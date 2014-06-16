@@ -1,0 +1,19 @@
+import "/robocomp/Interfaces/IDSLs/AGMAgent.idsl";
+import "/robocomp/Interfaces/IDSLs/AGMExecutive.idsl";
+import "/robocomp/Interfaces/IDSLs/AGMCommonBehavior.idsl";
+import "/robocomp/Interfaces/IDSLs/AGMWorldModel.idsl";
+
+import "/robocomp/Interfaces/IDSLs/AprilTags.idsl";
+
+Component objectDetectorAgentComp
+{
+	Communications
+	{
+		implements AGMCommonBehavior;
+		publishes AGMAgentTopic;
+		subscribesTo AGMExecutiveTopic, AprilTags;
+	};
+
+	language Cpp;
+	gui Qt(QWidget);
+};

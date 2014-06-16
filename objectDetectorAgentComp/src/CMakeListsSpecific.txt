@@ -1,0 +1,13 @@
+
+SET(LIBS ${LIBS} -lagm -lboost_system )
+# Sources set
+SET ( SOURCES
+  specificworker.cpp
+  specificmonitor.cpp
+)
+
+# Headers set
+SET ( HEADERS
+  specificworker.h
+  specificmonitor.h
+)
