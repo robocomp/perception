@@ -1,0 +1,12 @@
+import "/robocomp/interfaces/IDSLs/AprilTags.idsl";
+import "/robocomp/interfaces/IDSLs/InnerModelManager.idsl";
+import "/robocomp/interfaces/IDSLs/RGBD.idsl";
+
+Component objectDetectionComp{
+	Communications
+	{
+		requires InnerModelManager, RGBD;
+		subscribesTo AprilTags;
+	};
+	language Cpp;
+};
