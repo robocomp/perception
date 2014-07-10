@@ -24,6 +24,7 @@
 */
 
 SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mprx, parent)	
+, mutex(new QMutex())
 , cloud(new pcl::PointCloud<PointT>)
 {
 	
@@ -37,6 +38,13 @@ SpecificWorker::~SpecificWorker()
 
 }
 void SpecificWorker::compute( )
+{
+	doThePointClouds();
+	doTheAprilTags();
+	
+}
+
+void SpecificWorker::doThePointClouds()
 {
 	try
 	{
@@ -67,20 +75,13 @@ void SpecificWorker::compute( )
   int j=0;
   for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
   {
-// 		pointcloud[j].r=it->r;
-// 		pointcloud[j].g=it->g;
-// 		pointcloud[j].b=it->b;
-// 		pointcloud[j].x=(it->x);
-// 		pointcloud[j].y=(it->y);
-// 		pointcloud[j].z=(it->z);
-		pointcloud[j].r=0;
-		pointcloud[j].g=255;
-		pointcloud[j].b=0;
- 		pointcloud[j].x=points_kinect[j].x;
- 		pointcloud[j].y=points_kinect[j].y;
- 		pointcloud[j].z=points_kinect[j].z;
+		pointcloud[j].r=it->r;
+		pointcloud[j].g=it->g;
+		pointcloud[j].b=it->b;
+		pointcloud[j].x=(it->x);
+		pointcloud[j].y=(it->y);
+		pointcloud[j].z=(it->z);
 
-    
     j++;
   }
   
@@ -91,13 +92,77 @@ void SpecificWorker::compute( )
   {
     qDebug()<<"Error talking to inermodelmanager_proxy: "<<e.what();
   }
-		
+}
+
+void SpecificWorker::doTheAprilTags()
+{
+	mutex->lock();
+	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
+	{
+		if (itMap->second.id == 0)
+		{
+			RoboCompInnerModelManager::Pose3D pose;
+			pose.x = itMap->second.tx;
+			pose.y = itMap->second.ty;
+			pose.z = itMap->second.tz;
+			pose.rx = itMap->second.rx;
+			pose.ry = itMap->second.ry;
+			pose.rz = itMap->second.rz;
+			
+			bool exists = false;
+			
+			RoboCompInnerModelManager::NodeInformationSequence node_sequence;
+			innermodelmanager_proxy->getAllNodeInformation(node_sequence);
+			for(unsigned int i=0; i<node_sequence.size(); i++)
+			{
+				std::cout<<node_sequence[i].id<<std::endl;
+				if(node_sequence[i].id == "mesa")
+				{
+					exists = true;
+					break;
+				}
+			}
+			
+			if(exists)
+				addTheTable(pose);
+// 			else
+// 				updateTable(pose);
+			break;
+ 		}
+	}
+	mutex->unlock();
+}
+
+void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
+{
+	RoboCompInnerModelManager::Pose3D pose2;
+	pose2.x = pose2.y = pose2.z = pose2.rx = pose2.ry = pose2.rz = 0;
+	
+	RoboCompInnerModelManager::meshType table_mesh;
+	table_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cube.3ds";
+	try
+	{
+		innermodelmanager_proxy->addTransform("mesa_T",  "static", "world", pose);
+		innermodelmanager_proxy->addTransform("mesa_T2", "static", "mesa_T", pose2);
+		innermodelmanager_proxy->addMesh("mesa", "mesa_T2", table_mesh);
+	}
+	catch(RoboCompInnerModelManager::InnerModelManagerError e)
+	{
+		std::cout<<e.text<<std::endl;
+	}
 	
 }
 
-void showPointCloud()
+void SpecificWorker::updateTable(RoboCompInnerModelManager::Pose3D pose)
 {
+	RoboCompInnerModelManager::Pose3D pose2;
+	pose2.x = pose2.y = pose2.z = pose2.rx = pose2.ry = pose2.rz = 0;
 	
+	RoboCompInnerModelManager::meshType table_mesh;
+	table_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cube.3ds";
+
+ 	innermodelmanager_proxy->setPoseFromParent("mesa_T", pose);
+
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
@@ -107,5 +172,30 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 };
 void SpecificWorker::newAprilTag(const tagsList& tags)
 {
+	mutex->lock();
 	
+	QTime c = QTime::currentTime();
+
+	for (uint32_t i=0; i<tags.size(); i++)
+	{
+		if (tagMap.find(tags[i].id) != tagMap.end())
+		{
+			tagMap[tags[i].id] = AprilTagModel();
+		}
+		else
+		{
+			printf("new tag %d\n", tags[i].id);
+		}
+
+		tagMap[tags[i].id].id = tags[i].id;
+		tagMap[tags[i].id].tx = tags[i].tx;
+		tagMap[tags[i].id].ty = tags[i].ty;
+		tagMap[tags[i].id].tz = tags[i].tz;
+		tagMap[tags[i].id].rx = tags[i].rx;
+		tagMap[tags[i].id].ry = tags[i].ry;
+		tagMap[tags[i].id].rz = tags[i].rz;
+		tagMap[tags[i].id].lastTime = c;
+	}
+	
+	mutex->unlock();
 }

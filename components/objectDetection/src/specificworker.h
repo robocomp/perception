@@ -29,15 +29,32 @@
        @author authorname
 */
 
+class AprilTagModel
+{
+public:
+	int id;
+	float tx;
+	float ty;
+	float tz;
+	float rx;
+	float ry;
+	float rz;
+	QTime lastTime;
+};
+
 typedef pcl::PointXYZRGB PointT;
+typedef std::map<int, AprilTagModel> TagModelMap;
 
 class SpecificWorker : public GenericWorker
 {
-	RoboCompRGBD::ColorSeq rgbMatrix;
+	RoboCompRGBD::ColorSeq rgbMatrix;	
 	RoboCompRGBD::depthType distanceMatrix;
 	RoboCompRGBD::PointSeq points_kinect;
 	RoboCompJointMotor::MotorStateMap h;
 	RoboCompDifferentialRobot::TBaseState b;
+	
+	TagModelMap tagMap;
+	QMutex *mutex;
 	
 	//PCL data structures
 	pcl::PointCloud<PointT>::Ptr cloud;
@@ -47,8 +64,11 @@ public:
 	SpecificWorker(MapPrx& mprx, QObject *parent = 0);	
 	~SpecificWorker();
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
-	void  newAprilTag(const tagsList& tags);
-
+	void newAprilTag(const tagsList& tags);
+	void doThePointClouds();
+	void doTheAprilTags();
+	void addTheTable(RoboCompInnerModelManager::Pose3D pose);
+	void updateTable(RoboCompInnerModelManager::Pose3D pose);
 
 public slots:
  	void compute(); 	
