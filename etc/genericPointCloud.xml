@@ -1,12 +1,25 @@
 <innerModel>
-	<rgbd id="rgbd" focal="584" width="640" height="480" port="20096" ifconfig="20000,10004" />
 	<transform id="world" >
-		<pointcloud id="cloud" /> 
-		<transform id="cube_0">
-<!-- 			<mesh id="cube" file="/home/robocomp/robocomp/Files/osgModels/basics/cubexxx.3ds" scale="500" rx="0" render="wireframe"/> -->
-		</transform>
-<!-- 		<mesh id="rawOdometry_mesh" file="/home/robocomp/robocomp/Files/osgModels/axis.osg" scale="30" rx="1.57" render="wireframe" />  -->
+
+		<differentialrobot id="robot">
+			<translation id="pechote" ty="1077">
+				<translation id="pescuezo" ty="300">
+					<rotation id="cuellopabajo" rx="0.47">
+						<rgbd id="rgbd" focal="525" width="640" height="480" port="20096" ifconfig="20000,10004" />
+						<pointcloud id="cloud" /> 
+					</rotation>
+				</translation>
+			</translation>
+		</differentialrobot>
 	</transform>
+						
+						
+						
+						
+<!-- 		<transform id="cube_0"> -->
+<!-- 			<mesh id="cube" file="/home/robocomp/robocomp/Files/osgModels/basics/cubexxx.3ds" scale="500" rx="0" render="wireframe"/> -->
+<!-- 		</transform> -->
+<!-- 		<mesh id="rawOdometry_mesh" file="/home/robocomp/robocomp/Files/osgModels/axis.osg" scale="30" rx="1.57" render="wireframe" />  -->
 	<!--
 		<transform id="world">
 			<plane id="floor" ny="1" size="100000" repeat="1" />

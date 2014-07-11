@@ -24,6 +24,9 @@
 #include <pcl/point_cloud.h>
 #include <pcl/pcl_base.h>
 #include <pcl/point_types.h>
+#include <pcl/filters/passthrough.h>
+#include <pcl/filters/voxel_grid.h>
+
 /**
        \brief
        @author authorname
@@ -56,6 +59,9 @@ class SpecificWorker : public GenericWorker
 	TagModelMap tagMap;
 	QMutex *mutex;
 	
+	// Create the filtering object
+	pcl::PassThrough<pcl::PointXYZ> pass;
+	
 	//PCL data structures
 	pcl::PointCloud<PointT>::Ptr cloud;
 	
@@ -69,6 +75,8 @@ public:
 	void doTheAprilTags();
 	void addTheTable(RoboCompInnerModelManager::Pose3D pose);
 	void updateTable(RoboCompInnerModelManager::Pose3D pose);
+	
+	void drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud);
 
 public slots:
  	void compute(); 	

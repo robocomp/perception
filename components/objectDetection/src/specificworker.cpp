@@ -40,12 +40,16 @@ SpecificWorker::~SpecificWorker()
 void SpecificWorker::compute( )
 {
 	doThePointClouds();
+	
+	drawThePointCloud(this->cloud);
+	
 	doTheAprilTags();
 	
 }
 
 void SpecificWorker::doThePointClouds()
 {
+	//transform to pcl cloud
 	try
 	{
 		rgbd_proxy->getImage(rgbMatrix, distanceMatrix, points_kinect,  h, b);
@@ -59,22 +63,34 @@ void SpecificWorker::doThePointClouds()
 	
 	for(unsigned int i=0; i<points_kinect.size(); i++)
 	{
-		cloud->points[i].x=points_kinect[i].x*1000; 
-		cloud->points[i].y=points_kinect[i].y*1000; 
-		cloud->points[i].z=points_kinect[i].z*1000; 
+		cloud->points[i].x=points_kinect[i].x; 
+		cloud->points[i].y=points_kinect[i].y; 
+		cloud->points[i].z=points_kinect[i].z; 
+		
 		cloud->points[i].r=rgbMatrix[i].red;
 		cloud->points[i].g=rgbMatrix[i].green;
 		cloud->points[i].b=rgbMatrix[i].blue;
 	}
 	
-	//Do the PCL awesome processing here
 	
+	//Downsample the point cloud:
+	
+// 	pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+//   sor.setInputCloud (cloud);
+//   sor.setLeafSize (0.01f, 0.01f, 0.01f);
+//   sor.filter (*cloud);
+  
+}
+
+void SpecificWorker::drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud)
+{
 	//Now show results
 	RoboCompInnerModelManager::PointCloudVector pointcloud;
 	pointcloud.resize(cloud->size());
   int j=0;
   for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
   {
+		
 		pointcloud[j].r=it->r;
 		pointcloud[j].g=it->g;
 		pointcloud[j].b=it->b;
@@ -88,10 +104,11 @@ void SpecificWorker::doThePointClouds()
   try
   {
     innermodelmanager_proxy->setPointCloudData("cloud", pointcloud);
-  }catch(Ice::Exception e)
+  }
+  catch(Ice::Exception e)
   {
     qDebug()<<"Error talking to inermodelmanager_proxy: "<<e.what();
-  }
+  } 
 }
 
 void SpecificWorker::doTheAprilTags()
@@ -99,7 +116,7 @@ void SpecificWorker::doTheAprilTags()
 	mutex->lock();
 	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
 	{
-		if (itMap->second.id == 0)
+		if (itMap->second.id == 3)
 		{
 			RoboCompInnerModelManager::Pose3D pose;
 			pose.x = itMap->second.tx;
@@ -113,9 +130,8 @@ void SpecificWorker::doTheAprilTags()
 			
 			RoboCompInnerModelManager::NodeInformationSequence node_sequence;
 			innermodelmanager_proxy->getAllNodeInformation(node_sequence);
-			for(unsigned int i=0; i<node_sequence.size(); i++)
+			for (unsigned int i=0; i<node_sequence.size(); i++)
 			{
-				std::cout<<node_sequence[i].id<<std::endl;
 				if(node_sequence[i].id == "mesa")
 				{
 					exists = true;
@@ -123,10 +139,13 @@ void SpecificWorker::doTheAprilTags()
 				}
 			}
 			
-			if(exists)
+			if(!exists)
+			{
+				std::cout<<"pintando"<<std::endl;
 				addTheTable(pose);
-// 			else
-// 				updateTable(pose);
+			}
+			else
+				updateTable(pose);
 			break;
  		}
 	}
@@ -136,10 +155,18 @@ void SpecificWorker::doTheAprilTags()
 void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 {
 	RoboCompInnerModelManager::Pose3D pose2;
-	pose2.x = pose2.y = pose2.z = pose2.rx = pose2.ry = pose2.rz = 0;
+	pose2.x = pose2.y = pose2.rx = pose2.ry = pose2.rz = pose2.z = 0;
 	
 	RoboCompInnerModelManager::meshType table_mesh;
-	table_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cube.3ds";
+	
+ 	table_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
+	table_mesh.scaleX = 57.5;
+	table_mesh.scaleY = 80; // <--- A 674mm radius table has a scale of "100"
+	table_mesh.scaleZ = 57.5; 
+	
+	pose2.z = 57.5;
+	pose2.y = 26;
+	
 	try
 	{
 		innermodelmanager_proxy->addTransform("mesa_T",  "static", "world", pose);
