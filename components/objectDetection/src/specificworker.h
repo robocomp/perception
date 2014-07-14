@@ -20,6 +20,7 @@
 #define SPECIFICWORKER_H
 
 #include <genericworker.h>
+#include <qmat/QMatAll>
 
 #include <pcl/point_cloud.h>
 #include <pcl/pcl_base.h>
@@ -58,6 +59,7 @@ class SpecificWorker : public GenericWorker
 	
 	TagModelMap tagMap;
 	QMutex *mutex;
+	
 	
 	// Create the filtering object
 	pcl::PassThrough<pcl::PointXYZ> pass;

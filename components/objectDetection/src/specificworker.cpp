@@ -23,9 +23,8 @@
 * \brief Default constructor
 */
 
-SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mprx, parent)	
-, mutex(new QMutex())
-, cloud(new pcl::PointCloud<PointT>)
+SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mprx, parent), mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>)
+
 {
 	
 }
@@ -58,21 +57,47 @@ void SpecificWorker::doThePointClouds()
   {
 		qDebug()<<"Error talking to rgbd_proxy: "<<e.what();
 	}
-	
+
 	cloud->points.resize(points_kinect.size());
-	
-	for(unsigned int i=0; i<points_kinect.size(); i++)
-	{
-		cloud->points[i].x=points_kinect[i].x; 
-		cloud->points[i].y=points_kinect[i].y; 
-		cloud->points[i].z=points_kinect[i].z; 
+
 		
+	RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
+	QMat PP = QMat(m.rows, m.cols);
+	for (int r=0; r<m.rows; r++)
+	{
+		for (int c=0; c<m.cols; c++)
+		{
+			PP(r,c) = m.data[r*m.cols+c];
+		}
+	}
+	
+	bool first=true;
+	for (unsigned int i=0; i<points_kinect.size(); i++)
+	{
+		QVec p1 = QVec::vec4(points_kinect[i].x, points_kinect[i].y, points_kinect[i].z, 1);
+		QVec p2 = PP * p1;
+		QVec p22 = p2.fromHomogeneousCoordinates();
+
+		if (not isnan(points_kinect[i].x) and first)
+		{
+// 			p1.print("p1");
+// 			p2.print("p2");
+// 			p22.print("p22");
+			first = false;
+		}
+
+		cloud->points[i].x=p22(0);
+		cloud->points[i].y=p22(1);
+		cloud->points[i].z=p22(2);
+// 		cloud->points[i].x=points_kinect[i].x;
+// 		cloud->points[i].y=points_kinect[i].y;
+// 		cloud->points[i].z=points_kinect[i].z;
 		cloud->points[i].r=rgbMatrix[i].red;
 		cloud->points[i].g=rgbMatrix[i].green;
 		cloud->points[i].b=rgbMatrix[i].blue;
 	}
 	
-	
+
 	//Downsample the point cloud:
 	
 // 	pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
@@ -116,15 +141,34 @@ void SpecificWorker::doTheAprilTags()
 	mutex->lock();
 	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
 	{
+		//move the tags to the robot reference frame
+		
 		if (itMap->second.id == 3)
 		{
+			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
+			QMat PP = QMat(m.rows, m.cols);
+			for (int r=0; r<m.rows; r++)
+			{
+				for (int c=0; c<m.cols; c++)
+				{
+					PP(r,c) = m.data[r*m.cols+c];
+				}
+			}
+			const QVec init = QVec::vec4(itMap->second.tx, itMap->second.ty, itMap->second.tz, 1);
+			const QVec p2 = (PP * init).fromHomogeneousCoordinates();
+// 			const QVec p2 = init;
+			
 			RoboCompInnerModelManager::Pose3D pose;
-			pose.x = itMap->second.tx;
-			pose.y = itMap->second.ty;
-			pose.z = itMap->second.tz;
-			pose.rx = itMap->second.rx;
-			pose.ry = itMap->second.ry;
-			pose.rz = itMap->second.rz;
+			pose.x = p2(0);
+			pose.y = p2(1);
+			pose.z = p2(2);
+// 			pose.x = itMap->second.tx;
+// 			pose.y = itMap->second.ty;
+// 			pose.z = itMap->second.tz;
+// 			pose.rx = pose.ry = pose.rz = 0;
+// 			pose.rx = itMap->second.rx;
+// 			pose.ry = itMap->second.ry;
+// 			pose.rz = itMap->second.rz;
 			
 			bool exists = false;
 			
@@ -155,21 +199,23 @@ void SpecificWorker::doTheAprilTags()
 void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 {
 	RoboCompInnerModelManager::Pose3D pose2;
-	pose2.x = pose2.y = pose2.rx = pose2.ry = pose2.rz = pose2.z = 0;
+	pose2.x = pose2.y = pose2.z = pose2.rx = pose2.ry = pose2.rz = 0;
 	
 	RoboCompInnerModelManager::meshType table_mesh;
-	
  	table_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
+	table_mesh.pose.x = table_mesh.pose.y = table_mesh.pose.z = table_mesh.pose.rx = table_mesh.pose.ry = table_mesh.pose.rz = 0;
+	table_mesh.render = 0;
 	table_mesh.scaleX = 57.5;
-	table_mesh.scaleY = 80; // <--- A 674mm radius table has a scale of "100"
+	table_mesh.scaleY = 80; 
 	table_mesh.scaleZ = 57.5; 
 	
+	// fixing the tag offset
 	pose2.z = 57.5;
 	pose2.y = 26;
 	
 	try
 	{
-		innermodelmanager_proxy->addTransform("mesa_T",  "static", "world", pose);
+		innermodelmanager_proxy->addTransform("mesa_T",  "static", "robot", pose);
 		innermodelmanager_proxy->addTransform("mesa_T2", "static", "mesa_T", pose2);
 		innermodelmanager_proxy->addMesh("mesa", "mesa_T2", table_mesh);
 	}
@@ -182,14 +228,7 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 
 void SpecificWorker::updateTable(RoboCompInnerModelManager::Pose3D pose)
 {
-	RoboCompInnerModelManager::Pose3D pose2;
-	pose2.x = pose2.y = pose2.z = pose2.rx = pose2.ry = pose2.rz = 0;
-	
-	RoboCompInnerModelManager::meshType table_mesh;
-	table_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cube.3ds";
-
  	innermodelmanager_proxy->setPoseFromParent("mesa_T", pose);
-
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)

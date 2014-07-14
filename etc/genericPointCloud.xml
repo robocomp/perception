@@ -1,12 +1,14 @@
 <innerModel>
 	<transform id="world" >
-
+		<plane id="suelo" px="0" py="0" pz="0" ny="1" size="10000,10000,10" texture="#ff0000" />
 		<differentialrobot id="robot">
+			<pointcloud id="cloud" /> 
 			<translation id="pechote" ty="1077">
 				<translation id="pescuezo" ty="300">
 					<rotation id="cuellopabajo" rx="0.47">
-						<rgbd id="rgbd" focal="525" width="640" height="480" port="20096" ifconfig="20000,10004" />
-						<pointcloud id="cloud" /> 
+						<translation id="rgbd_t">
+							<rgbd id="rgbd" focal="525" width="640" height="480" port="20096" />
+						</translation>
 					</rotation>
 				</translation>
 			</translation>
@@ -15,28 +17,14 @@
 						
 						
 						
-						
-<!-- 		<transform id="cube_0"> -->
-<!-- 			<mesh id="cube" file="/home/robocomp/robocomp/Files/osgModels/basics/cubexxx.3ds" scale="500" rx="0" render="wireframe"/> -->
-<!-- 		</transform> -->
-<!-- 		<mesh id="rawOdometry_mesh" file="/home/robocomp/robocomp/Files/osgModels/axis.osg" scale="30" rx="1.57" render="wireframe" />  -->
-	<!--
-		<transform id="world">
-			<plane id="floor" ny="1" size="100000" repeat="1" />
-			<transform id="rawOdometry">
-				<translation id="geometricCenterRaw" tx="0" ty="0" tz="-100">
-					<mesh id="rawOdometry_mesh" file="/home/robocomp/robocomp/Files/osgModels/RobEx/platform.osg" scale="100" rx="1.57" />
-				</translation>
-			</transform>
-			
-			<transform id="base">
-				<translation id="robotGeometricCenter" tx="0" ty="0" tz="-285">
-					<mesh id="base_mesh" file="/home/robocomp/robocomp/Files/osgModels/Gualzru/Gualzru.osg" scale="10" ty="100" />
-				</translation>
-				<translation id="laser" tx="0" ty="-200" tz="0" />
-				<transform id="laser2" tx="0" ty="-200" tz="-40" ry="3.14159265" />
-			</transform>
-			
-			<transform id="worldTemporalRef" />
-		</transform>-->
+		<differentialrobot id="roboaat" port="10004" ty="10" >
+			<transform  id="base_trans" >
+				<mesh id="base_mesh" file="/home/robocomp/robocomp/files/osgModels/robex/robex.ive"  tx="0" ty="0" tz="0" scale="1000"  />
+				<transform id="base_body" rx="-1.5707963267948966" ty="0" tz="-100" >
+					<mesh id="barrahombro" file="/home/robocomp/robocomp/files/osgModels/robexarm/barrahombro.3ds" tx="-150" ty="0" tz="945" ry="-1.5707963267948966" scale="1000"  />
+					<mesh id="barracolumna" file="/home/robocomp/robocomp/files/osgModels/robexarm/barracolumna.osg" tx="30" ty="-15" tz="930" rz="1.5707963267948966" scale="850"  />
+				</transform>
+			</transform> <!-- cambiocoordenadas -->
+		</differentialrobot> <!--base -->						
+
 </innerModel>
