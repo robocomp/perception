@@ -23,7 +23,7 @@
 * \brief Default constructor
 */
 
-SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mprx, parent), mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>)
+SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>)
 
 {
 	
@@ -36,6 +36,12 @@ SpecificWorker::~SpecificWorker()
 {
 
 }
+
+void SpecificWorker::setModel2Fit(const string& model)
+{
+	
+}
+
 void SpecificWorker::compute( )
 {
 	doThePointClouds();

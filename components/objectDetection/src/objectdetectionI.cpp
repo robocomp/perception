@@ -32,4 +32,8 @@ objectDetectionI::~objectDetectionI()
 }
 
 // Component functions, implementation
+void objectDetectionI::setModel2Fit(const string& model, const Ice::Current&){
+	worker->setModel2Fit(model);
+}
+
 

@@ -74,8 +74,9 @@ class SpecificWorker : public GenericWorker
 	
 Q_OBJECT
 public:
-	SpecificWorker(MapPrx& mprx, QObject *parent = 0);	
+	SpecificWorker(MapPrx& mprx);	
 	~SpecificWorker();
+	void  setModel2Fit(const string& model);
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	void newAprilTag(const tagsList& tags);
 	void doThePointClouds();

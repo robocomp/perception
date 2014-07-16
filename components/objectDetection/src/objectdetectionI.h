@@ -37,7 +37,8 @@ Q_OBJECT
 public:
 	objectDetectionI( GenericWorker *_worker, QObject *parent = 0 );
 	~objectDetectionI();
-	
+	void  setModel2Fit(const string& model, const Ice::Current& = Ice::Current());
+
 
 	QMutex *mutex;
 private:

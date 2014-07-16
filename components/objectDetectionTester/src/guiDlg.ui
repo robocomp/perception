@@ -13,6 +13,32 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <widget class="QPushButton" name="fitTable">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>20</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>fitTable</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="fitBox">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>50</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>fitBox</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

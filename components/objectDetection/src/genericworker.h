@@ -60,6 +60,7 @@ public:
 
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;
+	virtual void  setModel2Fit(const string& model) = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:
