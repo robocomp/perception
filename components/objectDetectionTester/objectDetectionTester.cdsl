@@ -1,0 +1,6 @@
+Component objectDetectionTesterComp{
+	Communications{
+
+	};
+	language Cpp;
+};

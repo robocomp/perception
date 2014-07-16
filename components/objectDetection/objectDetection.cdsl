@@ -1,3 +1,4 @@
+import "/robocomp/interfaces/IDSLs/objectDetection.idsl";
 import "/robocomp/interfaces/IDSLs/AprilTags.idsl";
 import "/robocomp/interfaces/IDSLs/InnerModelManager.idsl";
 import "/robocomp/interfaces/IDSLs/RGBD.idsl";
