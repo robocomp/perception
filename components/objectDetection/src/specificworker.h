@@ -27,6 +27,10 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/sample_consensus/ransac.h>
+#include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/io/pcd_io.h>
 
 /**
        \brief
@@ -62,10 +66,11 @@ class SpecificWorker : public GenericWorker
 	
 	
 	// Create the filtering object
-	pcl::PassThrough<pcl::PointXYZ> pass;
+	pcl::PassThrough<PointT> pass;
 	
 	//PCL data structures
 	pcl::PointCloud<PointT>::Ptr cloud;
+	pcl::PointCloud<PointT>::Ptr downsampled_cloud;
 	
 Q_OBJECT
 public:

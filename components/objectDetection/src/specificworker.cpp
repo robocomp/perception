@@ -89,9 +89,6 @@ void SpecificWorker::doThePointClouds()
 		cloud->points[i].x=p22(0);
 		cloud->points[i].y=p22(1);
 		cloud->points[i].z=p22(2);
-// 		cloud->points[i].x=points_kinect[i].x;
-// 		cloud->points[i].y=points_kinect[i].y;
-// 		cloud->points[i].z=points_kinect[i].z;
 		cloud->points[i].r=rgbMatrix[i].red;
 		cloud->points[i].g=rgbMatrix[i].green;
 		cloud->points[i].b=rgbMatrix[i].blue;
@@ -100,10 +97,21 @@ void SpecificWorker::doThePointClouds()
 
 	//Downsample the point cloud:
 	
-// 	pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+// 	pcl::VoxelGrid<PointT> sor;
 //   sor.setInputCloud (cloud);
 //   sor.setLeafSize (0.01f, 0.01f, 0.01f);
-//   sor.filter (*cloud);
+//   sor.filter (*downsampled_cloud);
+
+// 	pcl::SampleConsensusModelPlane<PointT>::Ptr
+//     model_p (new pcl::SampleConsensusModelPlane<PointT> (cloud));
+// 	std::vector<int> inliers;
+// 		 
+// 	pcl::RandomSampleConsensus<PointT> ransac (model_p);
+//   ransac.setDistanceThreshold (.01);
+//   ransac.computeModel();
+//   ransac.getInliers(inliers);
+// 	std::cout<<"Inliers size: "<<inliers->size()<<std::endl;
+// 	pcl::copyPointCloud<PointT>(*cloud, inliers, *cloud);
   
 }
 
@@ -146,6 +154,7 @@ void SpecificWorker::doTheAprilTags()
 		if (itMap->second.id == 3)
 		{
 			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
+			
 			QMat PP = QMat(m.rows, m.cols);
 			for (int r=0; r<m.rows; r++)
 			{
@@ -154,21 +163,24 @@ void SpecificWorker::doTheAprilTags()
 					PP(r,c) = m.data[r*m.cols+c];
 				}
 			}
-			const QVec init = QVec::vec4(itMap->second.tx, itMap->second.ty, itMap->second.tz, 1);
-			const QVec p2 = (PP * init).fromHomogeneousCoordinates();
-// 			const QVec p2 = init;
+
+			
+			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz );
+
+							 
+			const RTMat translated_obj = PP * object_tr;
+			
+			const QVec tr = translated_obj.getTr();
+			const QVec r = translated_obj.extractAnglesR_min();
+
 			
 			RoboCompInnerModelManager::Pose3D pose;
-			pose.x = p2(0);
-			pose.y = p2(1);
-			pose.z = p2(2);
-// 			pose.x = itMap->second.tx;
-// 			pose.y = itMap->second.ty;
-// 			pose.z = itMap->second.tz;
-// 			pose.rx = pose.ry = pose.rz = 0;
-// 			pose.rx = itMap->second.rx;
-// 			pose.ry = itMap->second.ry;
-// 			pose.rz = itMap->second.rz;
+			pose.x = translated_obj(0,3);
+			pose.y = translated_obj(1,3);
+			pose.z = translated_obj(2,3);
+			pose.rx = r(0);
+			pose.ry = r(1);
+			pose.rz = r(2);
 			
 			bool exists = false;
 			
@@ -210,7 +222,7 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 	table_mesh.scaleZ = 57.5; 
 	
 	// fixing the tag offset
-	pose2.z = 57.5;
+	pose2.z = 65.5;
 	pose2.y = 26;
 	
 	try
