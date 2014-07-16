@@ -76,6 +76,7 @@
 #include "specificworker.h"
 #include "specificmonitor.h"
 #include "commonbehaviorI.h"
+#include <objectdetectionI.h>
 #include <apriltagsI.h>
 
 // Includes for remote proxy example
@@ -89,6 +90,7 @@
 // Namespaces
 using namespace std;
 using namespace RoboCompCommonBehavior;
+using namespace RoboCompobjectDetection;
 using namespace RoboCompAprilTags;
 using namespace RoboCompInnerModelManager;
 using namespace RoboCompRGBD;
@@ -217,6 +219,11 @@ RGBDPrx rgbd_proxy;
     	}
     	AprilTags_adapter->activate();
     	// Server adapter creation and publication
+		Ice::ObjectAdapterPtr adapterobjectDetection = communicator()->createObjectAdapter("objectDetectionComp");
+		objectDetectionI *objectdetection = new objectDetectionI(worker);
+		adapterobjectDetection->add(objectdetection, communicator()->stringToIdentity("objectdetection"));
+
+		adapterobjectDetection->activate();
 		cout << SERVER_FULL_NAME " started" << endl;
 
 		// User defined QtGui elements ( main window, dialogs, etc )

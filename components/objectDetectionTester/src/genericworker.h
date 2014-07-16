@@ -25,6 +25,9 @@
 #include <stdint.h>
 #include <qlog/qlog.h>
 #include <CommonBehavior.h>
+#include <ui_guiDlg.h>
+#include "config.h"
+#include <objectDetection.h>
 
 #define CHECK_PERIOD 5000
 #define BASIC_PERIOD 100
@@ -37,12 +40,17 @@ using namespace std;
        \brief
        @author authorname
 */
-
-class GenericWorker : public QObject
+using namespace RoboCompobjectDetection;
+class GenericWorker :
+#ifdef USE_QTGUI
+public QWidget, public Ui_guiDlg
+#else
+public QObject
+#endif
 {
 Q_OBJECT
 public:
-	GenericWorker(MapPrx& mprx, QObject *parent = 0);
+	GenericWorker(MapPrx& mprx);
 	virtual ~GenericWorker();
 	virtual void killYourSelf();
 	virtual void setPeriod(int p);
@@ -50,6 +58,7 @@ public:
 	virtual bool setParams(RoboCompCommonBehavior::ParameterList params) = 0;
 	QMutex *mutex;                //Shared mutex with servant
 
+	objectDetectionPrx objectdetection_proxy;
 protected:
 	QTimer timer;
 	int Period;

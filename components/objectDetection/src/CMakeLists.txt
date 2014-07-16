@@ -12,7 +12,8 @@ INCLUDE ( CMakeListsSpecific.txt)
 SET ( SOURCES
   ${SOURCES}
   objectdetectioncomp.cpp
-  apriltagsI.cpp
+  objectdetectionI.cpp
+apriltagsI.cpp
 
   genericmonitor.cpp
   commonbehaviorI.cpp
@@ -24,7 +25,8 @@ SET ( SOURCES
 # Headers set
 SET ( HEADERS
   ${HEADERS}
-  apriltagsI.h
+  objectdetectionI.h
+apriltagsI.h
 
   genericmonitor.h
   commonbehaviorI.h
@@ -32,7 +34,7 @@ SET ( HEADERS
 )
 #ROBOCOMP
 ROBOCOMP_INITIALIZE( $ENV{ROBOCOMP}/ )
-ROBOCOMP_WRAP_ICE( CommonBehavior  AprilTags InnerModelManager RGBD JointMotor  DifferentialRobot)
+ROBOCOMP_WRAP_ICE( CommonBehavior  objectDetection AprilTags InnerModelManager RGBD JointMotor  DifferentialRobot)
 SET (EXECUTABLE_OUTPUT_PATH ../bin)
 
 # Qt4

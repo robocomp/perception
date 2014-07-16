@@ -79,6 +79,8 @@
 
 // Includes for remote proxy example
 // #include <Remote.h>
+#include <ui_guiDlg.h>
+#include <objectDetection.h>
 
 
 // User includes here
@@ -86,6 +88,7 @@
 // Namespaces
 using namespace std;
 using namespace RoboCompCommonBehavior;
+using namespace RoboCompobjectDetection;
 
 
 class objectDetectionTesterComp : public RoboComp::Application
@@ -118,7 +121,8 @@ int objectDetectionTesterComp::run(int argc, char* argv[])
 
 	// Remote server proxy access example
 	// RemoteComponentPrx remotecomponent_proxy;
-	
+	objectDetectionPrx objectdetection_proxy;
+
 
 	string proxy;
 
@@ -145,7 +149,18 @@ int objectDetectionTesterComp::run(int argc, char* argv[])
 	//}
 	//rInfo("RemoteProxy initialized Ok!");
 	// 	// Now you can use remote server proxy (remotecomponent_proxy) as local object
-	
+	//Remote server proxy creation example
+	try
+	{
+		objectdetection_proxy = objectDetectionPrx::uncheckedCast( communicator()->stringToProxy( getProxyString("objectDetectionProxy") ) );
+	}
+	catch(const Ice::Exception& ex)
+	{
+		cout << "[" << PROGRAM_NAME << "]: Exception: " << ex;
+		return EXIT_FAILURE;
+	}
+	rInfo("objectDetectionProxy initialized Ok!");
+	mprx["objectDetectionProxy"] = (::IceProxy::Ice::Object*)(&objectdetection_proxy);
 	
 	GenericWorker *worker = new SpecificWorker(mprx);
 	//Monitor thread

@@ -16,48 +16,36 @@
  *    You should have received a copy of the GNU General Public License
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef OBJECTDETECTIONI_H
+#define OBJECTDETECTIONI_H
+
+// QT includes
+#include <QtCore/QObject>
+
+// Ice includes
+#include <Ice/Ice.h>
+#include <objectDetection.h>
+
+#include <config.h>
 #include "genericworker.h"
-/**
-* \brief Default constructor
-*/
-GenericWorker::GenericWorker(MapPrx& mprx) :
-#ifdef USE_QTGUI
-Ui_guiDlg()
-#else
-QObject()
+
+using namespace RoboCompobjectDetection;
+
+class objectDetectionI : public QObject , public virtual RoboCompobjectDetection::objectDetection
+{
+Q_OBJECT
+public:
+	objectDetectionI( GenericWorker *_worker, QObject *parent = 0 );
+	~objectDetectionI();
+	
+
+	QMutex *mutex;
+private:
+
+	GenericWorker *worker;
+public slots:
+
+
+};
+
 #endif
-
-{
-	objectdetection_proxy = (*(objectDetectionPrx*)mprx["objectDetectionProxy"]);
-
-	mutex = new QMutex();
-	#ifdef USE_QTGUI
-		setupUi(this);
-		show();
-	#endif
-	Period = BASIC_PERIOD;
-	connect(&timer, SIGNAL(timeout()), this, SLOT(compute()));
-}
-
-/**
-* \brief Default destructor
-*/
-GenericWorker::~GenericWorker()
-{
-
-}
-void GenericWorker::killYourSelf()
-{
-	rDebug("Killing myself");
-	emit kill();
-}
-/**
-* \brief Change compute period
-* @param per Period in ms
-*/
-void GenericWorker::setPeriod(int p)
-{
-	rDebug("Period changed"+QString::number(p));
-	Period = p;
-	timer.start(Period);
-}

@@ -1,6 +1,11 @@
-Component objectDetectionTesterComp{
-	Communications{
+import "/robocomp/interfaces/IDSLs/objectDetection.idsl";
 
+Component objectDetectionTesterComp
+{
+	Communications
+	{
+		requires objectDetection;
 	};
+	gui Qt(QWidget);
 	language Cpp;
 };

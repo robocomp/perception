@@ -1,6 +1,7 @@
 #
 # This property is used to configure the endpoints of the subscriber adapter.
 #
+objectDetectionComp.Endpoints=tcp -p 12216
 CommonBehavior.Endpoints=tcp -p 12216
 AprilTagsTopic.Endpoints=tcp -p 10261
 

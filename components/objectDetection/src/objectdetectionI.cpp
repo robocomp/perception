@@ -16,48 +16,20 @@
  *    You should have received a copy of the GNU General Public License
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "genericworker.h"
-/**
-* \brief Default constructor
-*/
-GenericWorker::GenericWorker(MapPrx& mprx) :
-#ifdef USE_QTGUI
-Ui_guiDlg()
-#else
-QObject()
-#endif
+#include "objectdetectionI.h"
 
+objectDetectionI::objectDetectionI(GenericWorker *_worker, QObject *parent) : QObject(parent)
 {
-	objectdetection_proxy = (*(objectDetectionPrx*)mprx["objectDetectionProxy"]);
-
-	mutex = new QMutex();
-	#ifdef USE_QTGUI
-		setupUi(this);
-		show();
-	#endif
-	Period = BASIC_PERIOD;
-	connect(&timer, SIGNAL(timeout()), this, SLOT(compute()));
+	worker = _worker;
+	mutex = worker->mutex;       // Shared worker mutex
+	// Component initialization...
 }
 
-/**
-* \brief Default destructor
-*/
-GenericWorker::~GenericWorker()
-{
 
-}
-void GenericWorker::killYourSelf()
+objectDetectionI::~objectDetectionI()
 {
-	rDebug("Killing myself");
-	emit kill();
+	// Free component resources here
 }
-/**
-* \brief Change compute period
-* @param per Period in ms
-*/
-void GenericWorker::setPeriod(int p)
-{
-	rDebug("Period changed"+QString::number(p));
-	Period = p;
-	timer.start(Period);
-}
+
+// Component functions, implementation
+

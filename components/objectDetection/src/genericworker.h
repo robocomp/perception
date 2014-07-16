@@ -27,6 +27,7 @@
 #include <CommonBehavior.h>
 #include <InnerModelManager.h>
 #include <RGBD.h>
+#include <objectDetection.h>
 #include <AprilTags.h>
 
 #define CHECK_PERIOD 5000
@@ -42,6 +43,7 @@ using namespace std;
 */
 using namespace RoboCompInnerModelManager;
 using namespace RoboCompRGBD;
+using namespace RoboCompobjectDetection;
 using namespace RoboCompAprilTags;
 
 class GenericWorker : public QObject
