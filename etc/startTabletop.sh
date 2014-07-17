@@ -36,6 +36,14 @@ qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand 'cmake . && m
 qdbus org.kde.yakuake /yakuake/tabs org.kde.yakuake.setTabTitle $sess 'ObjectDetection'
 sleep 1
 
+# ObjectDetectionTester
+qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.addSession
+sess=`qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.activeSessionId`
+qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand 'cd /home/robocomp/robocomp/components/perception/components/objectDetectionTester/build/'
+qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand 'cmake . && make && bin/objectdetectiontester --Ice.Config=/home/robocomp/robocomp/components/perception/etc/objectDetectionTester.conf'
+qdbus org.kde.yakuake /yakuake/tabs org.kde.yakuake.setTabTitle $sess 'ObjectDetectionTester'
+sleep 1
+
 # AGM Executive
 #qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.addSession
 #sess=`qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.activeSessionId`

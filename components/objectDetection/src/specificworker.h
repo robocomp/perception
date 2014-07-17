@@ -63,7 +63,7 @@ class SpecificWorker : public GenericWorker
 	
 	TagModelMap tagMap;
 	QMutex *mutex;
-	
+	QMutex *point_cloud_mutex;
 	
 	// Create the filtering object
 	pcl::PassThrough<PointT> pass;
@@ -79,10 +79,17 @@ public:
 	void  setModel2Fit(const string& model);
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	void newAprilTag(const tagsList& tags);
+	
 	void doThePointClouds();
 	void doTheAprilTags();
+	
+	void doTheBox();
+	void addTheBox(RoboCompInnerModelManager::Pose3D pose);
+	void updateTheBox(RoboCompInnerModelManager::Pose3D pose);
+	
+	void doTheTable();
 	void addTheTable(RoboCompInnerModelManager::Pose3D pose);
-	void updateTable(RoboCompInnerModelManager::Pose3D pose);
+	void updateTheTable(RoboCompInnerModelManager::Pose3D pose);
 	
 	void drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud);
 

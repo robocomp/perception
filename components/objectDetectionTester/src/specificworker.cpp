@@ -25,6 +25,8 @@
 
 SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mprx)	
 {
+	connect(fit_table_button, SIGNAL(clicked()), this, SLOT(fitTable()));
+ 	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
 }
 
 /**
@@ -32,8 +34,19 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 */
 SpecificWorker::~SpecificWorker()
 {
-
+	
 }
+
+void SpecificWorker::fitTable()
+{
+	objectdetection_proxy->setModel2Fit("table");
+}
+
+void SpecificWorker::fitBox()
+{
+	objectdetection_proxy->setModel2Fit("box");
+}
+
 void SpecificWorker::compute( )
 {
 }

@@ -23,7 +23,7 @@
 * \brief Default constructor
 */
 
-SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>)
+SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>)
 
 {
 	
@@ -39,7 +39,14 @@ SpecificWorker::~SpecificWorker()
 
 void SpecificWorker::setModel2Fit(const string& model)
 {
-	
+	if(model=="box")
+	{
+		doTheBox();
+	}
+	if(model=="table")
+	{
+		doTheTable();
+	}
 }
 
 void SpecificWorker::compute( )
@@ -48,7 +55,139 @@ void SpecificWorker::compute( )
 	
 	drawThePointCloud(this->cloud);
 	
-	doTheAprilTags();
+// 	doTheAprilTags();
+	
+}
+
+void SpecificWorker::doTheBox()
+{
+	//put the box processing here:
+	mutex->lock();
+	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
+	{
+		//move the tags to the robot reference frame
+		
+		if (itMap->second.id == 3)
+		{
+			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
+			
+			QMat PP = QMat(m.rows, m.cols);
+			for (int r=0; r<m.rows; r++)
+			{
+				for (int c=0; c<m.cols; c++)
+				{
+					PP(r,c) = m.data[r*m.cols+c];
+				}
+			}
+
+			
+			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz );
+
+							 
+			const RTMat translated_obj = PP * object_tr;
+			
+			const QVec tr = translated_obj.getTr();
+			const QVec r = translated_obj.extractAnglesR_min();
+
+			
+			RoboCompInnerModelManager::Pose3D pose;
+			pose.x = translated_obj(0,3);
+			pose.y = translated_obj(1,3);
+			pose.z = translated_obj(2,3);
+			pose.rx = r(0);
+			pose.ry = r(1);
+			pose.rz = r(2);
+			
+			bool exists = false;
+			
+			RoboCompInnerModelManager::NodeInformationSequence node_sequence;
+			innermodelmanager_proxy->getAllNodeInformation(node_sequence);
+			for (unsigned int i=0; i<node_sequence.size(); i++)
+			{
+				if(node_sequence[i].id == "box")
+				{
+					exists = true;
+					break;
+				}
+			}
+			
+			if(!exists)
+			{
+				std::cout<<"pintando"<<std::endl;
+				addTheBox(pose);
+			}
+			else
+				updateTheBox(pose);
+			break;
+ 		}
+	}
+	mutex->unlock();
+	
+}
+
+void SpecificWorker::doTheTable()
+{
+	//put the box processing here:
+	mutex->lock();
+	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
+	{
+		//move the tags to the robot reference frame
+		
+		if (itMap->second.id == 0)
+		{
+			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
+			
+			QMat PP = QMat(m.rows, m.cols);
+			for (int r=0; r<m.rows; r++)
+			{
+				for (int c=0; c<m.cols; c++)
+				{
+					PP(r,c) = m.data[r*m.cols+c];
+				}
+			}
+
+			
+			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz );
+
+							 
+			const RTMat translated_obj = PP * object_tr;
+			
+			const QVec tr = translated_obj.getTr();
+			const QVec r = translated_obj.extractAnglesR_min();
+
+			
+			RoboCompInnerModelManager::Pose3D pose;
+			pose.x = translated_obj(0,3);
+			pose.y = translated_obj(1,3);
+			pose.z = translated_obj(2,3);
+			pose.rx = r(0);
+			pose.ry = r(1);
+			pose.rz = r(2);
+			
+			bool exists = false;
+			
+			RoboCompInnerModelManager::NodeInformationSequence node_sequence;
+			innermodelmanager_proxy->getAllNodeInformation(node_sequence);
+			for (unsigned int i=0; i<node_sequence.size(); i++)
+			{
+				if(node_sequence[i].id == "table")
+				{
+					exists = true;
+					break;
+				}
+			}
+			
+			if(!exists)
+			{
+				std::cout<<"pintando"<<std::endl;
+				addTheTable(pose);
+			}
+			else
+				updateTheTable(pose);
+			break;
+ 		}
+	}
+	mutex->unlock();
 	
 }
 
@@ -194,7 +333,7 @@ void SpecificWorker::doTheAprilTags()
 			innermodelmanager_proxy->getAllNodeInformation(node_sequence);
 			for (unsigned int i=0; i<node_sequence.size(); i++)
 			{
-				if(node_sequence[i].id == "mesa")
+				if(node_sequence[i].id == "box")
 				{
 					exists = true;
 					break;
@@ -204,14 +343,46 @@ void SpecificWorker::doTheAprilTags()
 			if(!exists)
 			{
 				std::cout<<"pintando"<<std::endl;
-				addTheTable(pose);
+				addTheBox(pose);
 			}
 			else
-				updateTable(pose);
+				updateTheBox(pose);
 			break;
  		}
 	}
 	mutex->unlock();
+}
+
+void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
+{
+	RoboCompInnerModelManager::Pose3D pose2;
+	pose2.x = pose2.y = pose2.z = pose2.rx = pose2.ry = pose2.rz = 0;
+	
+	RoboCompInnerModelManager::meshType box_mesh;
+ 	box_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
+	box_mesh.pose.x = box_mesh.pose.y = box_mesh.pose.z = box_mesh.pose.rx = box_mesh.pose.ry = box_mesh.pose.rz = 0;
+	box_mesh.render = 0;
+	box_mesh.scaleX = 57.5;
+	box_mesh.scaleY = 80; 
+	box_mesh.scaleZ = 57.5; 
+	box_mesh.render = 1; //set wireframe mode
+	
+	// fixing the tag offset
+	pose2.z = 65.5;
+	pose2.y = 26;
+
+	
+	try
+	{
+		innermodelmanager_proxy->addTransform("box_T",  "static", "robot", pose);
+		innermodelmanager_proxy->addTransform("box_T2", "static", "box_T", pose2);
+		innermodelmanager_proxy->addMesh("box", "box_T2", box_mesh);
+	}
+	catch(RoboCompInnerModelManager::InnerModelManagerError e)
+	{
+		std::cout<<e.text<<std::endl;
+	}
+	
 }
 
 void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
@@ -222,20 +393,21 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 	RoboCompInnerModelManager::meshType table_mesh;
  	table_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
 	table_mesh.pose.x = table_mesh.pose.y = table_mesh.pose.z = table_mesh.pose.rx = table_mesh.pose.ry = table_mesh.pose.rz = 0;
-	table_mesh.render = 0;
-	table_mesh.scaleX = 57.5;
-	table_mesh.scaleY = 80; 
-	table_mesh.scaleZ = 57.5; 
+	table_mesh.scaleX = 1000;
+	table_mesh.scaleY = 400; 
+	table_mesh.scaleZ = 10; 
+	table_mesh.render = 1; //set wireframe mode
 	
 	// fixing the tag offset
-	pose2.z = 65.5;
-	pose2.y = 26;
+
+	pose2.x = -150;
+	pose2.y = 350;
 	
 	try
 	{
-		innermodelmanager_proxy->addTransform("mesa_T",  "static", "robot", pose);
-		innermodelmanager_proxy->addTransform("mesa_T2", "static", "mesa_T", pose2);
-		innermodelmanager_proxy->addMesh("mesa", "mesa_T2", table_mesh);
+		innermodelmanager_proxy->addTransform("table_T",  "static", "robot", pose);
+		innermodelmanager_proxy->addTransform("table_T2", "static", "table_T", pose2);
+		innermodelmanager_proxy->addMesh("table", "table_T2", table_mesh);
 	}
 	catch(RoboCompInnerModelManager::InnerModelManagerError e)
 	{
@@ -244,9 +416,14 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 	
 }
 
-void SpecificWorker::updateTable(RoboCompInnerModelManager::Pose3D pose)
+void SpecificWorker::updateTheBox(RoboCompInnerModelManager::Pose3D pose)
 {
- 	innermodelmanager_proxy->setPoseFromParent("mesa_T", pose);
+ 	innermodelmanager_proxy->setPoseFromParent("box_T", pose);
+}
+
+void SpecificWorker::updateTheTable(RoboCompInnerModelManager::Pose3D pose)
+{
+ 	innermodelmanager_proxy->setPoseFromParent("table_T", pose);
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)

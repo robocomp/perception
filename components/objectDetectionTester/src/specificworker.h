@@ -20,7 +20,6 @@
 #define SPECIFICWORKER_H
 
 #include <genericworker.h>
-
 /**
        \brief
        @author authorname
@@ -33,9 +32,11 @@ public:
 	SpecificWorker(MapPrx& mprx, QObject *parent = 0);	
 	~SpecificWorker();
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
-
+	
 public slots:
  	void compute(); 	
+	void fitBox();
+	void fitTable();
 };
 
 #endif
