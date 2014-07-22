@@ -24,6 +24,7 @@
 */
 
 SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>)
+, segmented_cloud(new pcl::PointCloud<PointT>)
 
 {
 	
@@ -46,6 +47,37 @@ void SpecificWorker::setModel2Fit(const string& model)
 	if(model=="table")
 	{
 		doTheTable();
+	}
+}
+
+void SpecificWorker::removePCwithinModel(const string& model)
+{
+	if(model=="table")
+	{
+		std::cout<<"remove point clouds within table"<<std::endl;
+// 		RoboCompInnerModelManager::Pose3D table_pose;
+// 		//get table model position
+// 		innermodelmanager_proxy->getPose("robot", "table", table_pose);
+// 
+// 		std::cout<<table_pose.x<<std::endl;
+// 		std::cout<<table_pose.y<<std::endl;
+// 		std::cout<<table_pose.z<<std::endl;
+// 		
+// 		RoboCompInnerModelManager::NodeInformationSequence table_info;
+// 		innermodelmanager_proxy->getAllNodeInformation(table_info);
+// 		
+// 		std::cout<<table_info[0].id<<std::endl;
+		
+		
+// 		segmented_cloud->points.resze(cloud->size());
+// 		int total_points = 0;
+// 		for(unsigned int i=0; i<cloud->size(); i++)
+// 		{
+// 			//check x boundary
+// 			if( cloud->points[i].x => 
+// 			
+// 			segmented_cloud->points[i]
+// 		}
 	}
 }
 
@@ -357,7 +389,7 @@ void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
 {
 	RoboCompInnerModelManager::Pose3D pose2;
 	pose2.x = pose2.y = pose2.z = pose2.rx = pose2.ry = pose2.rz = 0;
-	
+
 	RoboCompInnerModelManager::meshType box_mesh;
  	box_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
 	box_mesh.pose.x = box_mesh.pose.y = box_mesh.pose.z = box_mesh.pose.rx = box_mesh.pose.ry = box_mesh.pose.rz = 0;

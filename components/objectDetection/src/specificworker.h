@@ -70,13 +70,15 @@ class SpecificWorker : public GenericWorker
 	
 	//PCL data structures
 	pcl::PointCloud<PointT>::Ptr cloud;
+	pcl::PointCloud<PointT>::Ptr segmented_cloud;
 	pcl::PointCloud<PointT>::Ptr downsampled_cloud;
 	
 Q_OBJECT
 public:
 	SpecificWorker(MapPrx& mprx);	
 	~SpecificWorker();
-	void  setModel2Fit(const string& model);
+	void setModel2Fit(const string& model);
+	void removePCwithinModel(const string& model);
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	void newAprilTag(const tagsList& tags);
 	

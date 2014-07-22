@@ -37,6 +37,7 @@ public slots:
  	void compute(); 	
 	void fitBox();
 	void fitTable();
+	void removePCwithinTable();
 };
 
 #endif

@@ -16,7 +16,7 @@
   <widget class="QPushButton" name="fit_table_button">
    <property name="geometry">
     <rect>
-     <x>70</x>
+     <x>20</x>
      <y>20</y>
      <width>75</width>
      <height>23</height>
@@ -29,14 +29,27 @@
   <widget class="QPushButton" name="fit_box_button">
    <property name="geometry">
     <rect>
-     <x>70</x>
-     <y>50</y>
+     <x>20</x>
+     <y>80</y>
      <width>75</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
     <string>fitBox</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="remove_table_button">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>50</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>removeTable</string>
    </property>
   </widget>
  </widget>

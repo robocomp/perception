@@ -26,7 +26,8 @@
 SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mprx)	
 {
 	connect(fit_table_button, SIGNAL(clicked()), this, SLOT(fitTable()));
- 	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
+	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
+ 	connect(remove_table_button, SIGNAL(clicked()), this, SLOT(removePCwithinModel()));
 }
 
 /**
@@ -45,6 +46,12 @@ void SpecificWorker::fitTable()
 void SpecificWorker::fitBox()
 {
 	objectdetection_proxy->setModel2Fit("box");
+}
+
+void SpecificWorker::removePCwithinTable()
+{
+	std::cout<<"REMOVE TABLE"<<std::endl;
+ 	objectdetection_proxy->removePCwithinModel("table");
 }
 
 void SpecificWorker::compute( )
