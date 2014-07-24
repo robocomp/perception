@@ -27,7 +27,8 @@ SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QM
 , segmented_cloud(new pcl::PointCloud<PointT>)
 
 {
-	
+	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
+
 }
 
 /**
@@ -55,20 +56,34 @@ void SpecificWorker::removePCwithinModel(const string& model)
 	if(model=="table")
 	{
 		std::cout<<"remove point clouds within table"<<std::endl;
-// 		RoboCompInnerModelManager::Pose3D table_pose;
-// 		//get table model position
-// 		innermodelmanager_proxy->getPose("robot", "table", table_pose);
-// 
-// 		std::cout<<table_pose.x<<std::endl;
-// 		std::cout<<table_pose.y<<std::endl;
-// 		std::cout<<table_pose.z<<std::endl;
-// 		
+		RoboCompInnerModelManager::Pose3D table_pose;
+		RoboCompInnerModelManager::NodeInformation table_node;
+		//get table model position
+		innermodelmanager_proxy->getPose("robot", "table_T", table_pose);
+
+		std::cout<<table_pose.x<<std::endl;
+		std::cout<<table_pose.y<<std::endl;
+		std::cout<<table_pose.z<<std::endl;
+		
 // 		RoboCompInnerModelManager::NodeInformationSequence table_info;
 // 		innermodelmanager_proxy->getAllNodeInformation(table_info);
 // 		
-// 		std::cout<<table_info[0].id<<std::endl;
+// 		for (unsigned int i = 0; i<table_info.size(); i++)
+// 		{
+// 			if(table_info[i].id=="table")
+// 			{
+// 				table_node = table_info[i];
+// 				break;
+// 			}
+// 		}
+// 		RoboCompInnerModelManager::AttributeType attrT;
 		
+// 		attrT = table_node.attributes("ScaleX");
+// 		float ScaleX = ::atof(attrT.value.c_str());
 		
+// 		std::cout<<"ScaleX "<<attrT.value<<std::endl;
+// 		std::cout<<"ScaleY "<<ScaleY<<std::endl;
+// 		std::cout<<"ScaleZ "<<ScaleZ<<std::endl;
 // 		segmented_cloud->points.resze(cloud->size());
 // 		int total_points = 0;
 // 		for(unsigned int i=0; i<cloud->size(); i++)
@@ -101,17 +116,17 @@ void SpecificWorker::doTheBox()
 		
 		if (itMap->second.id == 3)
 		{
-			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
-			
-			QMat PP = QMat(m.rows, m.cols);
-			for (int r=0; r<m.rows; r++)
-			{
-				for (int c=0; c<m.cols; c++)
-				{
-					PP(r,c) = m.data[r*m.cols+c];
-				}
-			}
-
+// 			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
+// 			
+// 			QMat PP = QMat(m.rows, m.cols);
+// 			for (int r=0; r<m.rows; r++)
+// 			{
+// 				for (int c=0; c<m.cols; c++)
+// 				{
+// 					PP(r,c) = m.data[r*m.cols+c];
+// 				}
+// 			}
+			QMat PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
 			
 			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz );
 
@@ -167,17 +182,17 @@ void SpecificWorker::doTheTable()
 		
 		if (itMap->second.id == 0)
 		{
-			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
-			
-			QMat PP = QMat(m.rows, m.cols);
-			for (int r=0; r<m.rows; r++)
-			{
-				for (int c=0; c<m.cols; c++)
-				{
-					PP(r,c) = m.data[r*m.cols+c];
-				}
-			}
-
+// 			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
+// 			
+// 			QMat PP = QMat(m.rows, m.cols);
+// 			for (int r=0; r<m.rows; r++)
+// 			{
+// 				for (int c=0; c<m.cols; c++)
+// 				{
+// 					PP(r,c) = m.data[r*m.cols+c];
+// 				}
+// 			}
+			QMat PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
 			
 			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz );
 
@@ -238,15 +253,21 @@ void SpecificWorker::doThePointClouds()
 	cloud->points.resize(points_kinect.size());
 
 		
-	RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
-	QMat PP = QMat(m.rows, m.cols);
-	for (int r=0; r<m.rows; r++)
-	{
-		for (int c=0; c<m.cols; c++)
-		{
-			PP(r,c) = m.data[r*m.cols+c];
-		}
-	}
+// 	RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
+// 	QMat PP = QMat(m.rows, m.cols);
+// 	for (int r=0; r<m.rows; r++)
+// 	{
+// 		for (int c=0; c<m.cols; c++)
+// 		{
+// 			PP(r,c) = m.data[r*m.cols+c];
+// // 			std::cout<<PP(r,c)<<" ";
+// 		}
+// // 		std::cout<<std::endl;
+// 	}
+// // 	std::cout<<std::endl;
+	
+	QMat PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
+	
 	
 	bool first=true;
 	for (unsigned int i=0; i<points_kinect.size(); i++)
@@ -313,7 +334,8 @@ void SpecificWorker::drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud)
   
   try
   {
-    innermodelmanager_proxy->setPointCloudData("cloud", pointcloud);
+    add_point_cloud_to_innermodels("cloud", pointcloud);
+		
   }
   catch(Ice::Exception e)
   {
@@ -330,17 +352,18 @@ void SpecificWorker::doTheAprilTags()
 		
 		if (itMap->second.id == 3)
 		{
-			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
-			
-			QMat PP = QMat(m.rows, m.cols);
-			for (int r=0; r<m.rows; r++)
-			{
-				for (int c=0; c<m.cols; c++)
-				{
-					PP(r,c) = m.data[r*m.cols+c];
-				}
-			}
+// 			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
+// 			
+// 			QMat PP = QMat(m.rows, m.cols);
+// 			for (int r=0; r<m.rows; r++)
+// 			{
+// 				for (int c=0; c<m.cols; c++)
+// 				{
+// 					PP(r,c) = m.data[r*m.cols+c];
+// 				}
+// 			}
 
+			QMat PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
 			
 			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz );
 
@@ -406,9 +429,12 @@ void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
 	
 	try
 	{
-		innermodelmanager_proxy->addTransform("box_T",  "static", "robot", pose);
-		innermodelmanager_proxy->addTransform("box_T2", "static", "box_T", pose2);
-		innermodelmanager_proxy->addMesh("box", "box_T2", box_mesh);
+		add_tranform_to_innermodels("box_T",  "static", "robot", pose);
+		add_tranform_to_innermodels("box_T2",  "static", "box_T", pose2);
+		add_mesh_to_innermodels("box", "box_T2", box_mesh);
+// 		innermodelmanager_proxy->addTransform("box_T",  "static", "robot", pose);
+// 		innermodelmanager_proxy->addTransform("box_T2", "static", "box_T", pose2);
+// 		innermodelmanager_proxy->addMesh("box", "box_T2", box_mesh);
 	}
 	catch(RoboCompInnerModelManager::InnerModelManagerError e)
 	{
@@ -416,6 +442,7 @@ void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
 	}
 	
 }
+
 
 void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 {
@@ -437,9 +464,10 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 	
 	try
 	{
-		innermodelmanager_proxy->addTransform("table_T",  "static", "robot", pose);
-		innermodelmanager_proxy->addTransform("table_T2", "static", "table_T", pose2);
-		innermodelmanager_proxy->addMesh("table", "table_T2", table_mesh);
+		add_tranform_to_innermodels("table_T",  "static", "robot", pose);
+		add_tranform_to_innermodels("table_T2",  "static", "table_T", pose2);
+		add_mesh_to_innermodels("table", "table_T2", table_mesh);
+		
 	}
 	catch(RoboCompInnerModelManager::InnerModelManagerError e)
 	{
@@ -450,12 +478,12 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 
 void SpecificWorker::updateTheBox(RoboCompInnerModelManager::Pose3D pose)
 {
- 	innermodelmanager_proxy->setPoseFromParent("box_T", pose);
+	update_transforms_on_innermodels("box_T", pose);
 }
 
 void SpecificWorker::updateTheTable(RoboCompInnerModelManager::Pose3D pose)
 {
- 	innermodelmanager_proxy->setPoseFromParent("table_T", pose);
+ 	update_transforms_on_innermodels("table_T", pose);
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
@@ -491,4 +519,49 @@ void SpecificWorker::newAprilTag(const tagsList& tags)
 	}
 	
 	mutex->unlock();
+}
+
+
+bool SpecificWorker::add_point_cloud_to_innermodels(const std::string &id, const RoboCompInnerModelManager::PointCloudVector &cloud)
+{
+	//add to innermodel somehow //-- TODO
+	
+	//add to RCIS
+	innermodelmanager_proxy->setPointCloudData(id, cloud);
+}
+
+bool SpecificWorker::add_tranform_to_innermodels(const std::string &item, const std::string &engine, const std::string &base, const RoboCompInnerModelManager::Pose3D &pose)
+{
+	//adding to local innermodel
+	InnerModelNode * parent = innermodel->getNode(QString::fromStdString(base));
+	innermodel->newTransform(QString::fromStdString(item), QString::fromStdString("static") ,parent, pose.x, pose.y, pose.z, pose.rx, pose.ry, pose.rz);
+	
+	//adding to rcis:
+	innermodelmanager_proxy->addTransform(item, engine, base, pose);
+}
+
+bool SpecificWorker::add_mesh_to_innermodels(const std::string &item, const std::string &base, const RoboCompInnerModelManager::meshType &m)
+{
+// 	//ading to local innermodel
+	InnerModelNode * parent = innermodel->getNode(QString::fromStdString(base));
+	innermodel->newMesh (
+		QString::fromStdString(item),
+		parent,
+		QString::fromStdString(m.meshPath),
+		m.scaleX, m.scaleY, m.scaleZ,
+		m.render,
+		m.pose.x, m.pose.y, m.pose.z,
+		m.pose.rx, m.pose.ry, m.pose.rz);
+	
+	//adding to rcis	
+	innermodelmanager_proxy->addMesh(item, base, m);
+	
+}
+
+void SpecificWorker::update_transforms_on_innermodels (const std::string &item, const RoboCompInnerModelManager::Pose3D pose)
+{
+	//update on local innermodel
+	innermodel->updateTransformValues(QString::fromStdString(item), pose.x, pose.y, pose.z, pose.rx, pose.ry, pose.rz);
+	//update on RCIS
+	innermodelmanager_proxy->setPoseFromParent(item, pose);
 }

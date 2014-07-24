@@ -31,6 +31,7 @@
 #include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/io/pcd_io.h>
+#include <innermodel/innermodel.h>
 
 /**
        \brief
@@ -73,6 +74,8 @@ class SpecificWorker : public GenericWorker
 	pcl::PointCloud<PointT>::Ptr segmented_cloud;
 	pcl::PointCloud<PointT>::Ptr downsampled_cloud;
 	
+	InnerModel *innermodel;
+	
 Q_OBJECT
 public:
 	SpecificWorker(MapPrx& mprx);	
@@ -94,9 +97,16 @@ public:
 	void updateTheTable(RoboCompInnerModelManager::Pose3D pose);
 	
 	void drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud);
-
+	
+private:
+	bool add_point_cloud_to_innermodels(const std::string &id, const RoboCompInnerModelManager::PointCloudVector &cloud);
+	bool add_tranform_to_innermodels(const std::string &item, const std::string &engine, const std::string &base, const RoboCompInnerModelManager::Pose3D &pose);
+	bool add_mesh_to_innermodels(const std::string &item, const std::string &base, const RoboCompInnerModelManager::meshType &m);
+	void update_transforms_on_innermodels (const std::string &item, const RoboCompInnerModelManager::Pose3D pose);
+	
 public slots:
- 	void compute(); 	
+ 	void compute(); 
+
 };
 
 #endif

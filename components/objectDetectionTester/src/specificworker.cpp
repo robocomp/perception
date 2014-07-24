@@ -27,7 +27,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 {
 	connect(fit_table_button, SIGNAL(clicked()), this, SLOT(fitTable()));
 	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
- 	connect(remove_table_button, SIGNAL(clicked()), this, SLOT(removePCwithinModel()));
+ 	connect(remove_table_button, SIGNAL(clicked()), this, SLOT(removePCwithinTable()));
 }
 
 /**
