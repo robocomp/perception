@@ -48,6 +48,8 @@ SET( QT_USE_QTSTATEMACHINE TRUE )
 INCLUDE( ${QT_USE_FILE} )
 QT4_WRAP_CPP( MOC_SOURCES ${HEADERS} )
 
+message("${LIBS}")
+
 # Specify construction and link process
 ADD_EXECUTABLE( objectdetectioncomp ${SOURCES} ${MOC_SOURCES} ${RC_SOURCES} ${UI_HEADERS} )
 TARGET_LINK_LIBRARIES( objectdetectioncomp ${QT_LIBRARIES} ${LIBS} ${STATIC_LIBS} ${SPECIFIC_LIBS})
