@@ -59,11 +59,11 @@ void SpecificWorker::removePCwithinModel(const string& model)
 		RoboCompInnerModelManager::Pose3D table_pose;
 		RoboCompInnerModelManager::NodeInformation table_node;
 		//get table model position
-		innermodelmanager_proxy->getPose("robot", "table_T", table_pose);
+		RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
 
-		std::cout<<table_pose.x<<std::endl;
-		std::cout<<table_pose.y<<std::endl;
-		std::cout<<table_pose.z<<std::endl;
+		std::cout<<transform(0,3)<<std::endl;
+		std::cout<<transform(1,3)<<std::endl;
+		std::cout<<transform(2,3)<<std::endl;
 		
 // 		RoboCompInnerModelManager::NodeInformationSequence table_info;
 // 		innermodelmanager_proxy->getAllNodeInformation(table_info);
@@ -416,11 +416,10 @@ void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
 	RoboCompInnerModelManager::meshType box_mesh;
  	box_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
 	box_mesh.pose.x = box_mesh.pose.y = box_mesh.pose.z = box_mesh.pose.rx = box_mesh.pose.ry = box_mesh.pose.rz = 0;
-	box_mesh.render = 0;
 	box_mesh.scaleX = 57.5;
 	box_mesh.scaleY = 80; 
 	box_mesh.scaleZ = 57.5; 
-	box_mesh.render = 1; //set wireframe mode
+	box_mesh.render = 1; //set wireframe mode with 1 regular with 0
 	
 	// fixing the tag offset
 	pose2.z = 65.5;
@@ -535,6 +534,7 @@ bool SpecificWorker::add_tranform_to_innermodels(const std::string &item, const 
 	//adding to local innermodel
 	InnerModelNode * parent = innermodel->getNode(QString::fromStdString(base));
 	innermodel->newTransform(QString::fromStdString(item), QString::fromStdString("static") ,parent, pose.x, pose.y, pose.z, pose.rx, pose.ry, pose.rz);
+	cout<<"on local: "<<item<<" "<<pose.x<<" "<<pose.y<<" "<<pose.z<<endl;
 	
 	//adding to rcis:
 	innermodelmanager_proxy->addTransform(item, engine, base, pose);

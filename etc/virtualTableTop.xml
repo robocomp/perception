@@ -1,0 +1,46 @@
+<innerModel>
+	<transform id="world" >
+		<plane id="suelo" px="0" py="0" pz="0" ny="1" size="10000,10000,10" texture="#ff0000" />
+		<differentialrobot id="robot">
+			<pointcloud id="cloud" /> 
+			<translation id="pechote" ty="1077">
+				<translation id="pescuezo" ty="300">
+					<rotation id="cuellopabajo" rx="0.47">
+						<translation id="rgbd_t">
+							<rgbd id="rgbd" focal="525" width="640" height="480" port="10096" />
+						</translation>
+					</rotation>
+				</translation>
+			</translation>
+		</differentialrobot>
+	</transform>
+						
+						
+						
+		<differentialrobot id="roboaat" port="20004" ty="10" >
+			<transform  id="base_trans" >
+				<mesh id="base_mesh" file="/home/robocomp/robocomp/files/osgModels/robex/robex.ive"  tx="0" ty="0" tz="0" scale="1000"  />
+				<transform id="base_body" rx="-1.5707963267948966" ty="0" tz="-100" >
+					<mesh id="barrahombro" file="/home/robocomp/robocomp/files/osgModels/robexarm/barrahombro.3ds" tx="-150" ty="0" tz="945" ry="-1.5707963267948966" scale="1000"  />
+					<mesh id="barracolumna" file="/home/robocomp/robocomp/files/osgModels/robexarm/barracolumna.osg" tx="30" ty="-15" tz="930" rz="1.5707963267948966" scale="850"  />
+				</transform>
+			</transform> <!-- cambiocoordenadas -->
+		</differentialrobot> <!--base -->						
+	<transform id="tabletop" tz="100">
+		<transform id="target" tx="350" ty="750" tz="800" ry="0.7">
+			<transform id="aprilTransform" rx="1.57" tz="-100" ty="100">
+				<plane id="C1_6" ny="-1" size="108,-139.5,5" texture="/home/robocomp/robocomp/files/innermodel/tar36h11-3-50.png" />
+<!-- 				<plane id="C1_6" ny="1" size="216,-279,2" texture="/home/robocomp/robocomp/files/innermodel/tar36h11-3-50.png" /> -->
+			</transform>
+			<mesh id="cup" file="/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds" scale="100" rx="0"  ty="100" />
+		</transform>
+		
+		<transform id="mesaT" tx="0" ty="810"  tz="1000" >
+			<transform id="aprilmesa" ty="-60">
+				<plane id="mesa" ny="-1" size="108,-139.5,5" texture="/home/robocomp/robocomp/files/innermodel/tar36h11-0-50.png" />
+			</transform>
+			<mesh id="table" file="/home/robocomp/robocomp/files/osgModels/mobiliario/mes_comedor.osg" scale="100" rx="1.57"  ty="-800" />
+		</transform>
+	</transform>
+
+</innerModel>
