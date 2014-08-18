@@ -28,7 +28,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QM
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
-
+	removeTheTable = false;
 }
 
 /**
@@ -51,56 +51,83 @@ void SpecificWorker::setModel2Fit(const string& model)
 	}
 }
 
+//it only works for the table
 void SpecificWorker::removePCwithinModel(const string& model)
 {
 	if(model=="table")
 	{
-		std::cout<<"remove point clouds within table"<<std::endl;
-		RoboCompInnerModelManager::Pose3D table_pose;
-		RoboCompInnerModelManager::NodeInformation table_node;
-		//get table model position
-		RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
-
-		std::cout<<transform(0,3)<<std::endl;
-		std::cout<<transform(1,3)<<std::endl;
-		std::cout<<transform(2,3)<<std::endl;
-		
-// 		RoboCompInnerModelManager::NodeInformationSequence table_info;
-// 		innermodelmanager_proxy->getAllNodeInformation(table_info);
-// 		
-// 		for (unsigned int i = 0; i<table_info.size(); i++)
-// 		{
-// 			if(table_info[i].id=="table")
-// 			{
-// 				table_node = table_info[i];
-// 				break;
-// 			}
-// 		}
-// 		RoboCompInnerModelManager::AttributeType attrT;
-		
-// 		attrT = table_node.attributes("ScaleX");
-// 		float ScaleX = ::atof(attrT.value.c_str());
-		
-// 		std::cout<<"ScaleX "<<attrT.value<<std::endl;
-// 		std::cout<<"ScaleY "<<ScaleY<<std::endl;
-// 		std::cout<<"ScaleZ "<<ScaleZ<<std::endl;
-// 		segmented_cloud->points.resze(cloud->size());
-// 		int total_points = 0;
-// 		for(unsigned int i=0; i<cloud->size(); i++)
-// 		{
-// 			//check x boundary
-// 			if( cloud->points[i].x => 
-// 			
-// 			segmented_cloud->points[i]
-// 		}
+		removeTheTable=true;
 	}
+}
+
+void SpecificWorker::removeTablePC(const string& model)
+{
+	std::cout<<"remove point clouds within table"<<std::endl;
+	RoboCompInnerModelManager::Pose3D table_pose;
+	RoboCompInnerModelManager::NodeInformation table_node;
+	//get table model position
+	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
+
+	PointT table_center;
+	
+	table_center.x = transform(0,3);
+	table_center.y = transform(1,3);
+	table_center.z = transform(2,3);
+	
+	std::cout<<transform(0,3)<<std::endl;
+	std::cout<<transform(1,3)<<std::endl;
+	std::cout<<transform(2,3)<<std::endl;
+	
+	pcl::PointCloud<PointT>::Ptr plane_hull (new pcl::PointCloud<PointT>);
+	
+	plane_hull->points.resize(4);
+	
+	//Point left back
+	plane_hull->points[0].x = table_center.x - tablesize.x/2;
+	plane_hull->points[0].y = table_center.y;
+	plane_hull->points[0].z = table_center.z + tablesize.z/2;
+
+	//Point left front
+	plane_hull->points[1].x = table_center.x - tablesize.x/2;
+	plane_hull->points[1].y = table_center.y;
+	plane_hull->points[1].z = table_center.z - tablesize.z/2;
+	
+	//Point right front
+	plane_hull->points[2].x = table_center.x + tablesize.x/2;
+	plane_hull->points[2].y = table_center.y;
+	plane_hull->points[2].z = table_center.z - tablesize.z/2;	
+	
+	//Point front back
+	plane_hull->points[3].x = table_center.x + tablesize.x/2;
+	plane_hull->points[3].y = table_center.y;
+	plane_hull->points[3].z = table_center.z + tablesize.z/2;	
+	
+	
+	pcl::ExtractPolygonalPrismData<PointT> prism_extract;
+	pcl::PointIndices::Ptr prism_indices;
+	
+	prism_extract.setHeightLimits(10,500);
+	prism_extract.setInputCloud(this->cloud);
+	prism_extract.setInputPlanarHull(plane_hull);
+	prism_extract.segment(*prism_indices);
+	
+	pcl::ExtractIndices<PointT> extract_prism_indices;
+	extract_prism_indices.setInputCloud(this->cloud);
+	extract_prism_indices.setIndices(prism_indices);
+	extract_prism_indices.filter(*(this->cloud));
+  
+
 }
 
 void SpecificWorker::compute( )
 {
-	doThePointClouds();
-	
-	drawThePointCloud(this->cloud);
+		
+		doThePointClouds();
+		
+		if(removeTheTable)
+			removeTablePC("table");
+		
+		drawThePointCloud(this->cloud);
 	
 // 	doTheAprilTags();
 	
@@ -281,7 +308,7 @@ void SpecificWorker::doThePointClouds()
 // 			p1.print("p1");
 // 			p2.print("p2");
 // 			p22.print("p22");
-			first = false;
+// 			first = false;
 		}
 
 		cloud->points[i].x=p22(0);
@@ -451,15 +478,17 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 	RoboCompInnerModelManager::meshType table_mesh;
  	table_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
 	table_mesh.pose.x = table_mesh.pose.y = table_mesh.pose.z = table_mesh.pose.rx = table_mesh.pose.ry = table_mesh.pose.rz = 0;
-	table_mesh.scaleX = 1000;
-	table_mesh.scaleY = 400; 
-	table_mesh.scaleZ = 10; 
-	table_mesh.render = 1; //set wireframe mode
+	table_mesh.scaleX = tablesize.x;
+	table_mesh.scaleY = tablesize.z;  //TAKE CARE IN THE MODEL Z AND Y ARE CHANGED!!!
+	table_mesh.scaleZ = tablesize.y;  //TAKE CARE IN THE MODEL Z AND Y ARE CHANGED!!! 
+	table_mesh.render = 1; // set wireframe mode
 	
 	// fixing the tag offset
 
+	//the axis o
 	pose2.x = -150;
 	pose2.y = 350;
+	pose2.z = 0; 
 	
 	try
 	{

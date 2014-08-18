@@ -84,6 +84,8 @@
 #include <InnerModelManager.h>
 #include <RGBD.h>
 
+#include <signal.h>
+
 
 // User includes here
 
@@ -106,8 +108,11 @@ private:
 
 public:
 	virtual int run(int, char*[]);
+
 };
 
+void sig_term(int);
+	
 void objectDetectionComp::initialize()
 {
 	// Config file properties read example
@@ -117,6 +122,9 @@ void objectDetectionComp::initialize()
 
 int objectDetectionComp::run(int argc, char* argv[])
 {
+	
+			sigset(SIGTERM, sig_term);
+	
 #ifdef USE_QTGUI
 	QApplication a(argc, argv);  // GUI application
 #else
@@ -250,6 +258,11 @@ RGBDPrx rgbd_proxy;
 }
 
 	return status;
+}
+
+void sig_term(int)
+{
+    QCoreApplication::exit();
 }
 
 int main(int argc, char* argv[])

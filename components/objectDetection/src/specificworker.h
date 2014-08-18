@@ -29,6 +29,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/segmentation/extract_polygonal_prism_data.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/io/pcd_io.h>
 #include <innermodel/innermodel.h>
@@ -37,6 +38,13 @@
        \brief
        @author authorname
 */
+
+typedef struct TableSize
+{
+	static const int x=1000;
+	static const int y=10;
+	static const int z=300; 
+};
 
 class AprilTagModel
 {
@@ -56,6 +64,10 @@ typedef std::map<int, AprilTagModel> TagModelMap;
 
 class SpecificWorker : public GenericWorker
 {
+	//table related stuff
+	bool removeTheTable;
+	TableSize tablesize;
+	
 	RoboCompRGBD::ColorSeq rgbMatrix;	
 	RoboCompRGBD::depthType distanceMatrix;
 	RoboCompRGBD::PointSeq points_kinect;
@@ -82,6 +94,7 @@ public:
 	~SpecificWorker();
 	void setModel2Fit(const string& model);
 	void removePCwithinModel(const string& model);
+	void removeTablePC(const string& model);
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	void newAprilTag(const tagsList& tags);
 	
