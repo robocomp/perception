@@ -29,6 +29,10 @@ SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QM
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
 	removeTheTable = false;
+	table_offset.x = -150;
+	table_offset.y = 0;
+	table_offset.z = 350;
+	
 }
 
 /**
@@ -56,7 +60,7 @@ void SpecificWorker::removePCwithinModel(const string& model)
 {
 	if(model=="table")
 	{
-		removeTheTable=true;
+		removeTheTable=!removeTheTable;
 	}
 }
 
@@ -70,51 +74,67 @@ void SpecificWorker::removeTablePC(const string& model)
 
 	PointT table_center;
 	
-	table_center.x = transform(0,3);
-	table_center.y = transform(1,3);
-	table_center.z = transform(2,3);
+	table_center.x = transform(0,3) + table_offset.x;
+	table_center.y = transform(1,3) + table_offset.y;
+	table_center.z = transform(2,3) + table_offset.z;
 	
 	std::cout<<transform(0,3)<<std::endl;
 	std::cout<<transform(1,3)<<std::endl;
 	std::cout<<transform(2,3)<<std::endl;
 	
-	pcl::PointCloud<PointT>::Ptr plane_hull (new pcl::PointCloud<PointT>);
+	pcl::PointIndices::Ptr model_inliers_indices (new pcl::PointIndices);
 	
-	plane_hull->points.resize(4);
+ 	model_inliers_indices->indices.resize(this->cloud->points.size());
 	
-	//Point left back
-	plane_hull->points[0].x = table_center.x - tablesize.x/2;
-	plane_hull->points[0].y = table_center.y;
-	plane_hull->points[0].z = table_center.z + tablesize.z/2;
+	int j=0;
+	int index=0;
+	for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
+  {
+	
+		if ((it->x) < table_center.x + tablesize.x && (it->x) > table_center.x - tablesize.x &&
+				(it->y) < table_center.y + tablesize.y && (it->y) > table_center.y - 50 &&
+				(it->z) < table_center.z + tablesize.z && (it->z) > table_center.z - tablesize.z)
+		{
+			model_inliers_indices->indices[j]=index;
+			j++;
+		}
+		index++;;
+  }
+  model_inliers_indices->indices.resize(j);
+	
+// 	this->cloud=model_inliers_cloud;
+  
+  cout<<"Model inliers!!: "<<model_inliers_indices->indices.size()<<endl;
 
-	//Point left front
-	plane_hull->points[1].x = table_center.x - tablesize.x/2;
-	plane_hull->points[1].y = table_center.y;
-	plane_hull->points[1].z = table_center.z - tablesize.z/2;
+	//Let's project inliers
+// 	pcl::ProjectInliers<PointT> proj;
+// 	proj.setModelType (pcl::SACMODEL_PLANE);
+// 	proj.setIndices (model_inliers);
+// 	proj.setInputCloud (this->cloud);
+// 	proj.setModelCoefficients (coefficients);
+// 	proj.filter (*this->cloud);
+// 	
+// 	//Let's construct a convex hull representation of the model inliers
+// 	pcl::PointCloud<PointT>::Ptr cloud_hull(new pcl::PointCloud<PointT>);
+// 	pcl::ConvexHull<PointT> chull;
+// 	chull.setInputCloud(model_inliers_cloud);
+// 	chull.reconstruct(*cloud_hull);
 	
-	//Point right front
-	plane_hull->points[2].x = table_center.x + tablesize.x/2;
-	plane_hull->points[2].y = table_center.y;
-	plane_hull->points[2].z = table_center.z - tablesize.z/2;	
+	//let's segment those points that are in the polinomial prism
 	
-	//Point front back
-	plane_hull->points[3].x = table_center.x + tablesize.x/2;
-	plane_hull->points[3].y = table_center.y;
-	plane_hull->points[3].z = table_center.z + tablesize.z/2;	
-	
-	
-	pcl::ExtractPolygonalPrismData<PointT> prism_extract;
-	pcl::PointIndices::Ptr prism_indices;
-	
-	prism_extract.setHeightLimits(10,500);
-	prism_extract.setInputCloud(this->cloud);
-	prism_extract.setInputPlanarHull(plane_hull);
-	prism_extract.segment(*prism_indices);
-	
-	pcl::ExtractIndices<PointT> extract_prism_indices;
-	extract_prism_indices.setInputCloud(this->cloud);
-	extract_prism_indices.setIndices(prism_indices);
-	extract_prism_indices.filter(*(this->cloud));
+//  	pcl::ExtractPolygonalPrismData<PointT> prism_extract;
+//  	pcl::PointIndices::Ptr prism_indices;
+ 	
+//  	prism_extract.setHeightLimits(10,500);
+//  	prism_extract.setInputCloud(this->cloud);
+//  	prism_extract.setInputPlanarHull(cloud_hull);
+//  	prism_extract.segment(*prism_indices);
+//  	
+// 	//let's extract the result
+//  	pcl::ExtractIndices<PointT> extract_prism_indices;
+//  	extract_prism_indices.setInputCloud(this->cloud);
+//  	extract_prism_indices.setIndices(prism_indices);
+//  	extract_prism_indices.filter(*(this->cloud));
   
 
 }
@@ -238,6 +258,8 @@ void SpecificWorker::doTheTable()
 			pose.ry = r(1);
 			pose.rz = r(2);
 			
+			
+			
 			bool exists = false;
 			
 			RoboCompInnerModelManager::NodeInformationSequence node_sequence;
@@ -323,9 +345,9 @@ void SpecificWorker::doThePointClouds()
 	//Downsample the point cloud:
 	
 // 	pcl::VoxelGrid<PointT> sor;
-//   sor.setInputCloud (cloud);
-//   sor.setLeafSize (0.01f, 0.01f, 0.01f);
-//   sor.filter (*downsampled_cloud);
+//  sor.setInputCloud (cloud);
+//  sor.setLeafSize (0.01f, 0.01f, 0.01f);
+//  sor.filter (*downsampled_cloud);
 
 // 	pcl::SampleConsensusModelPlane<PointT>::Ptr
 //     model_p (new pcl::SampleConsensusModelPlane<PointT> (cloud));
@@ -359,15 +381,15 @@ void SpecificWorker::drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud)
     j++;
   }
   
-  try
-  {
+//   try
+//   {
     add_point_cloud_to_innermodels("cloud", pointcloud);
 		
-  }
-  catch(Ice::Exception e)
-  {
-    qDebug()<<"Error talking to inermodelmanager_proxy: "<<e.what();
-  } 
+//   }
+//   catch(Ice::Exception e)
+//   {
+//     qDebug()<<"Error talking to inermodelmanager_proxy: "<<e.what();
+//   } 
 }
 
 void SpecificWorker::doTheAprilTags()
@@ -486,9 +508,9 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 	// fixing the tag offset
 
 	//the axis o
-	pose2.x = -150;
-	pose2.y = 350;
-	pose2.z = 0; 
+	pose2.x = table_offset.x;
+	pose2.y = table_offset.z;
+	pose2.z = table_offset.y; 
 	
 	try
 	{

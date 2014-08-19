@@ -31,6 +31,7 @@
 #include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 #include <pcl/filters/extract_indices.h>
+#include <pcl/surface/convex_hull.h>
 #include <pcl/io/pcd_io.h>
 #include <innermodel/innermodel.h>
 
@@ -42,7 +43,7 @@
 typedef struct TableSize
 {
 	static const int x=1000;
-	static const int y=10;
+	static const int y=20;
 	static const int z=300; 
 };
 
@@ -67,6 +68,7 @@ class SpecificWorker : public GenericWorker
 	//table related stuff
 	bool removeTheTable;
 	TableSize tablesize;
+	PointT table_offset;
 	
 	RoboCompRGBD::ColorSeq rgbMatrix;	
 	RoboCompRGBD::depthType distanceMatrix;
