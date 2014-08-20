@@ -166,33 +166,38 @@ void SpecificWorker::removeTablePC(const string& model)
 
 	//Let's project inliers
 	pcl::ProjectInliers<PointT> proj;
+	pcl::PointCloud<PointT>::Ptr plane_hull(new pcl::PointCloud<PointT>);
 	proj.setModelType (pcl::SACMODEL_PLANE);
 	proj.setIndices (model_inliers_indices);
 	proj.setInputCloud (this->cloud);
 	proj.setModelCoefficients (plane);
-	proj.filter (*this->cloud);
-// 	
-// 	//Let's construct a convex hull representation of the model inliers
-// 	pcl::PointCloud<PointT>::Ptr cloud_hull(new pcl::PointCloud<PointT>);
-// 	pcl::ConvexHull<PointT> chull;
-// 	chull.setInputCloud(model_inliers_cloud);
-// 	chull.reconstruct(*cloud_hull);
+	proj.filter (*plane_hull);
+	
+	//Let's construct a convex hull representation of the model inliers
+	pcl::PointCloud<PointT>::Ptr cloud_hull(new pcl::PointCloud<PointT>);
+	pcl::ConvexHull<PointT> chull;
+	chull.setInputCloud(plane_hull);
+	chull.reconstruct(*cloud_hull);
 	
 	//let's segment those points that are in the polinomial prism
 	
-//  	pcl::ExtractPolygonalPrismData<PointT> prism_extract;
-//  	pcl::PointIndices::Ptr prism_indices;
+	//obtain viewpoint 
+	RTMat viewpoint_transform = innermodel->getTransformationMatrix("robot", "rgbd_t");
+	
+ 	pcl::ExtractPolygonalPrismData<PointT> prism_extract;
+ 	pcl::PointIndices::Ptr prism_indices (new pcl::PointIndices);
  	
-//  	prism_extract.setHeightLimits(10,500);
-//  	prism_extract.setInputCloud(this->cloud);
-//  	prism_extract.setInputPlanarHull(cloud_hull);
-//  	prism_extract.segment(*prism_indices);
-//  	
-// 	//let's extract the result
-//  	pcl::ExtractIndices<PointT> extract_prism_indices;
-//  	extract_prism_indices.setInputCloud(this->cloud);
-//  	extract_prism_indices.setIndices(prism_indices);
-//  	extract_prism_indices.filter(*(this->cloud));
+ 	prism_extract.setHeightLimits(10, 1500);
+	prism_extract.setViewPoint(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3));
+ 	prism_extract.setInputCloud(this->cloud);
+ 	prism_extract.setInputPlanarHull(cloud_hull);
+ 	prism_extract.segment(*prism_indices);
+ 	
+	//let's extract the result
+ 	pcl::ExtractIndices<PointT> extract_prism_indices;
+ 	extract_prism_indices.setInputCloud(this->cloud);
+ 	extract_prism_indices.setIndices(prism_indices);
+ 	extract_prism_indices.filter(*(this->cloud));
   
 
 }
