@@ -85,14 +85,17 @@ class SpecificWorker : public GenericWorker
 	
 	//PCL data structures
 	pcl::PointCloud<PointT>::Ptr cloud;
+	pcl::PointCloud<PointT>::Ptr original_cloud;
 	pcl::PointCloud<PointT>::Ptr segmented_cloud;
 	pcl::PointCloud<PointT>::Ptr downsampled_cloud;
 	
 	//table data
 	pcl::PointIndices::Ptr model_inliers_indices;
+	pcl::PointCloud<PointT>::Ptr plane_hull;
+	pcl::PointCloud<PointT>::Ptr cloud_hull;
 	
 	//action flags
-	bool getTableinliers, projectInliers, 
+	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag;
 	
 	InnerModel *innermodel;
 	
@@ -104,18 +107,23 @@ public:
 	//generic functions
 	void setModel2Fit(const string& model);
 	void getInliers(const string& model);
-	
-	void  projectInliers(const string& model) {}
-	void  convexHull(const string& model) {}
-	void  extractPolygon(const string& model);
+	void projectInliers(const string& model);
+	void convexHull(const string& model);
+	void extractPolygon(const string& model);
 	
 	//table specific functions
 	void getTableInliers();
+	void projectTableInliers();
+	void tableConvexHull();
 	void extractTablePolygon();
 	
+	//utils
+	static void threePointsToPlane (const PointT &point_a, 
+                            const PointT &point_b, 
+                            const PointT &point_c, 
+                            const pcl::ModelCoefficients::Ptr plane);
 	
-	void removePCwithinModel(const string& model);
-	void removeTablePC(const string& model);
+	
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	void newAprilTag(const tagsList& tags);
 	

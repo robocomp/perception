@@ -23,15 +23,17 @@
 * \brief Default constructor
 */
 
-SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>)
-, segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices)
+SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
+segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), plane_hull(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>)
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
-	removeTheTable = false;
 	table_offset.x = -150;
 	table_offset.y = 0;
 	table_offset.z = 350;
+	
+	//action flags
+	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = false;
 	
 }
 
@@ -58,7 +60,19 @@ void SpecificWorker::setModel2Fit(const string& model)
 void SpecificWorker::getInliers(const string& model)
 {
 	if(model=="table")
-		getTableInliers();
+		getTableInliers_flag = !getTableInliers_flag;
+}
+
+void SpecificWorker::projectInliers(const string& model)
+{
+	if(model=="table")
+		projectTableInliers_flag = !projectTableInliers_flag;
+}
+
+void SpecificWorker::convexHull(const string& model)
+{
+	if(model=="table")
+		tableConvexHull_flag = !tableConvexHull_flag;
 }
 
 void SpecificWorker::getTableInliers()
@@ -101,38 +115,8 @@ void SpecificWorker::getTableInliers()
 	
 }
 
-
-//it only works for the table now
-void SpecificWorker::extractPolygon(const string& model)
+void SpecificWorker::projectTableInliers()
 {
-	if(model=="table")
-	{
-		removeTheTable=!removeTheTable;
-	}
-}
-
-
-void threePointsToPlane (const PointT &point_a, 
-                            const PointT &point_b, 
-                            const PointT &point_c, 
-                            const pcl::ModelCoefficients::Ptr plane) 
-{ 
-  // Create Eigen plane through 3 points 
-  Eigen::Hyperplane<float, 3> eigen_plane = 
-    Eigen::Hyperplane<float, 3>::Through (point_a.getArray3fMap (), 
-                                                          point_b.getArray3fMap (), 
-                                                          point_c.getArray3fMap ()); 
-
-  plane->values.resize (4); 
-
-  for (int i = 0; i < plane->values.size (); i++) 
-    plane->values[i] = eigen_plane.coeffs ()[i]; 
-}
-
-void SpecificWorker::extractTablePolygon()
-{
-	std::cout<<"remove point clouds within table"<<std::endl;
-
 	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
 	
 	//lets get three points of the plane 
@@ -180,18 +164,52 @@ void SpecificWorker::extractTablePolygon()
 
 	//Let's project inliers
 	pcl::ProjectInliers<PointT> proj;
-	pcl::PointCloud<PointT>::Ptr plane_hull(new pcl::PointCloud<PointT>);
 	proj.setModelType (pcl::SACMODEL_PLANE);
 	proj.setIndices (model_inliers_indices);
 	proj.setInputCloud (this->cloud);
 	proj.setModelCoefficients (plane);
 	proj.filter (*plane_hull);
 	
+}
+
+void SpecificWorker::tableConvexHull()
+{
 	//Let's construct a convex hull representation of the model inliers
-	pcl::PointCloud<PointT>::Ptr cloud_hull(new pcl::PointCloud<PointT>);
 	pcl::ConvexHull<PointT> chull;
 	chull.setInputCloud(plane_hull);
 	chull.reconstruct(*cloud_hull);
+}
+
+//it only works for the table now
+void SpecificWorker::extractPolygon(const string& model)
+{
+	if(model=="table")
+	{
+		extractTablePolygon_flag = ! extractTablePolygon_flag;
+	}
+}
+
+
+void SpecificWorker::threePointsToPlane (const PointT &point_a, 
+                            const PointT &point_b, 
+                            const PointT &point_c, 
+                            const pcl::ModelCoefficients::Ptr plane) 
+{ 
+  // Create Eigen plane through 3 points 
+  Eigen::Hyperplane<float, 3> eigen_plane = 
+    Eigen::Hyperplane<float, 3>::Through (point_a.getArray3fMap (), 
+                                                          point_b.getArray3fMap (), 
+                                                          point_c.getArray3fMap ()); 
+
+  plane->values.resize (4); 
+
+  for (int i = 0; i < plane->values.size (); i++) 
+    plane->values[i] = eigen_plane.coeffs ()[i]; 
+}
+
+void SpecificWorker::extractTablePolygon()
+{
+	std::cout<<"remove point clouds within table"<<std::endl;
 	
 	//let's segment those points that are in the polinomial prism
 	
@@ -221,8 +239,17 @@ void SpecificWorker::compute( )
 		
 		doThePointClouds();
 		
-		if(removeTheTable)
-			extractPolygon("table");
+		if(getTableInliers_flag)
+			getTableInliers();
+		
+		if(getTableInliers_flag)
+			projectTableInliers();
+		
+		if(tableConvexHull_flag)
+			tableConvexHull();
+		
+		if(extractTablePolygon_flag)
+			extractTablePolygon();
 		
 		drawThePointCloud(this->cloud);
 	
@@ -418,7 +445,9 @@ void SpecificWorker::doThePointClouds()
 		cloud->points[i].b=rgbMatrix[i].blue;
 	}
 	
-
+	//lets make a copy to maintain the origianl cloud
+	*original_cloud = *cloud;
+	
 	//Downsample the point cloud:
 	
 // 	pcl::VoxelGrid<PointT> sor;
