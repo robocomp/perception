@@ -61,7 +61,10 @@ public:
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;
 	virtual void  setModel2Fit(const string& model) = 0;
-	virtual void  removePCwithinModel(const string& model) = 0;
+	virtual void  getInliers(const string& model) = 0;
+	virtual void  projectInliers(const string& model) = 0;
+	virtual void  convexHull(const string& model) = 0;
+	virtual void  extractPolygon(const string& model) = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:

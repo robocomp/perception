@@ -37,7 +37,10 @@ public slots:
  	void compute(); 	
 	void fitBox();
 	void fitTable();
-	void removePCwithinTable();
+	void getInliers();
+	void projectInliers();
+	void convexHull();
+	void extractPolygon();
 };
 
 #endif

@@ -36,8 +36,20 @@ void objectDetectionI::setModel2Fit(const string& model, const Ice::Current&){
 	worker->setModel2Fit(model);
 }
 
-void objectDetectionI::removePCwithinModel(const string& model, const Ice::Current&){
-	worker->removePCwithinModel(model);
+void objectDetectionI::getInliers(const string& model, const Ice::Current&){
+	worker->getInliers(model);
+}
+
+void objectDetectionI::projectInliers(const string& model, const Ice::Current&){
+	worker->projectInliers(model);
+}
+
+void objectDetectionI::convexHull(const string& model, const Ice::Current&){
+	worker->convexHull(model);
+}
+
+void objectDetectionI::extractPolygon(const string& model, const Ice::Current&){
+	worker->extractPolygon(model);
 }
 
 

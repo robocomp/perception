@@ -29,8 +29,8 @@
   <widget class="QPushButton" name="fit_box_button">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>80</y>
+     <x>260</x>
+     <y>20</y>
      <width>75</width>
      <height>23</height>
     </rect>
@@ -39,18 +39,38 @@
     <string>fitBox</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="remove_table_button">
+  <widget class="QSplitter" name="splitter">
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>50</y>
-     <width>75</width>
-     <height>23</height>
+     <y>60</y>
+     <width>84</width>
+     <height>92</height>
     </rect>
    </property>
-   <property name="text">
-    <string>removeTable</string>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
    </property>
+   <widget class="QPushButton" name="get_inliers_button">
+    <property name="text">
+     <string>getInliers</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="project_inliers_button">
+    <property name="text">
+     <string>ProjectInliers</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="convex_hull_button">
+    <property name="text">
+     <string>ConvexHull</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="extract_polygon_button">
+    <property name="text">
+     <string>ExtractPolygon</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

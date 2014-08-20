@@ -67,7 +67,6 @@ typedef std::map<int, AprilTagModel> TagModelMap;
 class SpecificWorker : public GenericWorker
 {
 	//table related stuff
-	bool removeTheTable;
 	TableSize tablesize;
 	PointT table_offset;
 	
@@ -89,13 +88,32 @@ class SpecificWorker : public GenericWorker
 	pcl::PointCloud<PointT>::Ptr segmented_cloud;
 	pcl::PointCloud<PointT>::Ptr downsampled_cloud;
 	
+	//table data
+	pcl::PointIndices::Ptr model_inliers_indices;
+	
+	//action flags
+	bool getTableinliers, projectInliers, 
+	
 	InnerModel *innermodel;
 	
 Q_OBJECT
 public:
 	SpecificWorker(MapPrx& mprx);	
 	~SpecificWorker();
+	
+	//generic functions
 	void setModel2Fit(const string& model);
+	void getInliers(const string& model);
+	
+	void  projectInliers(const string& model) {}
+	void  convexHull(const string& model) {}
+	void  extractPolygon(const string& model);
+	
+	//table specific functions
+	void getTableInliers();
+	void extractTablePolygon();
+	
+	
 	void removePCwithinModel(const string& model);
 	void removeTablePC(const string& model);
 	bool setParams(RoboCompCommonBehavior::ParameterList params);

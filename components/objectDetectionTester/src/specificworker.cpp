@@ -26,8 +26,12 @@
 SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mprx)	
 {
 	connect(fit_table_button, SIGNAL(clicked()), this, SLOT(fitTable()));
+	connect(get_inliers_button, SIGNAL(clicked()), this, SLOT(getInliers()));
+	connect(project_inliers_button, SIGNAL(clicked()), this, SLOT(projectInliers()));
+	connect(convex_hull_button, SIGNAL(clicked()), this, SLOT(convexHull()));
+ 	connect(extract_polygon_button, SIGNAL(clicked()), this, SLOT(extractPolygon()));
+	
 	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
- 	connect(remove_table_button, SIGNAL(clicked()), this, SLOT(removePCwithinTable()));
 }
 
 /**
@@ -43,15 +47,29 @@ void SpecificWorker::fitTable()
 	objectdetection_proxy->setModel2Fit("table");
 }
 
+void SpecificWorker::getInliers()
+{
+	objectdetection_proxy->getInliers("table");
+}
+
+void SpecificWorker::projectInliers()
+{
+	objectdetection_proxy->projectInliers("table");
+}
+
+void SpecificWorker::convexHull()
+{
+	objectdetection_proxy->convexHull("table");
+}
+
+void SpecificWorker::extractPolygon()
+{
+ 	objectdetection_proxy->extractPolygon("table");
+}
+
 void SpecificWorker::fitBox()
 {
 	objectdetection_proxy->setModel2Fit("box");
-}
-
-void SpecificWorker::removePCwithinTable()
-{
-	std::cout<<"REMOVE TABLE"<<std::endl;
- 	objectdetection_proxy->removePCwithinModel("table");
 }
 
 void SpecificWorker::compute( )

@@ -24,7 +24,7 @@
 */
 
 SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>)
-, segmented_cloud(new pcl::PointCloud<PointT>)
+, segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices)
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
@@ -55,8 +55,55 @@ void SpecificWorker::setModel2Fit(const string& model)
 	}
 }
 
-//it only works for the table
-void SpecificWorker::removePCwithinModel(const string& model)
+void SpecificWorker::getInliers(const string& model)
+{
+	if(model=="table")
+		getTableInliers();
+}
+
+void SpecificWorker::getTableInliers()
+{
+	std::cout<<"Getting Table Inliers"<<std::endl;
+	
+	RoboCompInnerModelManager::Pose3D table_pose;
+	RoboCompInnerModelManager::NodeInformation table_node;
+	//get table model position
+	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
+
+	PointT table_center;
+	
+	table_center.x = transform(0,3) + table_offset.x;
+	table_center.y = transform(1,3) + table_offset.y;
+	table_center.z = transform(2,3) + table_offset.z;
+	
+	std::cout<<" Table center: "<<std::endl;
+	std::cout<<transform(0,3)<<std::endl;
+	std::cout<<transform(1,3)<<std::endl;
+	std::cout<<transform(2,3)<<std::endl;
+	
+ 	model_inliers_indices->indices.resize(this->cloud->points.size());
+	
+	int j=0;
+	int index=0;
+	for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
+  {
+	
+		if ((it->x) < table_center.x + tablesize.x && (it->x) > table_center.x - tablesize.x &&
+				(it->y) < table_center.y + tablesize.y && (it->y) > table_center.y - 50 &&
+				(it->z) < table_center.z + tablesize.z && (it->z) > table_center.z - tablesize.z)
+		{
+			model_inliers_indices->indices[j]=index;
+			j++;
+		}
+		index++;;
+  }
+  model_inliers_indices->indices.resize(j);
+	
+}
+
+
+//it only works for the table now
+void SpecificWorker::extractPolygon(const string& model)
 {
 	if(model=="table")
 	{
@@ -82,44 +129,11 @@ void threePointsToPlane (const PointT &point_a,
     plane->values[i] = eigen_plane.coeffs ()[i]; 
 }
 
-void SpecificWorker::removeTablePC(const string& model)
+void SpecificWorker::extractTablePolygon()
 {
 	std::cout<<"remove point clouds within table"<<std::endl;
-	RoboCompInnerModelManager::Pose3D table_pose;
-	RoboCompInnerModelManager::NodeInformation table_node;
-	//get table model position
-	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
 
-	PointT table_center;
-	
-	table_center.x = transform(0,3) + table_offset.x;
-	table_center.y = transform(1,3) + table_offset.y;
-	table_center.z = transform(2,3) + table_offset.z;
-	
-	std::cout<<transform(0,3)<<std::endl;
-	std::cout<<transform(1,3)<<std::endl;
-	std::cout<<transform(2,3)<<std::endl;
-	
-	pcl::PointIndices::Ptr model_inliers_indices (new pcl::PointIndices);
-	
- 	model_inliers_indices->indices.resize(this->cloud->points.size());
-	
-	int j=0;
-	int index=0;
-	for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
-  {
-	
-		if ((it->x) < table_center.x + tablesize.x && (it->x) > table_center.x - tablesize.x &&
-				(it->y) < table_center.y + tablesize.y && (it->y) > table_center.y - 50 &&
-				(it->z) < table_center.z + tablesize.z && (it->z) > table_center.z - tablesize.z)
-		{
-			model_inliers_indices->indices[j]=index;
-			j++;
-		}
-		index++;;
-  }
-  model_inliers_indices->indices.resize(j);
-	
+	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
 	
 	//lets get three points of the plane 
 	
@@ -208,7 +222,7 @@ void SpecificWorker::compute( )
 		doThePointClouds();
 		
 		if(removeTheTable)
-			removeTablePC("table");
+			extractPolygon("table");
 		
 		drawThePointCloud(this->cloud);
 	
