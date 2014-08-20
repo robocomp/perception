@@ -64,6 +64,24 @@ void SpecificWorker::removePCwithinModel(const string& model)
 	}
 }
 
+
+void threePointsToPlane (const PointT &point_a, 
+                            const PointT &point_b, 
+                            const PointT &point_c, 
+                            const pcl::ModelCoefficients::Ptr plane) 
+{ 
+  // Create Eigen plane through 3 points 
+  Eigen::Hyperplane<float, 3> eigen_plane = 
+    Eigen::Hyperplane<float, 3>::Through (point_a.getArray3fMap (), 
+                                                          point_b.getArray3fMap (), 
+                                                          point_c.getArray3fMap ()); 
+
+  plane->values.resize (4); 
+
+  for (int i = 0; i < plane->values.size (); i++) 
+    plane->values[i] = eigen_plane.coeffs ()[i]; 
+}
+
 void SpecificWorker::removeTablePC(const string& model)
 {
 	std::cout<<"remove point clouds within table"<<std::endl;
@@ -102,17 +120,57 @@ void SpecificWorker::removeTablePC(const string& model)
   }
   model_inliers_indices->indices.resize(j);
 	
+	
+	//lets get three points of the plane 
+	
+	QVec p1 = transform * QVec::vec4(0, 0, 0, 1);
+	QVec p2 = transform * QVec::vec4(1, 0, 0, 1);
+	QVec p3 = transform * QVec::vec4(0, 1, 0, 1);
+	
+// 	p1.print("p1");
+// 	p2.print("p2");
+// 	p3.print("p3");
+	
+	
+// 	QVec normal = (p2-p1) * (p3-p1);
+// 	normal = normal.normalize();
+// 	float d = normal * p1;
+// 	
+// 	cout<<" A: "<<normal(0)<<" B: "<<normal(1)<<" C: "<<normal(2)<<" D: "<<d<<endl;
+	
+	PointT p_1,p_2, p_3;
+	p_1.x = p1(0);
+	p_1.y = p1(1);
+	p_1.z = p1(2);
+	
+	p_2.x = p2(0);
+	p_2.y = p2(1);
+	p_2.z = p2(2);
+	
+	p_3.x = p3(0);
+	p_3.y = p3(1);
+	p_3.z = p3(2);
+
+	pcl::ModelCoefficients::Ptr plane (new pcl::ModelCoefficients);
+	
+	threePointsToPlane(p_1, p_2, p_3, plane);
+	
+// 	cout<<"PCL0: "<<plane->values[0]<<endl;
+// 	cout<<"PCL1: "<<plane->values[1]<<endl;
+// 	cout<<"PCL2: "<<plane->values[2]<<endl;
+// 	cout<<"PCL3: "<<plane->values[3]<<endl;
+	
 // 	this->cloud=model_inliers_cloud;
   
   cout<<"Model inliers!!: "<<model_inliers_indices->indices.size()<<endl;
 
 	//Let's project inliers
-// 	pcl::ProjectInliers<PointT> proj;
-// 	proj.setModelType (pcl::SACMODEL_PLANE);
-// 	proj.setIndices (model_inliers);
-// 	proj.setInputCloud (this->cloud);
-// 	proj.setModelCoefficients (coefficients);
-// 	proj.filter (*this->cloud);
+	pcl::ProjectInliers<PointT> proj;
+	proj.setModelType (pcl::SACMODEL_PLANE);
+	proj.setIndices (model_inliers_indices);
+	proj.setInputCloud (this->cloud);
+	proj.setModelCoefficients (plane);
+	proj.filter (*this->cloud);
 // 	
 // 	//Let's construct a convex hull representation of the model inliers
 // 	pcl::PointCloud<PointT>::Ptr cloud_hull(new pcl::PointCloud<PointT>);
@@ -159,7 +217,7 @@ void SpecificWorker::doTheBox()
 	mutex->lock();
 	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
 	{
-		//move the tags to the robot reference frame
+		//move the tQVec v = r * QVec::vec3(p.x, p.y, p.z);
 		
 		if (itMap->second.id == 3)
 		{

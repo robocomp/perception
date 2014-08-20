@@ -32,6 +32,7 @@
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/surface/convex_hull.h>
+#include <pcl/filters/project_inliers.h>
 #include <pcl/io/pcd_io.h>
 #include <innermodel/innermodel.h>
 
