@@ -79,6 +79,7 @@ void SpecificWorker::getTableInliers()
 {
 	std::cout<<"Getting Table Inliers"<<std::endl;
 	
+	pcl::PointCloud<PointT>::Ptr inliers_cloud(new pcl::PointCloud<PointT>);
 	RoboCompInnerModelManager::Pose3D table_pose;
 	RoboCompInnerModelManager::NodeInformation table_node;
 	//get table model position
@@ -96,7 +97,8 @@ void SpecificWorker::getTableInliers()
 	std::cout<<transform(2,3)<<std::endl;
 	
  	model_inliers_indices->indices.resize(this->cloud->points.size());
-	
+	inliers_cloud->points.resize(this->cloud->points.size());
+
 	int j=0;
 	int index=0;
 	for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
@@ -106,12 +108,23 @@ void SpecificWorker::getTableInliers()
 				(it->y) < table_center.y + tablesize.y && (it->y) > table_center.y - 50 &&
 				(it->z) < table_center.z + tablesize.z && (it->z) > table_center.z - tablesize.z)
 		{
+			inliers_cloud->points[j].x = (it->x);
+			inliers_cloud->points[j].y = (it->y);
+			inliers_cloud->points[j].z = (it->z);
+			inliers_cloud->points[j].r = 0;
+			inliers_cloud->points[j].g = 0;
+			inliers_cloud->points[j].b = 255;
+			
 			model_inliers_indices->indices[j]=index;
 			j++;
 		}
 		index++;;
   }
+  
+  inliers_cloud->points.resize(j);
   model_inliers_indices->indices.resize(j);
+	
+	*this->cloud = *inliers_cloud;
 	
 }
 
@@ -166,9 +179,12 @@ void SpecificWorker::projectTableInliers()
 	pcl::ProjectInliers<PointT> proj;
 	proj.setModelType (pcl::SACMODEL_PLANE);
 	proj.setIndices (model_inliers_indices);
-	proj.setInputCloud (this->cloud);
+	proj.setInputCloud (this->original_cloud);
 	proj.setModelCoefficients (plane);
 	proj.filter (*plane_hull);
+	
+	//update showing cloud
+	*this->cloud = *plane_hull;
 	
 }
 
@@ -178,6 +194,8 @@ void SpecificWorker::tableConvexHull()
 	pcl::ConvexHull<PointT> chull;
 	chull.setInputCloud(plane_hull);
 	chull.reconstruct(*cloud_hull);
+	
+	*this->cloud = *cloud_hull;
 }
 
 //it only works for the table now
@@ -220,17 +238,16 @@ void SpecificWorker::extractTablePolygon()
  	pcl::PointIndices::Ptr prism_indices (new pcl::PointIndices);
  	
  	prism_extract.setHeightLimits(10, 1500);
-	prism_extract.setViewPoint(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3));
- 	prism_extract.setInputCloud(this->cloud);
+	prism_extract.setViewPoint(0, 1500, 0);
+ 	prism_extract.setInputCloud(this->original_cloud);
  	prism_extract.setInputPlanarHull(cloud_hull);
  	prism_extract.segment(*prism_indices);
  	
 	//let's extract the result
  	pcl::ExtractIndices<PointT> extract_prism_indices;
- 	extract_prism_indices.setInputCloud(this->cloud);
+ 	extract_prism_indices.setInputCloud(this->original_cloud);
  	extract_prism_indices.setIndices(prism_indices);
  	extract_prism_indices.filter(*(this->cloud));
-  
 
 }
 
@@ -242,7 +259,7 @@ void SpecificWorker::compute( )
 		if(getTableInliers_flag)
 			getTableInliers();
 		
-		if(getTableInliers_flag)
+		if(projectTableInliers_flag)
 			projectTableInliers();
 		
 		if(tableConvexHull_flag)
