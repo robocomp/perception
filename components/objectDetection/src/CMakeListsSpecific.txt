@@ -3,6 +3,8 @@
 SET ( SOURCES
   specificworker.cpp
   specificmonitor.cpp
+  shapes/basic/rectprism.cpp
+  shapes/table.cpp
 )
 
 # Headers set

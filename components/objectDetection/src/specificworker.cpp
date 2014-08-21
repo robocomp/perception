@@ -23,11 +23,15 @@
 * \brief Default constructor
 */
 
-SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
+SpecificWorker::SpecificWorker(MapPrx& mprx) : table(new Table()),
+GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
 segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), plane_hull(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>)
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
+	
+	table->set_board_size(1000,20,300);
+	
 	table_offset.x = -150;
 	table_offset.y = 0;
 	table_offset.z = 350;
@@ -91,26 +95,48 @@ void SpecificWorker::getTableInliers()
 	table_center.y = transform(1,3) + table_offset.y;
 	table_center.z = transform(2,3) + table_offset.z;
 	
-	std::cout<<" Table center: "<<std::endl;
-	std::cout<<transform(0,3)<<std::endl;
-	std::cout<<transform(1,3)<<std::endl;
+	std::cout<<" Table center: ";
+	std::cout<<transform(0,3)<<" ";
+	std::cout<<transform(1,3)<<" ";
 	std::cout<<transform(2,3)<<std::endl;
+	
+
+	
+	const QVec plane_r = transform.extractAnglesR_min();
+	table->set_board_center(table_center.x, table_center.y, table_center.z );
+	table->set_board_rotation(plane_r(0), plane_r(1), plane_r(2));
 	
  	model_inliers_indices->indices.resize(this->cloud->points.size());
 	inliers_cloud->points.resize(this->cloud->points.size());
+	
+	std::cout<<" Table rotation: ";
+	std::cout<<plane_r(0)<<" ";
+	std::cout<<plane_r(1)<<" ";
+	std::cout<<plane_r(2)<<std::endl;
 
 	int j=0;
-	int index=0;
+	int index=0;			
+	
+	RTMat translat_mat = RTMat(0,0,0, QVec::vec3(-table_center.x, -table_center.y, -table_center.z));
+	RTMat matriz_guay = RTMat(-plane_r(0), -plane_r(1), -plane_r(2), QVec::vec3(0, 0, 0))* translat_mat;
+	
 	for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
   {
-	
-		if ((it->x) < table_center.x + tablesize.x && (it->x) > table_center.x - tablesize.x &&
-				(it->y) < table_center.y + tablesize.y && (it->y) > table_center.y - 50 &&
-				(it->z) < table_center.z + tablesize.z && (it->z) > table_center.z - tablesize.z)
+// 		if ((it->x) < table_center.x + tablesize.x && (it->x) > table_center.x - tablesize.x &&
+// 				(it->y) < table_center.y + tablesize.y && (it->y) > table_center.y - 50 &&
+// 				(it->z) < table_center.z + tablesize.z && (it->z) > table_center.z - tablesize.z)
+		QVec placed_point = matriz_guay*QVec::vec4((it->x), (it->y), (it->z) , 1);
+// 		if (table->check_point_inside(it->x, it->y, it->z))
+		if (placed_point(0) < tablesize.x && placed_point(0) > (-tablesize.x) &&
+			placed_point(1) < tablesize.z && placed_point(1) > -tablesize.z &&
+			placed_point(2) < tablesize.y && placed_point(2) > (-tablesize.y))
 		{
 			inliers_cloud->points[j].x = (it->x);
 			inliers_cloud->points[j].y = (it->y);
 			inliers_cloud->points[j].z = (it->z);
+// 			inliers_cloud->points[j].x = placed_point(0);
+// 			inliers_cloud->points[j].y = placed_point(1);
+// 			inliers_cloud->points[j].z = placed_point(2);
 			inliers_cloud->points[j].r = 0;
 			inliers_cloud->points[j].g = 0;
 			inliers_cloud->points[j].b = 255;
@@ -118,13 +144,27 @@ void SpecificWorker::getTableInliers()
 			model_inliers_indices->indices[j]=index;
 			j++;
 		}
+// 		cout<<placed_point(0)<<" "<<placed_point(1)<<" "<<placed_point(2)<<endl;
 		index++;;
   }
+  
+
   
   inliers_cloud->points.resize(j);
   model_inliers_indices->indices.resize(j);
 	
 	*this->cloud = *inliers_cloud;
+	
+/*	
+	RoboCompInnerModelManager::Pose3D pose;
+	pose.x = 0;
+	pose.y = 0;
+	pose.z = 0;
+	pose.rx = 0;
+	pose.ry = 0;
+	pose.rz = 0;
+			
+	updateTheTable(pose);*/
 	
 }
 
@@ -379,6 +419,7 @@ void SpecificWorker::doTheTable()
 			pose.ry = r(1);
 			pose.rz = r(2);
 			
+			cout<<"Do the table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
 			
 			
 			bool exists = false;
@@ -461,6 +502,8 @@ void SpecificWorker::doThePointClouds()
 		cloud->points[i].g=rgbMatrix[i].green;
 		cloud->points[i].b=rgbMatrix[i].blue;
 	}
+	std::vector< int > index;
+	removeNaNFromPointCloud (*cloud, *cloud, index);
 	
 	//lets make a copy to maintain the origianl cloud
 	*original_cloud = *cloud;
@@ -595,8 +638,7 @@ void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
 	
 	// fixing the tag offset
 	pose2.z = 65.5;
-	pose2.y = 26;
-
+	pose2.y = 26;    
 	
 	try
 	{

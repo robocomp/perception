@@ -36,6 +36,9 @@
 #include <pcl/io/pcd_io.h>
 #include <innermodel/innermodel.h>
 
+#include "shapes/table.h"
+
+
 /**
        \brief
        @author authorname
@@ -67,6 +70,7 @@ typedef std::map<int, AprilTagModel> TagModelMap;
 class SpecificWorker : public GenericWorker
 {
 	//table related stuff
+	boost::shared_ptr<Table> table;
 	TableSize tablesize;
 	PointT table_offset;
 	
