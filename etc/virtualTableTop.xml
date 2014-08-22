@@ -1,18 +1,20 @@
 <innerModel>
 	<transform id="world" >
 		<plane id="suelo" px="0" py="0" pz="0" ny="1" size="10000,10000,10" texture="#ff0000" />
-		<differentialrobot id="robot">
-			<pointcloud id="cloud" /> 
-			<translation id="pechote" ty="1077">
-				<translation id="pescuezo" ty="300">
-					<rotation id="cuellopabajo" rx="0.47">
-						<translation id="rgbd_t">
-							<rgbd id="rgbd" focal="525" width="640" height="480" port="10096" />
-						</translation>
-					</rotation>
+		<transform id="rotate_robot" ry="0.2">
+			<differentialrobot id="robot" >
+				<pointcloud id="cloud" /> 
+				<translation id="pechote" ty="1077">
+					<translation id="pescuezo" ty="300">
+						<rotation id="cuellopabajo" rx="0.47">
+							<translation id="rgbd_t">
+								<rgbd id="rgbd" focal="525" width="640" height="480" port="10096" />
+							</translation>
+						</rotation>
+					</translation>
 				</translation>
-			</translation>
-		</differentialrobot>
+			</differentialrobot>
+		</transform>
 	</transform>
 						
 						

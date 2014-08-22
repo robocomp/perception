@@ -64,7 +64,6 @@ public:
 	QTime lastTime;
 };
 
-typedef pcl::PointXYZRGB PointT;
 typedef std::map<int, AprilTagModel> TagModelMap;
 
 class SpecificWorker : public GenericWorker
@@ -134,11 +133,11 @@ public:
 	void doThePointClouds();
 	void doTheAprilTags();
 	
-	void doTheBox();
+	void fitTheBox();
 	void addTheBox(RoboCompInnerModelManager::Pose3D pose);
 	void updateTheBox(RoboCompInnerModelManager::Pose3D pose);
 	
-	void doTheTable();
+	void fitTheTable();
 	void addTheTable(RoboCompInnerModelManager::Pose3D pose);
 	void updateTheTable(RoboCompInnerModelManager::Pose3D pose);
 	

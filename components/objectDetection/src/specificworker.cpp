@@ -53,11 +53,11 @@ void SpecificWorker::setModel2Fit(const string& model)
 {
 	if(model=="box")
 	{
-		doTheBox();
+		fitTheBox();
 	}
 	if(model=="table")
 	{
-		doTheTable();
+		fitTheTable();
 	}
 }
 
@@ -118,7 +118,7 @@ void SpecificWorker::getTableInliers()
 	int index=0;			
 	
 	RTMat translat_mat = RTMat(0,0,0, QVec::vec3(-table_center.x, -table_center.y, -table_center.z));
-	RTMat matriz_guay = RTMat(-plane_r(0), -plane_r(1), -plane_r(2), QVec::vec3(0, 0, 0))* translat_mat;
+	RTMat matriz_guay = RTMat(plane_r(0), plane_r(1), plane_r(2), QVec::vec3(0, 0, 0)).invert()* translat_mat;
 	
 	for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
   {
@@ -314,7 +314,7 @@ void SpecificWorker::compute( )
 	
 }
 
-void SpecificWorker::doTheBox()
+void SpecificWorker::fitTheBox()
 {
 	//put the box processing here:
 	mutex->lock();
@@ -380,7 +380,7 @@ void SpecificWorker::doTheBox()
 	
 }
 
-void SpecificWorker::doTheTable()
+void SpecificWorker::fitTheTable()
 {
 	//put the box processing here:
 	mutex->lock();

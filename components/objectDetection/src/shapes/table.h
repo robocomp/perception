@@ -3,7 +3,12 @@
 
 #include "basic/rectprism.h"
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <qmat/QMatAll>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+
+typedef pcl::PointXYZRGB PointT;
 
 using namespace std;
 
@@ -11,7 +16,8 @@ class Table
 {
   
 public:
-  Table();
+	
+	Table();
 	Table(const double Cx, const double Cy, const double Cz,
 						 const double Rx, const double Ry, const double Rz,
 						 const double Wx, const double Wy, const double Wz);
@@ -25,6 +31,9 @@ public:
 	inline QVec get_board_size () { return board->getWidth(); }
 	inline QVec get_board_center () { return board->getCenter(); }
 	inline QVec get_board_rotation () { return board->getRotation(); }
+	
+	//RANSAC to point cloud board
+	void fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const float threshold);
 	
 	bool check_point_inside(const float x, const float y, const float z) { return board->check_point_inside(QVec::vec3(x,y,z)); }
 	
