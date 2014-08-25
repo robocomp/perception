@@ -34,7 +34,7 @@ segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::Poi
 	
 	table_offset.x = -150;
 	table_offset.y = 0;
-	table_offset.z = 350;
+	table_offset.z = 300;
 	
 	//action flags
 	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = false;
@@ -87,13 +87,13 @@ void SpecificWorker::getTableInliers()
 	RoboCompInnerModelManager::Pose3D table_pose;
 	RoboCompInnerModelManager::NodeInformation table_node;
 	//get table model position
-	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
+	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T2");
 
 	PointT table_center;
 	
-	table_center.x = transform(0,3) + table_offset.x;
-	table_center.y = transform(1,3) + table_offset.y;
-	table_center.z = transform(2,3) + table_offset.z;
+	table_center.x = transform(0,3);
+	table_center.y = transform(1,3);
+	table_center.z = transform(2,3);
 	
 	std::cout<<" Table center: ";
 	std::cout<<transform(0,3)<<" ";
@@ -108,7 +108,7 @@ void SpecificWorker::getTableInliers()
 	
  	model_inliers_indices->indices.resize(this->cloud->points.size());
 	inliers_cloud->points.resize(this->cloud->points.size());
-	
+
 	std::cout<<" Table rotation: ";
 	std::cout<<plane_r(0)<<" ";
 	std::cout<<plane_r(1)<<" ";
@@ -118,18 +118,16 @@ void SpecificWorker::getTableInliers()
 	int index=0;			
 	
 	RTMat translat_mat = RTMat(0,0,0, QVec::vec3(-table_center.x, -table_center.y, -table_center.z));
-	RTMat matriz_guay = RTMat(plane_r(0), plane_r(1), plane_r(2), QVec::vec3(0, 0, 0)).invert()* translat_mat;
+	RTMat final_translat_mat = RTMat(plane_r(0), plane_r(1), plane_r(2), QVec::vec3(0, 0, 0)).invert()* translat_mat;
 	
 	for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
   {
-// 		if ((it->x) < table_center.x + tablesize.x && (it->x) > table_center.x - tablesize.x &&
-// 				(it->y) < table_center.y + tablesize.y && (it->y) > table_center.y - 50 &&
-// 				(it->z) < table_center.z + tablesize.z && (it->z) > table_center.z - tablesize.z)
-		QVec placed_point = matriz_guay*QVec::vec4((it->x), (it->y), (it->z) , 1);
+		QVec placed_point = final_translat_mat*QVec::vec4((it->x), (it->y), (it->z) , 1);
 // 		if (table->check_point_inside(it->x, it->y, it->z))
-		if (placed_point(0) < tablesize.x && placed_point(0) > (-tablesize.x) &&
-			placed_point(1) < tablesize.z && placed_point(1) > -tablesize.z &&
-			placed_point(2) < tablesize.y && placed_point(2) > (-tablesize.y))
+		QVec table_size = table->get_board_size();
+		if (placed_point(0) < table_size(0) && placed_point(0) > (-table_size(0)) &&
+			placed_point(1) < table_size(2) && placed_point(1) > -table_size(2) &&
+			placed_point(2) < table_size(1) && placed_point(2) > (-table_size(1)))
 		{
 			inliers_cloud->points[j].x = (it->x);
 			inliers_cloud->points[j].y = (it->y);
@@ -173,7 +171,6 @@ void SpecificWorker::projectTableInliers()
 	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
 	
 	//lets get three points of the plane 
-	
 	QVec p1 = transform * QVec::vec4(0, 0, 0, 1);
 	QVec p2 = transform * QVec::vec4(1, 0, 0, 1);
 	QVec p3 = transform * QVec::vec4(0, 1, 0, 1);
@@ -419,7 +416,8 @@ void SpecificWorker::fitTheTable()
 			pose.ry = r(1);
 			pose.rz = r(2);
 			
-			cout<<"Do the table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
+			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;
+			cout<<"Rotation of table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
 			
 			
 			bool exists = false;
@@ -662,12 +660,14 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 	RoboCompInnerModelManager::Pose3D pose2;
 	pose2.x = pose2.y = pose2.z = pose2.rx = pose2.ry = pose2.rz = 0;
 	
+	QVec table_size = table->get_board_size();
+	
 	RoboCompInnerModelManager::meshType table_mesh;
  	table_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
 	table_mesh.pose.x = table_mesh.pose.y = table_mesh.pose.z = table_mesh.pose.rx = table_mesh.pose.ry = table_mesh.pose.rz = 0;
-	table_mesh.scaleX = tablesize.x;
-	table_mesh.scaleY = tablesize.z;  //TAKE CARE IN THE MODEL Z AND Y ARE CHANGED!!!
-	table_mesh.scaleZ = tablesize.y;  //TAKE CARE IN THE MODEL Z AND Y ARE CHANGED!!! 
+	table_mesh.scaleX = table_size(0);
+	table_mesh.scaleY = table_size(2);  //TAKE CARE IN THE MODEL Z AND Y ARE CHANGED!!!
+	table_mesh.scaleZ = table_size(1);  //TAKE CARE IN THE MODEL Z AND Y ARE CHANGED!!! 
 	table_mesh.render = 1; // set wireframe mode
 	
 	// fixing the tag offset
@@ -705,7 +705,8 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 {
 	timer.start(Period);
 	return true;
-};
+}
+
 void SpecificWorker::newAprilTag(const tagsList& tags)
 {
 	mutex->lock();

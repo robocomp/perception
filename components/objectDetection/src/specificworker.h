@@ -44,13 +44,6 @@
        @author authorname
 */
 
-typedef struct TableSize
-{
-	static const int x=1000;
-	static const int y=20;
-	static const int z=300; 
-};
-
 class AprilTagModel
 {
 public:
@@ -70,7 +63,6 @@ class SpecificWorker : public GenericWorker
 {
 	//table related stuff
 	boost::shared_ptr<Table> table;
-	TableSize tablesize;
 	PointT table_offset;
 	
 	RoboCompRGBD::ColorSeq rgbMatrix;	
