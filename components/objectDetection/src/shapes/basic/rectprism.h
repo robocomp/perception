@@ -34,13 +34,13 @@ public:
   RectPrism();
   RectPrism(const QVec &center, const QVec &rotation, double Wx, double Wy, double Wz);
   static double distance_p2p (double x1, double y1, double z1, double x2, double y2, double z2);
-  inline const QVec getCenter () { return center; }
-  inline const QVec getRotation () { return rotation; }
-  inline const QVec getWidth () { return QVec::vec3(Wx,Wy,Wz); }
+  inline const QVec get_center () { return center; }
+  inline const QVec get_rotation () { return rotation; }
+  inline const QVec get_size () { return QVec::vec3(Wx,Wy,Wz); }
 
-  inline void setCenter ( const QVec center ) { this->center=center; }
-  inline void setRotation ( const QVec  rotation ) { this->rotation=rotation; }
-  inline void setWidth ( const QVec Width ) { this->Wx=Width(0);this->Wy=Width(1);this->Wz=Width(2); }
+  inline void set_center ( const QVec center ) { this->center=center; }
+  inline void set_rotation ( const QVec  rotation ) { this->rotation=rotation; }
+  inline void set_size ( const QVec Width ) { this->Wx=Width(0);this->Wy=Width(1);this->Wz=Width(2); }
   
   bool check_point_inside(const QVec point);
   

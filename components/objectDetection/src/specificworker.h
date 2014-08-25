@@ -63,7 +63,9 @@ class SpecificWorker : public GenericWorker
 {
 	//table related stuff
 	boost::shared_ptr<Table> table;
+	boost::shared_ptr<RectPrism> box;
 	PointT table_offset;
+	PointT box_offset;
 	
 	RoboCompRGBD::ColorSeq rgbMatrix;	
 	RoboCompRGBD::depthType distanceMatrix;
@@ -122,7 +124,7 @@ public:
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	void newAprilTag(const tagsList& tags);
 	
-	void doThePointClouds();
+	void updatePointCloud();
 	void doTheAprilTags();
 	
 	void fitTheBox();

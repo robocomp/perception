@@ -24,13 +24,13 @@ public:
 	Table(const boost::shared_ptr<RectPrism> board);
 	
 	//board management methods;
-	inline void set_board_size(const double Wx, const double Wy, const double Wz) { board->setWidth(QVec::vec3(Wx, Wy, Wz)); }
-	inline void set_board_center(const double Cx, const double Cy, const double Cz) { board->setCenter(QVec::vec3(Cx, Cy, Cz)); }
-	inline void set_board_rotation(const double Rx, const double Ry, const double Rz) { board->setRotation(QVec::vec3(Rx, Ry, Rz)); }
+	inline void set_board_size(const double Wx, const double Wy, const double Wz) { board->set_size(QVec::vec3(Wx, Wy, Wz)); }
+	inline void set_board_center(const double Cx, const double Cy, const double Cz) { board->set_center(QVec::vec3(Cx, Cy, Cz)); }
+	inline void set_board_rotation(const double Rx, const double Ry, const double Rz) { board->set_rotation(QVec::vec3(Rx, Ry, Rz)); }
 	
-	inline QVec get_board_size () { return board->getWidth(); }
-	inline QVec get_board_center () { return board->getCenter(); }
-	inline QVec get_board_rotation () { return board->getRotation(); }
+	inline QVec get_board_size () { return board->get_size(); }
+	inline QVec get_board_center () { return board->get_center(); }
+	inline QVec get_board_rotation () { return board->get_rotation(); }
 	
 	//RANSAC to point cloud board
 	void fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const float threshold);

@@ -10,18 +10,18 @@ Table::Table(const double Cx, const double Cy, const double Cz,
 						 const double Wx, const double Wy, const double Wz): board(new RectPrism())
 {
 	
-	this->board->setCenter(QVec::vec3(Cx,Cy,Cz));
-	this->board->setRotation(QVec::vec3(Rx,Ry,Rz));
-	this->board->setWidth(QVec::vec3(Wx,Wy,Wz));
+	this->board->set_center(QVec::vec3(Cx,Cy,Cz));
+	this->board->set_rotation(QVec::vec3(Rx,Ry,Rz));
+	this->board->set_size(QVec::vec3(Wx,Wy,Wz));
 	
 }
 
 Table::Table(const boost::shared_ptr<RectPrism> board): board(new RectPrism())
 { 
 	
-	this->board->setCenter( board->getCenter() );
-	this->board->setRotation( board->getRotation() );
-	this->board->setWidth( board->getWidth() );
+	this->board->set_center( board->get_center() );
+	this->board->set_rotation( board->get_rotation() );
+	this->board->set_size( board->get_size() );
 }
 
 //optimize board using ransac

@@ -23,18 +23,25 @@
 * \brief Default constructor
 */
 
-SpecificWorker::SpecificWorker(MapPrx& mprx) : table(new Table()),
+SpecificWorker::SpecificWorker(MapPrx& mprx) : table(new Table()), box(new RectPrism()),
 GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
 segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), plane_hull(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>)
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
 	
+	//let's set the sizes
 	table->set_board_size(1000,20,300);
-	
+	box->set_size(QVec::vec3(57.5, 80.0, 57.5));
+
+	//let's set the ofsets
 	table_offset.x = -150;
 	table_offset.y = 0;
 	table_offset.z = 300;
+	
+	box_offset.x = 0;
+	box_offset.y = 65.5;
+	box_offset.z = 26;
 	
 	//action flags
 	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = false;
@@ -291,7 +298,7 @@ void SpecificWorker::extractTablePolygon()
 void SpecificWorker::compute( )
 {
 		
-		doThePointClouds();
+		updatePointCloud();
 		
 		if(getTableInliers_flag)
 			getTableInliers();
@@ -306,8 +313,9 @@ void SpecificWorker::compute( )
 			extractTablePolygon();
 		
 		drawThePointCloud(this->cloud);
+		//drawTheModels();
 	
-// 	doTheAprilTags();
+		doTheAprilTags();
 	
 }
 
@@ -416,8 +424,8 @@ void SpecificWorker::fitTheTable()
 			pose.ry = r(1);
 			pose.rz = r(2);
 			
-			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;
-			cout<<"Rotation of table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
+// 			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;
+// 			cout<<"Rotation of table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
 			
 			
 			bool exists = false;
@@ -435,7 +443,7 @@ void SpecificWorker::fitTheTable()
 			
 			if(!exists)
 			{
-				std::cout<<"pintando"<<std::endl;
+// 				std::cout<<"pintando"<<std::endl;
 				addTheTable(pose);
 			}
 			else
@@ -447,7 +455,7 @@ void SpecificWorker::fitTheTable()
 	
 }
 
-void SpecificWorker::doThePointClouds()
+void SpecificWorker::updatePointCloud()
 {
 	//transform to pcl cloud
 	try
@@ -625,18 +633,21 @@ void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
 {
 	RoboCompInnerModelManager::Pose3D pose2;
 	pose2.x = pose2.y = pose2.z = pose2.rx = pose2.ry = pose2.rz = 0;
+	
+	QVec box_size = box->get_size();
 
 	RoboCompInnerModelManager::meshType box_mesh;
  	box_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
 	box_mesh.pose.x = box_mesh.pose.y = box_mesh.pose.z = box_mesh.pose.rx = box_mesh.pose.ry = box_mesh.pose.rz = 0;
-	box_mesh.scaleX = 57.5;
-	box_mesh.scaleY = 80; 
-	box_mesh.scaleZ = 57.5; 
+	box_mesh.scaleX = box_size(0);
+	box_mesh.scaleY = box_size(1); 
+	box_mesh.scaleZ = box_size(2); 
 	box_mesh.render = 1; //set wireframe mode with 1 regular with 0
 	
 	// fixing the tag offset
-	pose2.z = 65.5;
-	pose2.y = 26;    
+	pose2.x = box_offset.x;
+	pose2.z = box_offset.y;
+	pose2.y = box_offset.z;    
 	
 	try
 	{
@@ -653,7 +664,6 @@ void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
 	}
 	
 }
-
 
 void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 {
