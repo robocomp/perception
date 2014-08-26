@@ -86,162 +86,6 @@ void SpecificWorker::convexHull(const string& model)
 		tableConvexHull_flag = !tableConvexHull_flag;
 }
 
-void SpecificWorker::getTableInliers()
-{
-	std::cout<<"Getting Table Inliers"<<std::endl;
-	
-	pcl::PointCloud<PointT>::Ptr inliers_cloud(new pcl::PointCloud<PointT>);
-	RoboCompInnerModelManager::Pose3D table_pose;
-	RoboCompInnerModelManager::NodeInformation table_node;
-	//get table model position
-	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T2");
-
-	PointT table_center;
-	
-	table_center.x = transform(0,3);
-	table_center.y = transform(1,3);
-	table_center.z = transform(2,3);
-	
-	std::cout<<" Table center: ";
-	std::cout<<transform(0,3)<<" ";
-	std::cout<<transform(1,3)<<" ";
-	std::cout<<transform(2,3)<<std::endl;
-	
-
-	
-	const QVec plane_r = transform.extractAnglesR_min();
-	table->set_board_center(table_center.x, table_center.y, table_center.z );
-	table->set_board_rotation(plane_r(0), plane_r(1), plane_r(2));
-	
- 	model_inliers_indices->indices.resize(this->cloud->points.size());
-	inliers_cloud->points.resize(this->cloud->points.size());
-
-	std::cout<<" Table rotation: ";
-	std::cout<<plane_r(0)<<" ";
-	std::cout<<plane_r(1)<<" ";
-	std::cout<<plane_r(2)<<std::endl;
-
-	int j=0;
-	int index=0;			
-	
-	RTMat translat_mat = RTMat(0,0,0, QVec::vec3(-table_center.x, -table_center.y, -table_center.z));
-	RTMat final_translat_mat = RTMat(plane_r(0), plane_r(1), plane_r(2), QVec::vec3(0, 0, 0)).invert()* translat_mat;
-	
-	for (pcl::PointCloud<PointT>::iterator it = cloud->points.begin (); it < cloud->points.end (); ++it)
-  {
-		QVec placed_point = final_translat_mat*QVec::vec4((it->x), (it->y), (it->z) , 1);
-// 		if (table->check_point_inside(it->x, it->y, it->z))
-		QVec table_size = table->get_board_size();
-		if (placed_point(0) < table_size(0) && placed_point(0) > (-table_size(0)) &&
-			placed_point(1) < table_size(2) && placed_point(1) > -table_size(2) &&
-			placed_point(2) < table_size(1) && placed_point(2) > (-table_size(1)))
-		{
-			inliers_cloud->points[j].x = (it->x);
-			inliers_cloud->points[j].y = (it->y);
-			inliers_cloud->points[j].z = (it->z);
-// 			inliers_cloud->points[j].x = placed_point(0);
-// 			inliers_cloud->points[j].y = placed_point(1);
-// 			inliers_cloud->points[j].z = placed_point(2);
-			inliers_cloud->points[j].r = 0;
-			inliers_cloud->points[j].g = 0;
-			inliers_cloud->points[j].b = 255;
-			
-			model_inliers_indices->indices[j]=index;
-			j++;
-		}
-// 		cout<<placed_point(0)<<" "<<placed_point(1)<<" "<<placed_point(2)<<endl;
-		index++;;
-  }
-  
-
-  
-  inliers_cloud->points.resize(j);
-  model_inliers_indices->indices.resize(j);
-	
-	*this->cloud = *inliers_cloud;
-	
-/*	
-	RoboCompInnerModelManager::Pose3D pose;
-	pose.x = 0;
-	pose.y = 0;
-	pose.z = 0;
-	pose.rx = 0;
-	pose.ry = 0;
-	pose.rz = 0;
-			
-	updateTheTable(pose);*/
-	
-}
-
-void SpecificWorker::projectTableInliers()
-{
-	RTMat transform = innermodel->getTransformationMatrix("robot", "table_T");
-	
-	//lets get three points of the plane 
-	QVec p1 = transform * QVec::vec4(0, 0, 0, 1);
-	QVec p2 = transform * QVec::vec4(1, 0, 0, 1);
-	QVec p3 = transform * QVec::vec4(0, 1, 0, 1);
-	
-// 	p1.print("p1");
-// 	p2.print("p2");
-// 	p3.print("p3");
-	
-	
-// 	QVec normal = (p2-p1) * (p3-p1);
-// 	normal = normal.normalize();
-// 	float d = normal * p1;
-// 	
-// 	cout<<" A: "<<normal(0)<<" B: "<<normal(1)<<" C: "<<normal(2)<<" D: "<<d<<endl;
-	
-	PointT p_1,p_2, p_3;
-	p_1.x = p1(0);
-	p_1.y = p1(1);
-	p_1.z = p1(2);
-	
-	p_2.x = p2(0);
-	p_2.y = p2(1);
-	p_2.z = p2(2);
-	
-	p_3.x = p3(0);
-	p_3.y = p3(1);
-	p_3.z = p3(2);
-
-	pcl::ModelCoefficients::Ptr plane (new pcl::ModelCoefficients);
-	
-	threePointsToPlane(p_1, p_2, p_3, plane);
-	
-// 	cout<<"PCL0: "<<plane->values[0]<<endl;
-// 	cout<<"PCL1: "<<plane->values[1]<<endl;
-// 	cout<<"PCL2: "<<plane->values[2]<<endl;
-// 	cout<<"PCL3: "<<plane->values[3]<<endl;
-	
-// 	this->cloud=model_inliers_cloud;
-  
-  cout<<"Model inliers!!: "<<model_inliers_indices->indices.size()<<endl;
-
-	//Let's project inliers
-	pcl::ProjectInliers<PointT> proj;
-	proj.setModelType (pcl::SACMODEL_PLANE);
-	proj.setIndices (model_inliers_indices);
-	proj.setInputCloud (this->original_cloud);
-	proj.setModelCoefficients (plane);
-	proj.filter (*plane_hull);
-	
-	//update showing cloud
-	*this->cloud = *plane_hull;
-	
-}
-
-void SpecificWorker::tableConvexHull()
-{
-	//Let's construct a convex hull representation of the model inliers
-	pcl::ConvexHull<PointT> chull;
-	chull.setInputCloud(plane_hull);
-	chull.reconstruct(*cloud_hull);
-	
-	*this->cloud = *cloud_hull;
-}
-
 //it only works for the table now
 void SpecificWorker::extractPolygon(const string& model)
 {
@@ -251,71 +95,37 @@ void SpecificWorker::extractPolygon(const string& model)
 	}
 }
 
-
-void SpecificWorker::threePointsToPlane (const PointT &point_a, 
-                            const PointT &point_b, 
-                            const PointT &point_c, 
-                            const pcl::ModelCoefficients::Ptr plane) 
-{ 
-  // Create Eigen plane through 3 points 
-  Eigen::Hyperplane<float, 3> eigen_plane = 
-    Eigen::Hyperplane<float, 3>::Through (point_a.getArray3fMap (), 
-                                                          point_b.getArray3fMap (), 
-                                                          point_c.getArray3fMap ()); 
-
-  plane->values.resize (4); 
-
-  for (int i = 0; i < plane->values.size (); i++) 
-    plane->values[i] = eigen_plane.coeffs ()[i]; 
-}
-
-void SpecificWorker::extractTablePolygon()
-{
-	std::cout<<"remove point clouds within table"<<std::endl;
-	
-	//let's segment those points that are in the polinomial prism
-	
-	//obtain viewpoint 
-	RTMat viewpoint_transform = innermodel->getTransformationMatrix("robot", "rgbd_t");
-	
- 	pcl::ExtractPolygonalPrismData<PointT> prism_extract;
- 	pcl::PointIndices::Ptr prism_indices (new pcl::PointIndices);
- 	
- 	prism_extract.setHeightLimits(10, 1500);
-	prism_extract.setViewPoint(0, 1500, 0);
- 	prism_extract.setInputCloud(this->original_cloud);
- 	prism_extract.setInputPlanarHull(cloud_hull);
- 	prism_extract.segment(*prism_indices);
- 	
-	//let's extract the result
- 	pcl::ExtractIndices<PointT> extract_prism_indices;
- 	extract_prism_indices.setInputCloud(this->original_cloud);
- 	extract_prism_indices.setIndices(prism_indices);
- 	extract_prism_indices.filter(*(this->cloud));
-
-}
-
 void SpecificWorker::compute( )
 {
 		
 		updatePointCloud();
 		
 		if(getTableInliers_flag)
-			getTableInliers();
+		{
+			table->get_table_inliers(cloud, cloud, model_inliers_indices);
+		}
 		
 		if(projectTableInliers_flag)
-			projectTableInliers();
+		{
+			table->project_board_inliers(cloud, model_inliers_indices, plane_hull);
+			//update showing cloud
+			*this->cloud = *plane_hull;
+		}
 		
 		if(tableConvexHull_flag)
-			tableConvexHull();
+		{
+			table->board_convex_hull(plane_hull, cloud_hull);
+			
+			*this->cloud = *cloud_hull;
+		}
 		
 		if(extractTablePolygon_flag)
-			extractTablePolygon();
+		{
+			RTMat viewpoint_transform = innermodel->getTransformationMatrix("robot", "rgbd_t");
+			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 10, 1500, this->cloud);
+		}
 		
 		drawThePointCloud(this->cloud);
-		//drawTheModels();
-	
-		doTheAprilTags();
 	
 }
 
@@ -412,9 +222,13 @@ void SpecificWorker::fitTheTable()
 							 
 			const RTMat translated_obj = PP * object_tr;
 			
-			const QVec tr = translated_obj.getTr();
 			const QVec r = translated_obj.extractAnglesR_min();
-
+			
+// 			table->set_board_center(translated_obj(0,3), translated_obj(1,3), translated_obj(2,3));
+// 			table->set_board_rotation(r(0), r(1), r(2));
+// 			
+// 			QVec table_translation = table->get_board_center();
+// 			QVec table_rotation = table->get_board_rotation();
 			
 			RoboCompInnerModelManager::Pose3D pose;
 			pose.x = translated_obj(0,3);
@@ -424,8 +238,8 @@ void SpecificWorker::fitTheTable()
 			pose.ry = r(1);
 			pose.rz = r(2);
 			
-// 			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;
-// 			cout<<"Rotation of table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
+		// 			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;
+		// 			cout<<"Rotation of table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
 			
 			
 			bool exists = false;
@@ -442,18 +256,17 @@ void SpecificWorker::fitTheTable()
 			}
 			
 			if(!exists)
-			{
-// 				std::cout<<"pintando"<<std::endl;
 				addTheTable(pose);
-			}
 			else
 				updateTheTable(pose);
+	
 			break;
  		}
 	}
 	mutex->unlock();
 	
 }
+
 
 void SpecificWorker::updatePointCloud()
 {
@@ -573,16 +386,6 @@ void SpecificWorker::doTheAprilTags()
 		
 		if (itMap->second.id == 3)
 		{
-// 			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
-// 			
-// 			QMat PP = QMat(m.rows, m.cols);
-// 			for (int r=0; r<m.rows; r++)
-// 			{
-// 				for (int c=0; c<m.cols; c++)
-// 				{
-// 					PP(r,c) = m.data[r*m.cols+c];
-// 				}
-// 			}
 
 			QMat PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
 			
@@ -651,12 +454,17 @@ void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
 	
 	try
 	{
-		add_tranform_to_innermodels("box_T",  "static", "robot", pose);
-		add_tranform_to_innermodels("box_T2",  "static", "box_T", pose2);
+		add_transform_to_innermodels("box_T",  "static", "robot", pose);
+		add_transform_to_innermodels("box_T2",  "static", "box_T", pose2);
 		add_mesh_to_innermodels("box", "box_T2", box_mesh);
-// 		innermodelmanager_proxy->addTransform("box_T",  "static", "robot", pose);
-// 		innermodelmanager_proxy->addTransform("box_T2", "static", "box_T", pose2);
-// 		innermodelmanager_proxy->addMesh("box", "box_T2", box_mesh);
+		
+		//add position to box
+		RTMat box_transform = innermodel->getTransformationMatrix("robot", "box");
+		QVec box_rotation = box_transform.extractAnglesR_min();
+		
+		box->set_center(QVec::vec3(box_transform(0,3), box_transform(1,3), box_transform(2,3)));
+		box->set_rotation(QVec::vec3(box_rotation(0), box_rotation(1), box_rotation(2)));
+		
 	}
 	catch(RoboCompInnerModelManager::InnerModelManagerError e)
 	{
@@ -689,9 +497,16 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 	
 	try
 	{
-		add_tranform_to_innermodels("table_T",  "static", "robot", pose);
-		add_tranform_to_innermodels("table_T2",  "static", "table_T", pose2);
+		add_transform_to_innermodels("table_T",  "static", "robot", pose);
+		add_transform_to_innermodels("table_T2",  "static", "table_T", pose2);
 		add_mesh_to_innermodels("table", "table_T2", table_mesh);
+		
+		//add position to table
+		RTMat table_transform = innermodel->getTransformationMatrix("robot", "table");
+		QVec table_rotation = table_transform.extractAnglesR_min();
+		
+		table->set_board_center(table_transform(0,3), table_transform(1,3), table_transform(2,3));
+		table->set_board_rotation(table_rotation(0), table_rotation(1), table_rotation(2));
 		
 	}
 	catch(RoboCompInnerModelManager::InnerModelManagerError e)
@@ -704,11 +519,25 @@ void SpecificWorker::addTheTable(RoboCompInnerModelManager::Pose3D pose)
 void SpecificWorker::updateTheBox(RoboCompInnerModelManager::Pose3D pose)
 {
 	update_transforms_on_innermodels("box_T", pose);
+	
+	//add position to box
+	RTMat box_transform = innermodel->getTransformationMatrix("robot", "box");
+	QVec box_rotation = box_transform.extractAnglesR_min();
+	
+	box->set_center(QVec::vec3(box_transform(0,3), box_transform(1,3), box_transform(2,3)));
+	box->set_rotation(QVec::vec3(box_rotation(0), box_rotation(1), box_rotation(2)));
 }
 
 void SpecificWorker::updateTheTable(RoboCompInnerModelManager::Pose3D pose)
 {
  	update_transforms_on_innermodels("table_T", pose);
+	
+	//add position to table
+	RTMat table_transform = innermodel->getTransformationMatrix("robot", "table");
+	QVec table_rotation = table_transform.extractAnglesR_min();
+
+	table->set_board_center(table_transform(0,3), table_transform(1,3), table_transform(2,3));
+	table->set_board_rotation(table_rotation(0), table_rotation(1), table_rotation(2));
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
@@ -756,7 +585,7 @@ bool SpecificWorker::add_point_cloud_to_innermodels(const std::string &id, const
 	innermodelmanager_proxy->setPointCloudData(id, cloud);
 }
 
-bool SpecificWorker::add_tranform_to_innermodels(const std::string &item, const std::string &engine, const std::string &base, const RoboCompInnerModelManager::Pose3D &pose)
+bool SpecificWorker::add_transform_to_innermodels(const std::string &item, const std::string &engine, const std::string &base, const RoboCompInnerModelManager::Pose3D &pose)
 {
 	//adding to local innermodel
 	InnerModelNode * parent = innermodel->getNode(QString::fromStdString(base));

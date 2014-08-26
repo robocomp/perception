@@ -16,6 +16,7 @@
  *    You should have received a copy of the GNU General Public License
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #ifndef SPECIFICWORKER_H
 #define SPECIFICWORKER_H
 
@@ -31,7 +32,6 @@
 #include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 #include <pcl/filters/extract_indices.h>
-#include <pcl/surface/convex_hull.h>
 #include <pcl/filters/project_inliers.h>
 #include <pcl/io/pcd_io.h>
 #include <innermodel/innermodel.h>
@@ -108,12 +108,6 @@ public:
 	void convexHull(const string& model);
 	void extractPolygon(const string& model);
 	
-	//table specific functions
-	void getTableInliers();
-	void projectTableInliers();
-	void tableConvexHull();
-	void extractTablePolygon();
-	
 	//utils
 	static void threePointsToPlane (const PointT &point_a, 
                             const PointT &point_b, 
@@ -139,7 +133,7 @@ public:
 	
 private:
 	bool add_point_cloud_to_innermodels(const std::string &id, const RoboCompInnerModelManager::PointCloudVector &cloud);
-	bool add_tranform_to_innermodels(const std::string &item, const std::string &engine, const std::string &base, const RoboCompInnerModelManager::Pose3D &pose);
+	bool add_transform_to_innermodels(const std::string &item, const std::string &engine, const std::string &base, const RoboCompInnerModelManager::Pose3D &pose);
 	bool add_mesh_to_innermodels(const std::string &item, const std::string &base, const RoboCompInnerModelManager::meshType &m);
 	void update_transforms_on_innermodels (const std::string &item, const RoboCompInnerModelManager::Pose3D pose);
 	

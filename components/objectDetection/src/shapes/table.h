@@ -7,6 +7,10 @@
 #include <qmat/QMatAll>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/filters/project_inliers.h>
+#include <pcl/surface/convex_hull.h>
+#include <pcl/segmentation/extract_polygonal_prism_data.h>
+#include <pcl/filters/extract_indices.h>
 
 typedef pcl::PointXYZRGB PointT;
 
@@ -31,6 +35,17 @@ public:
 	inline QVec get_board_size () { return board->get_size(); }
 	inline QVec get_board_center () { return board->get_center(); }
 	inline QVec get_board_rotation () { return board->get_rotation(); }
+	
+	void get_table_inliers(const pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointCloud<PointT>::Ptr inliers, const pcl::PointIndices::Ptr inliers_indices);
+	
+	//it gets a set of table board inliers and projects them to the board plane 
+	void project_board_inliers(const pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointIndices::Ptr inliers_indices, const pcl::PointCloud<PointT>::Ptr plane_projected);
+	
+	//computes the convex hull of the board
+	void board_convex_hull(const pcl::PointCloud<PointT>::Ptr plane_projected, const pcl::PointCloud<PointT>::Ptr cloud_hull);
+	
+	//Extract table polygon
+	void extract_table_polygon(const pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointCloud<PointT>::Ptr cloud_hull, QVec viewpoint, double height_min, double height_max, const pcl::PointCloud<PointT>::Ptr polygon_cloud);	
 	
 	//RANSAC to point cloud board
 	void fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const float threshold);
