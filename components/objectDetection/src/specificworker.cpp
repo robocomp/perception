@@ -76,15 +76,9 @@ void SpecificWorker::getInliers(const string& model)
 
 void SpecificWorker::ransac(const string& model)
 {
-	std::cout<<"Just got the RANSAC call"<<std::endl;
 	if(model=="table")
-	{
-// 		std::cout<<"about to call table ransac"<<std::endl;
-// 		table->fit_board_with_RANSAC( cloud, 0.01);
-// 		std::cout<<"just called ransac table"<<std::endl;
 		getTableRANSAC_flag = !getTableRANSAC_flag;
-	}
-	std::cout<<"ened the ransac function"<<std::endl;
+
 }
 
 void SpecificWorker::projectInliers(const string& model)
@@ -128,6 +122,7 @@ void SpecificWorker::compute( )
 		if(getTableRANSAC_flag)
 		{
 			table->fit_board_with_RANSAC( cloud, 0.01);
+			drawTheTable();
 		}
 		
 		if(tableConvexHull_flag)
@@ -211,6 +206,60 @@ void SpecificWorker::fitTheBox()
 	}
 	mutex->unlock();
 	
+}
+
+void SpecificWorker::drawTheTable()
+{
+	const QVec r = table->get_board_rotation();
+	const QVec t = table->get_board_center();
+	
+	RoboCompInnerModelManager::Pose3D pose;
+	pose.x = t(0);
+	pose.y = t(1);
+	pose.z = t(2);
+	pose.rx = r(0);
+	pose.ry = r(1);
+	pose.rz = r(2);
+	
+	innermodelmanager_proxy->setPose("robot", "table_T2", pose);
+	innermodel->updateTransformValues("table_T2", pose.x, pose.y, pose.z, pose.rx, pose.ry, pose.rz, "robot");
+	
+// 		bool exists = false;
+// 	
+// 	RoboCompInnerModelManager::NodeInformationSequence node_sequence;
+// 	innermodelmanager_proxy->getAllNodeInformation(node_sequence);
+// 	for (unsigned int i=0; i<node_sequence.size(); i++)
+// 	{
+// 		if(node_sequence[i].id == "table")
+// 		{
+// 			exists = true;
+// 			break;
+// 		}
+// 	}
+// 	
+// 	if(!exists)
+// 		addTheTable(pose);
+// 	else
+// 		updateTheTable(pose);
+	
+	
+// 	bool exists = false;
+// 	
+// 	RoboCompInnerModelManager::NodeInformationSequence node_sequence;
+// 	innermodelmanager_proxy->getAllNodeInformation(node_sequence);
+// 	for (unsigned int i=0; i<node_sequence.size(); i++)
+// 	{
+// 		if(node_sequence[i].id == "table")
+// 		{
+// 			exists = true;
+// 			break;
+// 		}
+// 	}
+// 	
+// 	if(!exists)
+// 		addTheTable(pose);
+// 	else
+// 		updateTheTable(pose);
 }
 
 void SpecificWorker::fitTheTable()

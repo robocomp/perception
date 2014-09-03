@@ -127,6 +127,7 @@ public:
 	void updateTheBox(RoboCompInnerModelManager::Pose3D pose);
 	
 	void fitTheTable();
+	void drawTheTable();
 	void addTheTable(RoboCompInnerModelManager::Pose3D pose);
 	void updateTheTable(RoboCompInnerModelManager::Pose3D pose);
 	

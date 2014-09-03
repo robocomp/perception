@@ -225,17 +225,17 @@ void Table::fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const floa
 	seg.setModelType (pcl::SACMODEL_PLANE);
 	seg.setMethodType (pcl::SAC_RANSAC);
 	seg.setDistanceThreshold (threshold);
-	
-	cout<<"hasta aqui hemos llegao"<<endl;
+
 	seg.setInputCloud (cloud);
 	seg.segment (*inliers, *coefficients);
-	cout<<"done"<<endl;
-	QVec qcoef = QVec::vec4(coefficients->values[0], coefficients->values[1], coefficients->values[2], coefficients->values[3]);
+	QVec qcoef = QVec::vec3(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
 	
 	QVec plane_rotation = board->get_rotation();
  	
-	planeCoeffsToRot(qcoef, plane_rotation);
-// 	
-// 	board->set_rotation(plane_rotation);
+	plane_rotation = planeCoeffsToRot(qcoef, plane_rotation);
+	
+	plane_rotation.print("plane_rotation:");
+	
+ 	board->set_rotation(plane_rotation);
 	
 }
