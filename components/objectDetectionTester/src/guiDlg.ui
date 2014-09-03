@@ -29,7 +29,7 @@
   <widget class="QPushButton" name="fit_box_button">
    <property name="geometry">
     <rect>
-     <x>260</x>
+     <x>300</x>
      <y>20</y>
      <width>75</width>
      <height>23</height>
@@ -71,6 +71,19 @@
      <string>ExtractPolygon</string>
     </property>
    </widget>
+  </widget>
+  <widget class="QPushButton" name="ransac_button">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>20</y>
+     <width>91</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>RANSAC</string>
+   </property>
   </widget>
  </widget>
  <resources/>

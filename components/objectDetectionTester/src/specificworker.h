@@ -41,6 +41,7 @@ public slots:
 	void projectInliers();
 	void convexHull();
 	void extractPolygon();
+	void ransac_table();
 };
 
 #endif

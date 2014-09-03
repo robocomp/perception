@@ -74,6 +74,12 @@ void SpecificWorker::getInliers(const string& model)
 		getTableInliers_flag = !getTableInliers_flag;
 }
 
+void SpecificWorker::ransac(const string& model)
+{
+	if(model=="table")
+		table->fit_board_with_RANSAC( cloud, 0.01);
+}
+
 void SpecificWorker::projectInliers(const string& model)
 {
 	if(model=="table")

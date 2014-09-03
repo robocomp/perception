@@ -104,6 +104,7 @@ public:
 	//generic functions
 	void setModel2Fit(const string& model);
 	void getInliers(const string& model);
+	void ransac(const string& model);
 	void projectInliers(const string& model);
 	void convexHull(const string& model);
 	void extractPolygon(const string& model);

@@ -52,4 +52,8 @@ void objectDetectionI::extractPolygon(const string& model, const Ice::Current&){
 	worker->extractPolygon(model);
 }
 
+void objectDetectionI::ransac(const string& model, const Ice::Current&){
+	worker->ransac(model);
+}
+
 

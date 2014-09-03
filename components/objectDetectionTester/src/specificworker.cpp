@@ -30,6 +30,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(project_inliers_button, SIGNAL(clicked()), this, SLOT(projectInliers()));
 	connect(convex_hull_button, SIGNAL(clicked()), this, SLOT(convexHull()));
  	connect(extract_polygon_button, SIGNAL(clicked()), this, SLOT(extractPolygon()));
+	connect(ransac_button, SIGNAL(clicked()), this, SLOT(ransac_table()));
 	
 	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
 }
@@ -45,6 +46,11 @@ SpecificWorker::~SpecificWorker()
 void SpecificWorker::fitTable()
 {
 	objectdetection_proxy->setModel2Fit("table");
+}
+
+void SpecificWorker::ransac_table()
+{
+	objectdetection_proxy->ransac("table");
 }
 
 void SpecificWorker::getInliers()

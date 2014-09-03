@@ -178,6 +178,39 @@ void Table::extract_table_polygon(const pcl::PointCloud<PointT>::Ptr cloud, cons
 	
 }
 
+
+
+float normAngle(float theta)
+{
+    while (theta > 2.*M_PIl)
+        theta -= 2.*M_PIl;
+    while (theta < -2.*M_PIl)
+        theta += 2.*M_PIl;
+    return theta;
+}
+
+QVec planeCoeffsToRot(const QVec &planeVector, const QVec &initialRots)
+{
+    QVec v = planeVector;
+
+    // Compute R_x
+    float RX = normAngle(atan2(v(1), -v(2)));
+    if (abs(RX-initialRots(0)) >= M_PIl)
+    {
+        if (RX > 0)
+            RX -= M_PIl;
+        else
+            RX += M_PIl;
+    }
+
+    // Compute R_y
+    QMat m = Rot3D(-RX, 0, 0);
+    v = m * v;
+    const float RY = normAngle(-atan2(v(0), -v(2)));
+
+    return QVec::vec3(RX, RY, initialRots(2));
+}
+
 //optimize board using ransac
 void Table::fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const float threshold)
 {  
@@ -195,5 +228,11 @@ void Table::fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const floa
 	
 	seg.setInputCloud (cloud);
 	seg.segment (*inliers, *coefficients);
+	
+	QVec plane_rotation;
+	
+	planeCoeffsToRot(plane_rotation, QVec::vec4(coefficients->values[0], coefficients->values[1], coefficients->values[2], coefficients->values[3]));
+	
+	board->set_rotation(plane_rotation);
 	
 }
