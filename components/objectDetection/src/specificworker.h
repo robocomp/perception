@@ -92,7 +92,7 @@ class SpecificWorker : public GenericWorker
 	pcl::PointCloud<PointT>::Ptr cloud_hull;
 	
 	//action flags
-	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag;
+	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag, getTableRANSAC_flag;
 	
 	InnerModel *innermodel;
 	

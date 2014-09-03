@@ -38,11 +38,11 @@ public:
 	objectDetectionI( GenericWorker *_worker, QObject *parent = 0 );
 	~objectDetectionI();
 	void  setModel2Fit(const string& model, const Ice::Current& = Ice::Current());
-void  getInliers(const string& model, const Ice::Current& = Ice::Current());
-void  projectInliers(const string& model, const Ice::Current& = Ice::Current());
-void  convexHull(const string& model, const Ice::Current& = Ice::Current());
-void  extractPolygon(const string& model, const Ice::Current& = Ice::Current());
-void  ransac(const string& model, const Ice::Current& = Ice::Current());
+	void  getInliers(const string& model, const Ice::Current& = Ice::Current());
+	void  projectInliers(const string& model, const Ice::Current& = Ice::Current());
+	void  convexHull(const string& model, const Ice::Current& = Ice::Current());
+	void  extractPolygon(const string& model, const Ice::Current& = Ice::Current());
+	void  ransac(const string& model, const Ice::Current& = Ice::Current());
 
 
 	QMutex *mutex;

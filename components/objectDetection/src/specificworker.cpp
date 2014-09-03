@@ -44,7 +44,7 @@ segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::Poi
 	box_offset.z = 26;
 	
 	//action flags
-	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = false;
+	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = false;
 	
 }
 
@@ -76,8 +76,15 @@ void SpecificWorker::getInliers(const string& model)
 
 void SpecificWorker::ransac(const string& model)
 {
+	std::cout<<"Just got the RANSAC call"<<std::endl;
 	if(model=="table")
-		table->fit_board_with_RANSAC( cloud, 0.01);
+	{
+// 		std::cout<<"about to call table ransac"<<std::endl;
+// 		table->fit_board_with_RANSAC( cloud, 0.01);
+// 		std::cout<<"just called ransac table"<<std::endl;
+		getTableRANSAC_flag = !getTableRANSAC_flag;
+	}
+	std::cout<<"ened the ransac function"<<std::endl;
 }
 
 void SpecificWorker::projectInliers(const string& model)
@@ -116,6 +123,11 @@ void SpecificWorker::compute( )
 			table->project_board_inliers(cloud, model_inliers_indices, plane_hull);
 			//update showing cloud
 			*this->cloud = *plane_hull;
+		}
+		
+		if(getTableRANSAC_flag)
+		{
+			table->fit_board_with_RANSAC( cloud, 0.01);
 		}
 		
 		if(tableConvexHull_flag)

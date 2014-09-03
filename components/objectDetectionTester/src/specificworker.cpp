@@ -50,7 +50,9 @@ void SpecificWorker::fitTable()
 
 void SpecificWorker::ransac_table()
 {
+	std::cout<<"About to send RANSAC"<<std::endl;
 	objectdetection_proxy->ransac("table");
+	std::cout<<"sent RANSAC"<<std::endl;
 }
 
 void SpecificWorker::getInliers()

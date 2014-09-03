@@ -195,7 +195,7 @@ QVec planeCoeffsToRot(const QVec &planeVector, const QVec &initialRots)
 
     // Compute R_x
     float RX = normAngle(atan2(v(1), -v(2)));
-    if (abs(RX-initialRots(0)) >= M_PIl)
+		if (abs(RX-initialRots(0)) >= M_PIl)
     {
         if (RX > 0)
             RX -= M_PIl;
@@ -226,13 +226,16 @@ void Table::fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const floa
 	seg.setMethodType (pcl::SAC_RANSAC);
 	seg.setDistanceThreshold (threshold);
 	
+	cout<<"hasta aqui hemos llegao"<<endl;
 	seg.setInputCloud (cloud);
 	seg.segment (*inliers, *coefficients);
+	cout<<"done"<<endl;
+	QVec qcoef = QVec::vec4(coefficients->values[0], coefficients->values[1], coefficients->values[2], coefficients->values[3]);
 	
-	QVec plane_rotation;
-	
-	planeCoeffsToRot(plane_rotation, QVec::vec4(coefficients->values[0], coefficients->values[1], coefficients->values[2], coefficients->values[3]));
-	
-	board->set_rotation(plane_rotation);
+	QVec plane_rotation = board->get_rotation();
+ 	
+	planeCoeffsToRot(qcoef, plane_rotation);
+// 	
+// 	board->set_rotation(plane_rotation);
 	
 }
