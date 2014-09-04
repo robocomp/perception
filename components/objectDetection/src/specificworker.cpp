@@ -121,6 +121,8 @@ void SpecificWorker::compute( )
 		
 		if(getTableRANSAC_flag)
 		{
+			QVec rotation = table->get_board_rotation();
+// 			rotation.print("PREROTATION: ");
 			table->fit_board_with_RANSAC( cloud, 0.01);
 			drawTheTable();
 		}
@@ -135,7 +137,7 @@ void SpecificWorker::compute( )
 		if(extractTablePolygon_flag)
 		{
 			RTMat viewpoint_transform = innermodel->getTransformationMatrix("robot", "rgbd_t");
-			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 10, 1500, this->cloud);
+			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 20, 1500, this->cloud);
 		}
 		
 		drawThePointCloud(this->cloud);
@@ -297,12 +299,14 @@ void SpecificWorker::fitTheTable()
 // 			QVec table_translation = table->get_board_center();
 // 			QVec table_rotation = table->get_board_rotation();
 			
+			r.print("april");
+			
 			RoboCompInnerModelManager::Pose3D pose;
 			pose.x = translated_obj(0,3);
 			pose.y = translated_obj(1,3);
 			pose.z = translated_obj(2,3);
 			pose.rx = r(0);
-			pose.ry = r(1);
+			pose.ry = r(1) + 0.1;
 			pose.rz = r(2);
 			
 		// 			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;
@@ -330,6 +334,7 @@ void SpecificWorker::fitTheTable()
 			break;
  		}
 	}
+	drawTheTable();
 	mutex->unlock();
 	
 }
@@ -605,6 +610,7 @@ void SpecificWorker::updateTheTable(RoboCompInnerModelManager::Pose3D pose)
 
 	table->set_board_center(table_transform(0,3), table_transform(1,3), table_transform(2,3));
 	table->set_board_rotation(table_rotation(0), table_rotation(1), table_rotation(2));
+	
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
