@@ -56,4 +56,16 @@ void objectDetectionI::ransac(const string& model, const Ice::Current&){
 	worker->ransac(model);
 }
 
+void objectDetectionI::euclideanClustering(Ice::Int& numClusters, const Ice::Current&){
+	worker->euclideanClustering(numClusters);
+}
+
+void objectDetectionI::showObject(Ice::Int numObject, const Ice::Current&){
+	worker->showObject(numObject);
+}
+
+void objectDetectionI::reset(const Ice::Current&){
+	worker->reset();
+}
+
 

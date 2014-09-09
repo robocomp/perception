@@ -34,10 +34,11 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/project_inliers.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/segmentation/extract_clusters.h>
+
 #include <innermodel/innermodel.h>
 
 #include "shapes/table.h"
-
 
 /**
        \brief
@@ -60,7 +61,9 @@ public:
 typedef std::map<int, AprilTagModel> TagModelMap;
 
 class SpecificWorker : public GenericWorker
-{
+{ 
+	pcl::PCDWriter writer;
+	
 	//table related stuff
 	boost::shared_ptr<Table> table;
 	boost::shared_ptr<RectPrism> box;
@@ -76,6 +79,7 @@ class SpecificWorker : public GenericWorker
 	TagModelMap tagMap;
 	QMutex *mutex;
 	QMutex *point_cloud_mutex;
+	QMutex *euclidean_mutex;
 	
 	// Create the filtering object
 	pcl::PassThrough<PointT> pass;
@@ -91,8 +95,13 @@ class SpecificWorker : public GenericWorker
 	pcl::PointCloud<PointT>::Ptr plane_hull;
 	pcl::PointCloud<PointT>::Ptr cloud_hull;
 	
+	//euclidean clustring
+	std::vector<pcl::PointIndices> cluster_indices;
+	std::vector<pcl::PointCloud<PointT>::Ptr> cluster_clouds;
+	int object_to_show;
+	
 	//action flags
-	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag, getTableRANSAC_flag;
+	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag, getTableRANSAC_flag, euclideanClustering_flag, showOnlyObject_flag;
 	
 	InnerModel *innermodel;
 	
@@ -108,6 +117,12 @@ public:
 	void projectInliers(const string& model);
 	void convexHull(const string& model);
 	void extractPolygon(const string& model);
+	
+	void euclideanClustering(int &num_clusters);
+	void performEuclideanClustering();
+	void showObject(int object_to_show);
+	
+	void reset();
 	
 	//utils
 	static void threePointsToPlane (const PointT &point_a, 

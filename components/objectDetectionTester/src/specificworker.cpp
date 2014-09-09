@@ -31,6 +31,10 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(convex_hull_button, SIGNAL(clicked()), this, SLOT(convexHull()));
  	connect(extract_polygon_button, SIGNAL(clicked()), this, SLOT(extractPolygon()));
 	connect(ransac_button, SIGNAL(clicked()), this, SLOT(ransac_table()));
+	connect(ec_button, SIGNAL(clicked()), this, SLOT(euclidean_clustering()));
+	connect(list_clouds, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(showObject(QListWidgetItem*)));
+	connect(reset_button, SIGNAL(clicked()), this, SLOT(reset()));
+	
 	
 	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
 }
@@ -78,6 +82,36 @@ void SpecificWorker::extractPolygon()
 void SpecificWorker::fitBox()
 {
 	objectdetection_proxy->setModel2Fit("box");
+}
+void SpecificWorker::euclidean_clustering()
+{
+	int num_clusters;
+	objectdetection_proxy->euclideanClustering(num_clusters);
+	list_clouds->clear();
+	stringstream ss;
+	for(int i=0; i<num_clusters; i++)
+	{
+		ss << i;
+		string name = "cloud_" + ss.str();
+		ss.str("");
+		list_clouds->addItem(QString::fromStdString(name));
+	}
+		
+	std::cout<<num_clusters<<std::endl;
+}
+
+void SpecificWorker::showObject(QListWidgetItem *item)
+{
+	QString number = item->text();
+	number.remove("cloud_");
+	int num_object = number.toInt();
+	
+	objectdetection_proxy->showObject(num_object);
+}
+
+void SpecificWorker::reset()
+{
+	objectdetection_proxy->reset();
 }
 
 void SpecificWorker::compute( )

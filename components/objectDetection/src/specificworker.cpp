@@ -25,13 +25,14 @@
 
 SpecificWorker::SpecificWorker(MapPrx& mprx) : table(new Table()), box(new RectPrism()),
 GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
-segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), plane_hull(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>)
+segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), plane_hull(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>), 
+euclidean_mutex(new QMutex())
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
 	
 	//let's set the sizes
-	table->set_board_size(1000,20,300);
+	table->set_board_size(1000,10,300);
 	box->set_size(QVec::vec3(57.5, 80.0, 57.5));
 
 	//let's set the ofsets
@@ -44,8 +45,10 @@ segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::Poi
 	box_offset.z = 26;
 	
 	//action flags
-	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = false;
+	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = showOnlyObject_flag = false;
 	
+	//only released when the euclidean cluster is performed
+	euclidean_mutex->lock();
 }
 
 /**
@@ -102,6 +105,16 @@ void SpecificWorker::extractPolygon(const string& model)
 	}
 }
 
+void SpecificWorker::euclideanClustering(int &num_clusters)
+{
+	//release flag to perferorm euclidean clustering
+	euclideanClustering_flag = ! euclideanClustering_flag;
+	
+	//wait for euclidean clustering to be performed
+	euclidean_mutex->lock();
+	num_clusters = cluster_indices.size();
+}
+
 void SpecificWorker::compute( )
 {
 		
@@ -131,7 +144,7 @@ void SpecificWorker::compute( )
 		{
 			table->board_convex_hull(plane_hull, cloud_hull);
 			
-			*this->cloud = *cloud_hull;
+			this->cloud = cloud_hull;
 		}
 		
 		if(extractTablePolygon_flag)
@@ -140,8 +153,30 @@ void SpecificWorker::compute( )
 			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 20, 1500, this->cloud);
 		}
 		
-		drawThePointCloud(this->cloud);
+		if(euclideanClustering_flag)
+		{
+			performEuclideanClustering();
+			euclideanClustering_flag = ! euclideanClustering_flag;
+		}
+		
+		if(showOnlyObject_flag)
+		{
+			drawThePointCloud(cluster_clouds[object_to_show]);
+		}
+		else
+			drawThePointCloud(this->cloud);
 	
+}
+void SpecificWorker::showObject(int object_to_show)
+{
+	this->object_to_show = object_to_show;
+	showOnlyObject_flag = true;
+}
+
+void SpecificWorker::reset()
+{
+	//action flags
+	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = showOnlyObject_flag = false;
 }
 
 void SpecificWorker::fitTheBox()
@@ -339,6 +374,45 @@ void SpecificWorker::fitTheTable()
 	
 }
 
+void SpecificWorker::performEuclideanClustering()
+{
+	pcl::search::KdTree<PointT>::Ptr tree (new pcl::search::KdTree<PointT>);
+  tree->setInputCloud (this->cloud);
+	cluster_indices.clear();
+	cluster_clouds.clear();
+	pcl::EuclideanClusterExtraction<PointT> ec;
+	
+	ec.setClusterTolerance (30); // 2cm
+  ec.setMinClusterSize (100);
+  ec.setMaxClusterSize (25000);
+  ec.setSearchMethod (tree);
+	
+	ec.setInputCloud (this->cloud);
+  ec.extract (cluster_indices);
+	 
+	int j = 0;
+  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
+  {
+    pcl::PointCloud<PointT>::Ptr cloud_cluster (new pcl::PointCloud<PointT>);
+    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); pit++)
+		{
+      cloud_cluster->points.push_back (this->cloud->points[*pit]); //*
+		}
+    cloud_cluster->width = cloud_cluster->points.size ();
+    cloud_cluster->height = 1;
+    cloud_cluster->is_dense = true;
+		
+		//save the cloud at 
+		cluster_clouds.push_back(cloud_cluster);
+		
+    std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
+    std::stringstream ss;
+    ss << "cloud_cluster_" << j << ".pcd";
+    writer.write<PointT> (ss.str (), *cloud_cluster, false); //*
+    j++;
+  }
+  euclidean_mutex->unlock();
+}
 
 void SpecificWorker::updatePointCloud()
 {
@@ -385,10 +459,10 @@ void SpecificWorker::updatePointCloud()
 // 			p22.print("p22");
 // 			first = false;
 		}
-
-		cloud->points[i].x=p22(0);
-		cloud->points[i].y=p22(1);
-		cloud->points[i].z=p22(2);
+			memcpy(&cloud->points[i],p22.data(),3*sizeof(float));
+// 		cloud->points[i].x=p22(0);
+// 		cloud->points[i].y=p22(1);
+// 		cloud->points[i].z=p22(2);
 		cloud->points[i].r=rgbMatrix[i].red;
 		cloud->points[i].g=rgbMatrix[i].green;
 		cloud->points[i].b=rgbMatrix[i].blue;

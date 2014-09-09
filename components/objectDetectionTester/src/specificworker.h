@@ -42,6 +42,9 @@ public slots:
 	void convexHull();
 	void extractPolygon();
 	void ransac_table();
+	void euclidean_clustering();
+	void showObject(QListWidgetItem *item);
+	void reset();
 };
 
 #endif

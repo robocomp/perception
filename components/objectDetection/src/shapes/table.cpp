@@ -26,7 +26,7 @@ Table::Table(const boost::shared_ptr<RectPrism> board): board(new RectPrism())
 
 void Table::get_table_inliers(const pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointCloud<PointT>::Ptr inliers, const pcl::PointIndices::Ptr inliers_indices)
 {
-	std::cout<<"Getting Table Inliers"<<std::endl;
+// 	std::cout<<"Getting Table Inliers"<<std::endl;
 
 	QVec board_center = this->board->get_center();
 	QVec board_rotation = this->board->get_rotation();
@@ -138,7 +138,7 @@ void Table::project_board_inliers(const pcl::PointCloud<PointT>::Ptr cloud, cons
 	
 // 	this->cloud=model_inliers_cloud;
   
-  cout<<"Model inliers!!: "<<inliers_indices->indices.size()<<endl;
+//   cout<<"Model inliers!!: "<<inliers_indices->indices.size()<<endl;
 
 	//Let's project inliers
 	pcl::ProjectInliers<PointT> proj;

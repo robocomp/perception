@@ -66,6 +66,9 @@ public:
 	virtual void  convexHull(const string& model) = 0;
 	virtual void  extractPolygon(const string& model) = 0;
 	virtual void  ransac(const string& model) = 0;
+	virtual void  euclideanClustering(Ice::Int& numClusters) = 0;
+	virtual void  showObject(int numObject) = 0;
+	virtual void  reset() = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:
