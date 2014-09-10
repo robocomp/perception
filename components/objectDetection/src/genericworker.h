@@ -69,6 +69,8 @@ public:
 	virtual void  euclideanClustering(Ice::Int& numClusters) = 0;
 	virtual void  showObject(int numObject) = 0;
 	virtual void  reset() = 0;
+	virtual void  vfh(int numObject) = 0;
+	virtual void  loadVFH() = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:

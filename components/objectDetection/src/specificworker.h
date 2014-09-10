@@ -36,6 +36,9 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/segmentation/extract_clusters.h>
 
+#include <flann/flann.h>
+#include <flann/io/hdf5.h>
+
 #include <innermodel/innermodel.h>
 
 #include "shapes/table.h"
@@ -44,6 +47,8 @@
        \brief
        @author authorname
 */
+
+typedef std::pair<std::string, std::vector<float> > vfh_model;
 
 class AprilTagModel
 {
@@ -121,6 +126,9 @@ public:
 	void euclideanClustering(int &num_clusters);
 	void performEuclideanClustering();
 	void showObject(int object_to_show);
+	
+	void loadVFH();
+	void vfh(int numObject);
 	
 	void reset();
 	

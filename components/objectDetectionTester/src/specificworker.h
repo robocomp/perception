@@ -29,7 +29,7 @@ class SpecificWorker : public GenericWorker
 {
 Q_OBJECT
 public:
-	SpecificWorker(MapPrx& mprx, QObject *parent = 0);	
+	SpecificWorker(MapPrx& mprx, QObject *parent = 0);
 	~SpecificWorker();
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	
@@ -45,6 +45,7 @@ public slots:
 	void euclidean_clustering();
 	void showObject(QListWidgetItem *item);
 	void reset();
+	void loadVFH();
 };
 
 #endif

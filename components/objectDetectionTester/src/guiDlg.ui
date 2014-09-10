@@ -51,7 +51,7 @@
    <property name="orientation">
     <enum>Qt::Vertical</enum>
    </property>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <widget class="QPushButton" name="get_inliers_button">
@@ -175,7 +175,7 @@
   <widget class="QPushButton" name="reset_button">
    <property name="geometry">
     <rect>
-     <x>600</x>
+     <x>590</x>
      <y>280</y>
      <width>75</width>
      <height>23</height>
@@ -192,7 +192,7 @@
     <string>RESET</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>471</x>
@@ -225,13 +225,13 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>520</x>
      <y>50</y>
      <width>111</width>
-     <height>81</height>
+     <height>197</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -245,6 +245,19 @@
      <widget class="QListView" name="listView_3"/>
     </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="load_vfh_button">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>20</y>
+     <width>131</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>(Re)load </string>
+   </property>
   </widget>
  </widget>
  <resources/>

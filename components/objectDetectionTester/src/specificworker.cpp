@@ -34,7 +34,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(ec_button, SIGNAL(clicked()), this, SLOT(euclidean_clustering()));
 	connect(list_clouds, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(showObject(QListWidgetItem*)));
 	connect(reset_button, SIGNAL(clicked()), this, SLOT(reset()));
-	
+	connect(load_vfh_button, SIGNAL(clicked()), this, SLOT(loadVFH()));
 	
 	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
 }
@@ -107,6 +107,11 @@ void SpecificWorker::showObject(QListWidgetItem *item)
 	int num_object = number.toInt();
 	
 	objectdetection_proxy->showObject(num_object);
+}
+
+void SpecificWorker::loadVFH()
+{
+	objectdetection_proxy->loadVFH();
 }
 
 void SpecificWorker::reset()

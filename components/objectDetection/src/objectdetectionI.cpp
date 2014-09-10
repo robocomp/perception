@@ -68,4 +68,12 @@ void objectDetectionI::reset(const Ice::Current&){
 	worker->reset();
 }
 
+void objectDetectionI::vfh(Ice::Int numObject, const Ice::Current&){
+	worker->vfh(numObject);
+}
+
+void objectDetectionI::loadVFH(const Ice::Current&){
+	worker->loadVFH();
+}
+
 
