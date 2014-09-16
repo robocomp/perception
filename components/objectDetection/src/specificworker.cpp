@@ -47,6 +47,8 @@ euclidean_mutex(new QMutex())
 	//action flags
 	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = showOnlyObject_flag = false;
 	
+	saved_counter = 0;
+	
 	//only released when the euclidean cluster is performed
 	euclidean_mutex->lock();
 }
@@ -180,7 +182,7 @@ loadHist (const boost::filesystem::path &path, vfh_model &vfh)
   // Load the file as a PCD
   try
   {
-    pcl::PointCloud<PointT> cloud;
+    pcl::PCLPointCloud2 cloud;
     int version;
     Eigen::Vector4f origin;
     Eigen::Quaternionf orientation;
@@ -258,7 +260,7 @@ void SpecificWorker::loadVFH()
 	std::string model_directory ("/home/robocomp/robocomp/files/objectData/partial_clouds/");
 	
 	// Load the model histograms
-	loadFeatureModels (model_directory, ".pcd", models);
+	loadFeatureModels (model_directory, ".vfh.pcd", models);
   pcl::console::print_highlight ("Loaded %d VFH models. Creating training data %s/%s.\n", 
       (int)models.size (), training_data_h5_file_name.c_str (), training_data_list_file_name.c_str ());
 	
@@ -508,6 +510,20 @@ void SpecificWorker::performEuclideanClustering()
 	ec.setInputCloud (this->cloud);
   ec.extract (cluster_indices);
 	 
+	cv::Mat rgbd_image(480,640, CV_8UC3, cv::Scalar::all(0));
+	
+	//lets transform the image to opencv
+	cout<<rgbMatrix.size()<<endl;
+	for(int i=0; i<rgbMatrix.size(); i++)
+	{
+		std::cout<<"the first one: " <<i<<std::endl;
+		int column = i/480;
+		int row = i-(column*480);
+		
+		rgbd_image.at<cv::Vec3b>(row,column) = cv::Vec3b(255,255,255);
+	}
+	
+	 
 	int j = 0;
   for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
   {
@@ -525,7 +541,57 @@ void SpecificWorker::performEuclideanClustering()
 		
     std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
     std::stringstream ss;
-    ss << "cloud_cluster_" << j << ".pcd";
+    ss <<"capture_"<<saved_counter<< "cloud_cluster_" << j << ".pcd";
+		
+		/////save rgbd 
+		
+		cv::Mat M(480,640,CV_8UC1, cv::Scalar::all(0));
+		for (int i = 0; i<cloud_cluster->points.size(); i++)
+		{
+			QVec xy = innermodel->project("robot", QVec::vec3(cloud_cluster->points[i].x, cloud_cluster->points[i].y, cloud_cluster->points[i].z), "rgbd"); 
+
+			if (xy(0)>=0 and xy(0) < 640 and xy(1)>=0 and xy(1) < 480 )
+			{
+				M.at<uchar> ((int)xy(1), (int)xy(0)) = 255;
+			}
+			else if (not (isinf(xy(1)) or isinf(xy(0))))
+			{
+				std::cout<<"Accediendo a -noinf: "<<xy(1)<<" "<<xy(0)<<std::endl;
+			}
+ 		}
+ 		
+ 		//dilate
+ 		cv::Mat dilated_M, mask;
+
+ 		cv::dilate( M, dilated_M, cv::Mat(), cv::Point(-1, -1), 2, 1, 1 );
+		
+		
+ 		//find contour
+		int thresh = 100;
+		vector<vector<cv::Point> > contours;
+		vector<cv::Vec4i> hierarchy;
+		
+		cv::findContours( dilated_M, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+		
+		  /// Draw contours
+		cv::Mat drawing = cv::Mat::zeros( dilated_M.size(), CV_8UC3 );
+		int contour_index = 1;
+
+// 		cv::Scalar color = cv::Scalar( 0, 255, 0 );
+// 		cv::drawContours( drawing, contours, contour_index, color, 2, 8, hierarchy, 0, cv::Point() );
+		
+		cv::drawContours(mask, contours, -1, cv::Scalar(255, 255, 255), CV_FILLED);
+		
+		cout<<"about to display"<<endl;
+		
+		cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
+    cv::imshow( "Display window", rgbd_image );
+
+		
+		/////save rgbd end
+		
+		saved_counter++;
+		
     writer.write<PointT> (ss.str (), *cloud_cluster, false); //*
     j++;
   }

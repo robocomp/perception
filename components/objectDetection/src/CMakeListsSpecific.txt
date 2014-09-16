@@ -15,3 +15,7 @@ SET ( HEADERS
 
 # pcl
 INCLUDE ($ENV{ROBOCOMP}/cmake/modules/pcl.cmake )
+INCLUDE ($ENV{ROBOCOMP}/cmake/modules/opencv2.cmake )
+
+add_executable (createVFH createVFH.cpp)
+target_link_libraries (createVFH ${PCL_LIBRARIES} ${FLANN_LIBRARIES} ${Boost_LIBRARIES})

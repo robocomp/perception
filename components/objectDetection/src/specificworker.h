@@ -43,6 +43,12 @@
 
 #include "shapes/table.h"
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#define VFH_FILES_EXTENSION ".pcd"
+
 /**
        \brief
        @author authorname
@@ -68,6 +74,8 @@ typedef std::map<int, AprilTagModel> TagModelMap;
 class SpecificWorker : public GenericWorker
 { 
 	pcl::PCDWriter writer;
+	
+	int saved_counter;
 	
 	//table related stuff
 	boost::shared_ptr<Table> table;
