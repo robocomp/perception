@@ -25,15 +25,17 @@
 
 SpecificWorker::SpecificWorker(MapPrx& mprx) : table(new Table()), box(new RectPrism()),
 GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
-segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), plane_hull(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>), 
-euclidean_mutex(new QMutex())
+segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), projected_plane(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>), 
+euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<PointT>)
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
 	
+	viewpoint_transform = innermodel->getTransformationMatrix("robot", "rgbd_t");
+	
 	//let's set the sizes
-	table->set_board_size(1000,10,300);
-	box->set_size(QVec::vec3(57.5, 80.0, 57.5));
+	table->set_board_size(1000,40,300);
+	box->set_size(QVec::vec3(57.5, 20.0, 57.5));
 
 	//let's set the ofsets
 	table_offset.x = -150;
@@ -46,6 +48,7 @@ euclidean_mutex(new QMutex())
 	
 	//action flags
 	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = showOnlyObject_flag = false;
+	normal_segmentation_flag = false;
 	
 	saved_counter = 0;
 	
@@ -107,6 +110,14 @@ void SpecificWorker::extractPolygon(const string& model)
 	}
 }
 
+void SpecificWorker::normalSegmentation(const string& model)
+{
+	if(model=="table")
+	{
+		normal_segmentation_flag = !normal_segmentation_flag;
+	}
+}
+
 void SpecificWorker::euclideanClustering(int &num_clusters)
 {
 	//release flag to perferorm euclidean clustering
@@ -129,9 +140,9 @@ void SpecificWorker::compute( )
 		
 		if(projectTableInliers_flag)
 		{
-			table->project_board_inliers(cloud, model_inliers_indices, plane_hull);
+			table->project_board_inliers(cloud, model_inliers_indices, projected_plane);
 			//update showing cloud
-			*this->cloud = *plane_hull;
+			*this->cloud = *projected_plane;
 		}
 		
 		if(getTableRANSAC_flag)
@@ -144,15 +155,56 @@ void SpecificWorker::compute( )
 		
 		if(tableConvexHull_flag)
 		{
-			table->board_convex_hull(plane_hull, cloud_hull);
-			
+			table->board_convex_hull(projected_plane, cloud_hull);
 			this->cloud = cloud_hull;
 		}
 		
 		if(extractTablePolygon_flag)
 		{
-			RTMat viewpoint_transform = innermodel->getTransformationMatrix("robot", "rgbd_t");
-			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 20, 1500, this->cloud);
+			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 10, 1500, this->cloud);
+		}
+		
+		if(normal_segmentation_flag)
+		{
+			  // Create a search tree, use KDTreee for non-organized data.
+			pcl::search::Search<PointT>::Ptr tree;
+			if (cloud->isOrganized ())
+			{
+				tree.reset (new pcl::search::OrganizedNeighbor<PointT> ());
+			}
+			else
+			{
+				tree.reset (new pcl::search::KdTree<PointT> (false));
+			}
+			
+			normal_estimation.setInputCloud (this->original_cloud);
+			normal_estimation.setSearchMethod (tree);
+			
+			normal_estimation.setViewPoint (viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3));
+			
+			  // calculate normals with the small scale
+			cout << "Calculating normals for scale..." << normal_scale << endl;
+			pcl::PointCloud<pcl::PointNormal>::Ptr normals_small_scale (new pcl::PointCloud<pcl::PointNormal>);
+
+			normal_estimation.setRadiusSearch (normal_scale);
+			normal_estimation.compute (*normals_small_scale);
+			
+			for(pcl::PointCloud<pcl::PointNormal>::iterator it = normals_small_scale->begin (); it != normals_small_scale->end (); ++it)
+			{
+				std::cout<<"Normal: "<<it->x<<" "<<it->y<<" "<<it->z<<std::endl;
+			}
+// 			// Create output cloud for DoN results
+// 			PointCloud<pcl::PointNormal>::Ptr doncloud (new pcl::PointCloud<pcl::PointNormal>);
+// 			pcl::copyPointCloud<PointT, pcl::PointNormal>(*cloud, *doncloud);
+			
+			
+// 			cout << "Calculating DoN... " << endl;
+// 			// Create DoN operator
+// 			pcl::DifferenceOfNormalsEstimation<PointT, pcl::PointNormal, pcl::PointNormal> don;
+// 			don.setInputCloud (this->original_cloud);
+// 			don.setNormalScaleLarge (normals_large_scale);
+// 			don.setNormalScaleSmall (normals_small_scale);
+			
 		}
 		
 		if(euclideanClustering_flag)
@@ -516,11 +568,11 @@ void SpecificWorker::performEuclideanClustering()
 	cout<<rgbMatrix.size()<<endl;
 	for(int i=0; i<rgbMatrix.size(); i++)
 	{
-		std::cout<<"the first one: " <<i<<std::endl;
-		int column = i/480;
-		int row = i-(column*480);
+// 		std::cout<<"the first one: " <<i<<std::endl;
+		int row = i/640;
+		int column = i-(row*640);
 		
-		rgbd_image.at<cv::Vec3b>(row,column) = cv::Vec3b(255,255,255);
+		rgbd_image.at<cv::Vec3b>(row,column) = cv::Vec3b(rgbMatrix[i].blue, rgbMatrix[i].green, rgbMatrix[i].red);
 	}
 	
 	 
@@ -541,7 +593,7 @@ void SpecificWorker::performEuclideanClustering()
 		
     std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
     std::stringstream ss;
-    ss <<"capture_"<<saved_counter<< "cloud_cluster_" << j << ".pcd";
+    ss <<"capture_"<<saved_counter<< "_object_" << j;
 		
 		/////save rgbd 
 		
@@ -561,38 +613,47 @@ void SpecificWorker::performEuclideanClustering()
  		}
  		
  		//dilate
- 		cv::Mat dilated_M, mask;
-
+ 		cv::Mat dilated_M, z;
  		cv::dilate( M, dilated_M, cv::Mat(), cv::Point(-1, -1), 2, 1, 1 );
 		
-		
  		//find contour
-		int thresh = 100;
 		vector<vector<cv::Point> > contours;
 		vector<cv::Vec4i> hierarchy;
 		
 		cv::findContours( dilated_M, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
 		
 		  /// Draw contours
-		cv::Mat drawing = cv::Mat::zeros( dilated_M.size(), CV_8UC3 );
-		int contour_index = 1;
+		cv::Mat mask = cv::Mat::zeros( dilated_M.size(), CV_8UC3 );
+// 		int contour_index = 1;
 
 // 		cv::Scalar color = cv::Scalar( 0, 255, 0 );
 // 		cv::drawContours( drawing, contours, contour_index, color, 2, 8, hierarchy, 0, cv::Point() );
 		
 		cv::drawContours(mask, contours, -1, cv::Scalar(255, 255, 255), CV_FILLED);
 		
+		
+    // let's create a new image now
+    cv::Mat crop(rgbd_image.rows, rgbd_image.cols, CV_8UC3);
+
+    // set background to green
+    crop.setTo(cv::Scalar(255,255,255));
+		
+		rgbd_image.copyTo(crop, mask);
+		
+		normalize(mask.clone(), mask, 0.0, 255.0, CV_MINMAX, CV_8UC1);
+		
 		cout<<"about to display"<<endl;
 		
 		cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
-    cv::imshow( "Display window", rgbd_image );
+    cv::imshow( "Display window", crop );
 
-		
+		cv::imwrite( ss.str() + ".png", crop );
+
 		/////save rgbd end
 		
 		saved_counter++;
 		
-    writer.write<PointT> (ss.str (), *cloud_cluster, false); //*
+    writer.write<PointT> (ss.str () + ".pcd", *cloud_cluster, false); //*
     j++;
   }
   euclidean_mutex->unlock();

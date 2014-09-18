@@ -56,6 +56,10 @@ void objectDetectionI::ransac(const string& model, const Ice::Current&){
 	worker->ransac(model);
 }
 
+void objectDetectionI::normalSegmentation(const string& model, const Ice::Current&){
+	worker->normalSegmentation(model);
+}
+
 void objectDetectionI::euclideanClustering(Ice::Int& numClusters, const Ice::Current&){
 	worker->euclideanClustering(numClusters);
 }

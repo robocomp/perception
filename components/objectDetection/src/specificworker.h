@@ -35,6 +35,8 @@
 #include <pcl/filters/project_inliers.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <pcl/features/don.h>
+
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -46,6 +48,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <pcl/features/normal_3d_omp.h>
 
 #define VFH_FILES_EXTENSION ".pcd"
 
@@ -105,16 +108,25 @@ class SpecificWorker : public GenericWorker
 	
 	//table data
 	pcl::PointIndices::Ptr model_inliers_indices;
-	pcl::PointCloud<PointT>::Ptr plane_hull;
+	pcl::PointCloud<PointT>::Ptr projected_plane;
 	pcl::PointCloud<PointT>::Ptr cloud_hull;
+	pcl::PointCloud<PointT>::Ptr cloud_to_normal_segment;
+	
+	//Normal estimation stuff:
+	pcl::NormalEstimationOMP<PointT, pcl::PointNormal> normal_estimation;
+	static const double normal_scale = 0.03;
+	///The minimum DoN magnitude to threshold by
+  static const double threshold = 0.2;
 	
 	//euclidean clustring
 	std::vector<pcl::PointIndices> cluster_indices;
 	std::vector<pcl::PointCloud<PointT>::Ptr> cluster_clouds;
 	int object_to_show;
 	
+	RTMat viewpoint_transform;
+	
 	//action flags
-	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag, getTableRANSAC_flag, euclideanClustering_flag, showOnlyObject_flag;
+	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag, getTableRANSAC_flag, euclideanClustering_flag, showOnlyObject_flag, normal_segmentation_flag;
 	
 	InnerModel *innermodel;
 	
@@ -130,6 +142,7 @@ public:
 	void projectInliers(const string& model);
 	void convexHull(const string& model);
 	void extractPolygon(const string& model);
+	void normalSegmentation(const string& model);
 	
 	void euclideanClustering(int &num_clusters);
 	void performEuclideanClustering();

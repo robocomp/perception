@@ -46,6 +46,7 @@ public slots:
 	void showObject(QListWidgetItem *item);
 	void reset();
 	void loadVFH();
+	void normal_segmentation();
 };
 
 #endif

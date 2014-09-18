@@ -259,6 +259,19 @@
     <string>(Re)load </string>
    </property>
   </widget>
+  <widget class="QPushButton" name="normal_segmentation_button">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>200</y>
+     <width>91</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>normalSegm</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

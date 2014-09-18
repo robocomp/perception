@@ -35,6 +35,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(list_clouds, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(showObject(QListWidgetItem*)));
 	connect(reset_button, SIGNAL(clicked()), this, SLOT(reset()));
 	connect(load_vfh_button, SIGNAL(clicked()), this, SLOT(loadVFH()));
+	connect(normal_segmentation_button, SIGNAL(clicked()), this, SLOT(normal_segmentation()));
 	
 	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
 }
@@ -77,6 +78,11 @@ void SpecificWorker::convexHull()
 void SpecificWorker::extractPolygon()
 {
  	objectdetection_proxy->extractPolygon("table");
+}
+
+void SpecificWorker::normal_segmentation()
+{
+	objectdetection_proxy->normalSegmentation("table");
 }
 
 void SpecificWorker::fitBox()
