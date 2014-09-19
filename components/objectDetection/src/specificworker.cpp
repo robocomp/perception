@@ -26,7 +26,7 @@
 SpecificWorker::SpecificWorker(MapPrx& mprx) : table(new Table()), box(new RectPrism()),
 GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
 segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), projected_plane(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>), 
-euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<PointT>)
+euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<PointT>), prism_indices (new pcl::PointIndices)
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
@@ -161,50 +161,12 @@ void SpecificWorker::compute( )
 		
 		if(extractTablePolygon_flag)
 		{
-			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 10, 1500, this->cloud);
+			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 30, 1500, prism_indices, this->cloud);
 		}
 		
 		if(normal_segmentation_flag)
 		{
-			  // Create a search tree, use KDTreee for non-organized data.
-			pcl::search::Search<PointT>::Ptr tree;
-			if (cloud->isOrganized ())
-			{
-				tree.reset (new pcl::search::OrganizedNeighbor<PointT> ());
-			}
-			else
-			{
-				tree.reset (new pcl::search::KdTree<PointT> (false));
-			}
-			
-			normal_estimation.setInputCloud (this->original_cloud);
-			normal_estimation.setSearchMethod (tree);
-			
-			normal_estimation.setViewPoint (viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3));
-			
-			  // calculate normals with the small scale
-			cout << "Calculating normals for scale..." << normal_scale << endl;
-			pcl::PointCloud<pcl::PointNormal>::Ptr normals_small_scale (new pcl::PointCloud<pcl::PointNormal>);
-
-			normal_estimation.setRadiusSearch (normal_scale);
-			normal_estimation.compute (*normals_small_scale);
-			
-			for(pcl::PointCloud<pcl::PointNormal>::iterator it = normals_small_scale->begin (); it != normals_small_scale->end (); ++it)
-			{
-				std::cout<<"Normal: "<<it->x<<" "<<it->y<<" "<<it->z<<std::endl;
-			}
-// 			// Create output cloud for DoN results
-// 			PointCloud<pcl::PointNormal>::Ptr doncloud (new pcl::PointCloud<pcl::PointNormal>);
-// 			pcl::copyPointCloud<PointT, pcl::PointNormal>(*cloud, *doncloud);
-			
-			
-// 			cout << "Calculating DoN... " << endl;
-// 			// Create DoN operator
-// 			pcl::DifferenceOfNormalsEstimation<PointT, pcl::PointNormal, pcl::PointNormal> don;
-// 			don.setInputCloud (this->original_cloud);
-// 			don.setNormalScaleLarge (normals_large_scale);
-// 			don.setNormalScaleSmall (normals_small_scale);
-			
+			table->normal_segmentation(this->original_cloud, 30, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)), prism_indices, this->cloud);
 		}
 		
 		if(euclideanClustering_flag)
@@ -643,6 +605,9 @@ void SpecificWorker::performEuclideanClustering()
 		normalize(mask.clone(), mask, 0.0, 255.0, CV_MINMAX, CV_8UC1);
 		
 		cout<<"about to display"<<endl;
+		
+		cv::namedWindow( "Display window2", cv::WINDOW_AUTOSIZE );// Create a window for display.
+    cv::imshow( "Display window2", rgbd_image );
 		
 		cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
     cv::imshow( "Display window", crop );

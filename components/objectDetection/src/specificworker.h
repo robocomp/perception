@@ -111,12 +111,13 @@ class SpecificWorker : public GenericWorker
 	pcl::PointCloud<PointT>::Ptr projected_plane;
 	pcl::PointCloud<PointT>::Ptr cloud_hull;
 	pcl::PointCloud<PointT>::Ptr cloud_to_normal_segment;
+	pcl::PointIndices::Ptr prism_indices;
 	
 	//Normal estimation stuff:
 	pcl::NormalEstimationOMP<PointT, pcl::PointNormal> normal_estimation;
-	static const double normal_scale = 0.03;
+	static const double normal_scale = 60;
 	///The minimum DoN magnitude to threshold by
-  static const double threshold = 0.2;
+//   static const double threshold = 0.2;
 	
 	//euclidean clustring
 	std::vector<pcl::PointIndices> cluster_indices;

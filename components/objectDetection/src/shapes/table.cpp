@@ -158,11 +158,10 @@ void Table::board_convex_hull(const pcl::PointCloud<PointT>::Ptr plane_projected
 	chull.reconstruct(*cloud_hull);
 }
 
-void Table::extract_table_polygon(const pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointCloud<PointT>::Ptr cloud_hull, QVec viewpoint, double height_min, double height_max, const pcl::PointCloud<PointT>::Ptr polygon_cloud)
+void Table::extract_table_polygon(const pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointCloud<PointT>::Ptr cloud_hull, QVec viewpoint, double height_min, double height_max, const pcl::PointIndices::Ptr prism_indices, const pcl::PointCloud<PointT>::Ptr polygon_cloud)
 {
 	
  	pcl::ExtractPolygonalPrismData<PointT> prism_extract;
- 	pcl::PointIndices::Ptr prism_indices (new pcl::PointIndices);
  	
  	prism_extract.setHeightLimits(height_min, height_max);
 	prism_extract.setViewPoint(viewpoint(0), viewpoint(1), viewpoint(2));
@@ -242,4 +241,40 @@ void Table::fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const floa
 	
  	board->set_rotation(plane_rotation);
 	
+}
+
+void Table::normal_segmentation(const pcl::PointCloud<PointT>:: Ptr cloud_to_estimate, const int radius, const QVec viewpoint, const pcl::PointIndices::Ptr prism_indices, const pcl::PointCloud<PointT>::Ptr cloud_output)
+{
+	// Create the normal estimation class, and pass the input dataset to it
+	pcl::NormalEstimation<PointT, pcl::Normal> ne;
+	cloud_output->clear();
+	
+	ne.setInputCloud (cloud_to_estimate);
+
+	// Create an empty kdtree representation, and pass it to the normal estimation object.
+	// Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+	pcl::search::KdTree<PointT>::Ptr tree (new pcl::search::KdTree<PointT> ());
+	ne.setSearchMethod (tree);
+
+	// Output datasets
+	pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
+
+	// Use all neighbors in a sphere of radius 3cm
+	ne.setRadiusSearch (radius);
+	
+	ne.setViewPoint (viewpoint(0), viewpoint(1), viewpoint(2));
+	// Compute the features
+	ne.compute (*cloud_normals);
+	QVec center = board->get_center();
+	for(int i = 0; i < prism_indices->indices.size(); i++)
+	{
+		int index = prism_indices->indices[i];
+		if( cloud_normals->points[index].normal_y < 0.7 || center(1)-cloud_to_estimate->points[index].y > 20)
+		{
+// 					printf( " %f \n", cloud_normals->points[index].normal_y ); 
+			//check if its near the table
+
+			cloud_output->push_back(cloud_to_estimate->points[index]);
+		}
+	}
 }

@@ -11,6 +11,7 @@
 #include <pcl/surface/convex_hull.h>
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 #include <pcl/filters/extract_indices.h>
+#include <pcl/features/normal_3d_omp.h>
 
 typedef pcl::PointXYZRGB PointT;
 
@@ -45,10 +46,14 @@ public:
 	void board_convex_hull(const pcl::PointCloud<PointT>::Ptr plane_projected, const pcl::PointCloud<PointT>::Ptr cloud_hull);
 	
 	//Extract table polygon
-	void extract_table_polygon(const pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointCloud<PointT>::Ptr cloud_hull, QVec viewpoint, double height_min, double height_max, const pcl::PointCloud<PointT>::Ptr polygon_cloud);	
+	void extract_table_polygon(const pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointCloud<PointT>::Ptr cloud_hull, QVec viewpoint, double height_min, double height_max, const pcl::PointIndices::Ptr prism_indices, 
+														 const pcl::PointCloud<PointT>::Ptr polygon_cloud);	
 	
 	//RANSAC to point cloud board
 	void fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const float threshold);
+	
+	//normal segmentation
+	void normal_segmentation(const pcl::PointCloud<PointT>:: Ptr cloud_to_estimate, const int radius, const QVec viewpoint, const pcl::PointIndices::Ptr prism_indices, const pcl::PointCloud<PointT>::Ptr cloud_output);
 	
 	bool check_point_inside(const float x, const float y, const float z) { return board->check_point_inside(QVec::vec3(x,y,z)); }
 	
