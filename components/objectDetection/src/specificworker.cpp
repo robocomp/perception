@@ -34,7 +34,7 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	viewpoint_transform = innermodel->getTransformationMatrix("robot", "rgbd_t");
 	
 	//let's set the sizes
-	table->set_board_size(1000,40,300);
+	table->set_board_size(1000,30,300);
 	box->set_size(QVec::vec3(57.5, 20.0, 57.5));
 
 	//let's set the ofsets
@@ -161,7 +161,7 @@ void SpecificWorker::compute( )
 		
 		if(extractTablePolygon_flag)
 		{
-			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 30, 1500, prism_indices, this->cloud);
+			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 10, 1500, prism_indices, this->cloud);
 		}
 		
 		if(normal_segmentation_flag)
