@@ -161,7 +161,7 @@ void SpecificWorker::compute( )
 		
 		if(extractTablePolygon_flag)
 		{
-			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 10, 1500, prism_indices, this->cloud);
+			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 20, 1500, prism_indices, this->cloud);
 		}
 		
 		if(normal_segmentation_flag)
@@ -616,11 +616,11 @@ void SpecificWorker::performEuclideanClustering()
 
 		/////save rgbd end
 		
-		saved_counter++;
 		
     writer.write<PointT> (ss.str () + ".pcd", *cloud_cluster, false); //*
     j++;
   }
+  saved_counter++;
   euclidean_mutex->unlock();
 }
 

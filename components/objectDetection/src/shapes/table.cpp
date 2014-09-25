@@ -221,9 +221,9 @@ QVec planeCoeffsToTrans(const QVec coefficients, const QVec &initalTrans)
 	float p2 = initalTrans(1);
 	float p3 = initalTrans(2);
 	
-	float y = (-B*C+A*A*p1+A*B*p1)/(-B*B-A*A);
-	float x = (-B*y+C)/A;
-	float z = (-C*y-B*p3+C*p2)/B;
+	float y = (B*C+B*D-A*A*p2+A*B*p1)/(-B*B-A*A);
+	float x = (-B*y-C-D)/A;
+	float z = (-C*y-B*p3+C*p2)/-B;
 	
 	return QVec::vec3(x, y, z);
 }
@@ -248,7 +248,7 @@ void Table::fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const floa
 	seg.setInputCloud (cloud);
 	seg.segment (*inliers, *coefficients);
 	QVec qcoef = QVec::vec3(coefficients->values[0], coefficients->values[1], coefficients->values[2]) * (-1);
-	QVec qcoef_d = QVec::vec4(qcoef(0), qcoef(1), qcoef(2), coefficients->values[3]);
+	QVec qcoef_d = QVec::vec4(coefficients->values[0], coefficients->values[1], coefficients->values[2], coefficients->values[3]);
 	
 	qcoef.print("VECTOR NORMAL: ");
 	
