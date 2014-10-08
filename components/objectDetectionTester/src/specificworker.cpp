@@ -25,7 +25,6 @@
 
 SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mprx)	
 {
-	connect(fit_table_button, SIGNAL(clicked()), this, SLOT(fitTable()));
 	connect(get_inliers_button, SIGNAL(clicked()), this, SLOT(getInliers()));
 	connect(project_inliers_button, SIGNAL(clicked()), this, SLOT(projectInliers()));
 	connect(convex_hull_button, SIGNAL(clicked()), this, SLOT(convexHull()));
@@ -37,7 +36,13 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(load_vfh_button, SIGNAL(clicked()), this, SLOT(loadVFH()));
 	connect(normal_segmentation_button, SIGNAL(clicked()), this, SLOT(normal_segmentation()));
 	
-	connect(fit_box_button, SIGNAL(clicked()), this, SLOT(fitBox()));
+	//april fits
+	connect(april_fit_table_button, SIGNAL(clicked()), this, SLOT(aprilFitTable()));
+	connect(april_fit_box_button, SIGNAL(clicked()), this, SLOT(aprilFitBox()));
+	
+	//fitters
+	connect(fit_prism_button, SIGNAL(clicked()), this, SLOT(fitPrism()));
+	connect(fit_cylinder_button, SIGNAL(clicked()), this, SLOT(fitCylinder()));
 }
 
 /**
@@ -46,11 +51,6 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 SpecificWorker::~SpecificWorker()
 {
 	
-}
-
-void SpecificWorker::fitTable()
-{
-	objectdetection_proxy->setModel2Fit("table");
 }
 
 void SpecificWorker::ransac_table()
@@ -85,10 +85,26 @@ void SpecificWorker::normal_segmentation()
 	objectdetection_proxy->normalSegmentation("table");
 }
 
-void SpecificWorker::fitBox()
+void SpecificWorker::fitPrism()
 {
-	objectdetection_proxy->setModel2Fit("box");
+	objectdetection_proxy->fitModel("prism");
 }
+
+void SpecificWorker::fitCylinder()
+{
+	objectdetection_proxy->fitModel("cylinder");
+}
+
+void SpecificWorker::aprilFitTable()
+{
+	objectdetection_proxy->aprilFitModel("table");
+}
+
+void SpecificWorker::aprilFitBox()
+{
+	objectdetection_proxy->aprilFitModel("box");
+}
+
 void SpecificWorker::euclidean_clustering()
 {
 	int num_clusters;

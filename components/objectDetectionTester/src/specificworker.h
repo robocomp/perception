@@ -35,8 +35,13 @@ public:
 	
 public slots:
  	void compute(); 	
-	void fitBox();
-	void fitTable();
+	
+	void fitPrism();
+	void fitCylinder();
+	
+	void aprilFitTable();
+	void aprilFitBox();
+	
 	void getInliers();
 	void projectInliers();
 	void convexHull();

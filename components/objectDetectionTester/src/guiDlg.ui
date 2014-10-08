@@ -6,37 +6,37 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>704</width>
-    <height>322</height>
+    <width>956</width>
+    <height>301</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="fit_table_button">
+  <widget class="QPushButton" name="april_fit_table_button">
    <property name="geometry">
     <rect>
      <x>20</x>
      <y>60</y>
-     <width>75</width>
+     <width>81</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>fitTable</string>
+    <string>april fit table</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="fit_box_button">
+  <widget class="QPushButton" name="fit_cylinder_button">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>260</y>
-     <width>75</width>
+     <x>680</x>
+     <y>80</y>
+     <width>101</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>fitBox</string>
+    <string>fit cylinder</string>
    </property>
   </widget>
   <widget class="QSplitter" name="splitter">
@@ -159,25 +159,25 @@
     <string>SURF</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_4">
+  <widget class="QPushButton" name="fit_prism_button">
    <property name="geometry">
     <rect>
-     <x>380</x>
-     <y>160</y>
-     <width>75</width>
+     <x>680</x>
+     <y>50</y>
+     <width>101</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>fit</string>
+    <string>fit prism</string>
    </property>
   </widget>
   <widget class="QPushButton" name="reset_button">
    <property name="geometry">
     <rect>
-     <x>590</x>
-     <y>280</y>
-     <width>75</width>
+     <x>370</x>
+     <y>260</y>
+     <width>261</width>
      <height>23</height>
     </rect>
    </property>
@@ -270,6 +270,19 @@
    </property>
    <property name="text">
     <string>normalSegm</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="april_fit_box_button">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>250</y>
+     <width>81</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>april fit box</string>
    </property>
   </widget>
  </widget>

@@ -137,7 +137,8 @@ public:
 	~SpecificWorker();
 	
 	//generic functions
-	void setModel2Fit(const string& model);
+	void aprilFitModel(const string& model);
+	void fitModel(const string& model);
 	void getInliers(const string& model);
 	void ransac(const string& model);
 	void projectInliers(const string& model);
@@ -163,15 +164,15 @@ public:
 	
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	void newAprilTag(const tagsList& tags);
-	
+
 	void updatePointCloud();
 	void doTheAprilTags();
 	
-	void fitTheBox();
+	void aprilFitTheBox();
 	void addTheBox(RoboCompInnerModelManager::Pose3D pose);
 	void updateTheBox(RoboCompInnerModelManager::Pose3D pose);
 	
-	void fitTheTable();
+	void aprilFitTheTable();
 	void drawTheTable();
 	void addTheTable(RoboCompInnerModelManager::Pose3D pose);
 	void updateTheTable(RoboCompInnerModelManager::Pose3D pose);

@@ -64,16 +64,21 @@ SpecificWorker::~SpecificWorker()
 
 }
 
-void SpecificWorker::setModel2Fit(const string& model)
+void SpecificWorker::aprilFitModel(const string& model)
 {
 	if(model=="box")
 	{
-		fitTheBox();
+		aprilFitTheBox();
 	}
 	if(model=="table")
 	{
-		fitTheTable();
+		aprilFitTheTable();
 	}
+}
+
+void SpecificWorker::fitModel(const string& model)
+{
+	
 }
 
 void SpecificWorker::getInliers(const string& model)
@@ -161,7 +166,7 @@ void SpecificWorker::compute( )
 		
 		if(extractTablePolygon_flag)
 		{
-			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 20, 1500, prism_indices, this->cloud);
+			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 15, 1500, prism_indices, this->cloud);
 		}
 		
 		if(normal_segmentation_flag)
@@ -313,8 +318,9 @@ void SpecificWorker::reset()
 	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = showOnlyObject_flag = false;
 }
 
-void SpecificWorker::fitTheBox()
+void SpecificWorker::aprilFitTheBox()
 {
+	
 	//put the box processing here:
 	mutex->lock();
 	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
@@ -433,7 +439,7 @@ void SpecificWorker::drawTheTable()
 // 		updateTheTable(pose);
 }
 
-void SpecificWorker::fitTheTable()
+void SpecificWorker::aprilFitTheTable()
 {
 	//put the box processing here:
 	mutex->lock();
@@ -669,10 +675,10 @@ void SpecificWorker::updatePointCloud()
 // 			p22.print("p22");
 // 			first = false;
 		}
-			memcpy(&cloud->points[i],p22.data(),3*sizeof(float));
-// 		cloud->points[i].x=p22(0);
-// 		cloud->points[i].y=p22(1);
-// 		cloud->points[i].z=p22(2);
+// 			memcpy(&cloud->points[i],p22.data(),3*sizeof(float));
+		cloud->points[i].x=p22(0);
+		cloud->points[i].y=p22(1);
+		cloud->points[i].z=p22(2);
 		cloud->points[i].r=rgbMatrix[i].red;
 		cloud->points[i].g=rgbMatrix[i].green;
 		cloud->points[i].b=rgbMatrix[i].blue;
@@ -682,6 +688,10 @@ void SpecificWorker::updatePointCloud()
 	
 	//lets make a copy to maintain the origianl cloud
 	*original_cloud = *cloud;
+	
+	cloud->width = 1;
+	cloud->height = cloud->points.size();
+	writer.write<PointT> ("out.pcd", *cloud, false);
 	
 	//Downsample the point cloud:
 	

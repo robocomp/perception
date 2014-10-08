@@ -32,8 +32,12 @@ objectDetectionI::~objectDetectionI()
 }
 
 // Component functions, implementation
-void objectDetectionI::setModel2Fit(const string& model, const Ice::Current&){
-	worker->setModel2Fit(model);
+void objectDetectionI::aprilFitModel(const string& model, const Ice::Current&){
+	worker->aprilFitModel(model);
+}
+
+void objectDetectionI::fitModel(const string& model, const Ice::Current&){
+	worker->fitModel(model);
 }
 
 void objectDetectionI::getInliers(const string& model, const Ice::Current&){
