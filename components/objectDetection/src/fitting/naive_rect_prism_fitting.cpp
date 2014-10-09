@@ -47,6 +47,8 @@ void naiveRectangularPrismFitting::initRectangularPrism ()
   //calculate centroid, eigen values and eigen vectors
   pcl::computeMeanAndCovarianceMatrix(*pointCloud2Fit, covariance_matrix, centroid);
   pcl::eigen33(covariance_matrix, eigen_vectors, eigen_values);
+	
+	std::cout<<"To el centroide: "<<centroid(0)<<" "<<centroid(1)<<" "<<centroid(2)<<std::endl;
   
   //calculate ratio to resize the eigen_value 
   float max_distance=0;
@@ -77,6 +79,8 @@ void naiveRectangularPrismFitting::initRectangularPrism ()
   float ry = atan2(-eigen_vectors(2,0),sqrt(pow(eigen_vectors(2,1),2)+pow(eigen_vectors(2,2),2)));
   float rz = atan2(eigen_vectors(1,0),eigen_vectors(0,0));
   shape2Fit->set_rotation(QVec::vec3(rx,ry,rz));
+	
+	*bestFit = *shape2Fit;
 }
 
 void naiveRectangularPrismFitting::captureThreadFunction ()
@@ -141,7 +145,7 @@ float naiveRectangularPrismFitting::computeWeight()
 
 void naiveRectangularPrismFitting::adapt()
 {
-  
+  std::cout<<"adapting"<<std::endl;
   switch(rand()%9)
   {
     //x

@@ -199,31 +199,71 @@ void SpecificWorker::fitPrismtoObject()
 {
 	if(objectSelected_flag)
 	{
-		//insert naive prism if not in innermodel
-		std::cout<<"Drawing the awesome cube"<<std::endl;
-		RoboCompInnerModelManager::meshType prism_mesh;
-		prism_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
-		prism_mesh.pose.x = prism_mesh.pose.y = prism_mesh.pose.z = prism_mesh.pose.rx = prism_mesh.pose.ry = prism_mesh.pose.rz = 10;
-		prism_mesh.scaleX = 1000;
-		prism_mesh.scaleY = 1000; 
-		prism_mesh.scaleZ = 1000; 
-		prism_mesh.render = 1;
-		
-		add_mesh_to_innermodels("prism", "robot", prism_mesh);
- 		boost::shared_ptr<RectPrism> shape(new RectPrism());
+		//init fitter
+		boost::shared_ptr<RectPrism> shape(new RectPrism());
      fitter = new naiveRectangularPrismFitting( cluster_clouds[object_to_show] );
  		
  		boost::function<void (const boost::shared_ptr<RectPrism>&)> f = boost::bind (&SpecificWorker::naive_fit_cb, this, _1);
 		
+		//Insert and draw cube intialization
+		std::cout<<"Drawing the awesome cube"<<std::endl;
+		
+		const boost::shared_ptr<RectPrism> prism_fit = fitter->getBest();
+		
+		QVec translation = prism_fit->get_center();
+		QVec rotation = prism_fit->get_rotation();
+		QVec size = prism_fit->get_size();
+		
+		RoboCompInnerModelManager::meshType prism_mesh;
+		prism_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
+		prism_mesh.pose.x = prism_mesh.pose.y = prism_mesh.pose.z = prism_mesh.pose.rx = prism_mesh.pose.ry = prism_mesh.pose.rz = 0;
+		prism_mesh.scaleX = size(0);
+		prism_mesh.scaleY = size(1); 
+		prism_mesh.scaleZ = size(2);
+		prism_mesh.render = 1;
+		
+		RoboCompInnerModelManager::Pose3D pose;
+		pose.x = translation(0);
+		pose.y = translation(1);
+		pose.z = translation(2);
+		pose.rx = rotation(0);
+		pose.ry = rotation(1);
+		pose.rz = rotation(2);
+		
+		
+		add_transform_to_innermodels("prism_t",  "static", "robot", pose);
+		add_mesh_to_innermodels("prism", "prism_t", prism_mesh);
+		
+		
+// 		fitter->registerCallback (f);
+		
+// 		fitter->start ();
 	}
-	
 }
 
 void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 {
 	//update rectprism
+	std::cout<<"I got called"<<std::endl;
 	
+	QVec translation = shape->get_center();
+	QVec rotation = shape->get_rotation();
+	QVec size = shape->get_size();
 	
+	translation.print("translation");
+	rotation.print("rotation");
+	size.print("size");
+	
+	RoboCompInnerModelManager::Pose3D pose;
+	pose.x = translation(0);
+			pose.y = translation(1);
+			pose.z = translation(2);
+			pose.rx = rotation(0);
+			pose.ry = rotation(1);
+			pose.rz = rotation(2);
+	
+	update_transforms_on_innermodels("prism_t", pose);
+	innermodelmanager_proxy->setScale("prism", size(0), size(1), size(2));
 	
 // 	v->setPose("cube_0_t", shape->getCenter(), shape->getRotation(), shape->getWidth() );
 // 	v->setScale("cube_0", shape->getWidth()(0)/2, shape->getWidth()(1)/2, shape->getWidth()(2)/2);
@@ -1003,7 +1043,7 @@ bool SpecificWorker::add_transform_to_innermodels(const std::string &item, const
 
 bool SpecificWorker::add_mesh_to_innermodels(const std::string &item, const std::string &base, const RoboCompInnerModelManager::meshType &m)
 {
-// 	//ading to local innermodel
+ 	//ading to local innermodel
 	InnerModelNode * parent = innermodel->getNode(QString::fromStdString(base));
 	innermodel->newMesh (
 		QString::fromStdString(item),
