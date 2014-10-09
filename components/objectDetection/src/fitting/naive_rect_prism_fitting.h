@@ -1,7 +1,7 @@
 #ifndef OROL_NAIVE_RECT_PRISM_FITTING
 #define OROL_NAIVE_RECT_PRISM_FITTING
 
-#include <../shapes/basic/rectprism.h>
+#include "../shapes/basic/rectprism.h"
 #include "fitting.h"
 
 #include <boost/thread.hpp>
@@ -15,7 +15,7 @@
   * \ingroup fitting
   */
 
-typedef pcl::PointXYZRGBA PointT;
+typedef pcl::PointXYZRGB PointT;
 
 class naiveRectangularPrismFitting: public fitting
 {
@@ -41,8 +41,8 @@ public:
   bool notAnyDimensionChanged();
   
   //Get and set cloud
-  inline void setCloud (pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud) { pointCloud2Fit=cloud; }
-  inline pcl::PointCloud<pcl::PointXYZRGBA>::Ptr getCloud () { return pointCloud2Fit; }
+  inline void setCloud (pcl::PointCloud<PointT>::Ptr cloud) { pointCloud2Fit=cloud; }
+  inline pcl::PointCloud<PointT>::Ptr getCloud () { return pointCloud2Fit; }
   
   //get and set rectangular prism
   inline void setRectangularPrism (boost::shared_ptr<RectPrism> shape) { shape2Fit=shape; }

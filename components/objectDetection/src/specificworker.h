@@ -44,6 +44,7 @@
 #include <innermodel/innermodel.h>
 
 #include "shapes/table.h"
+#include "fitting/naive_rect_prism_fitting.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -127,9 +128,12 @@ class SpecificWorker : public GenericWorker
 	RTMat viewpoint_transform;
 	
 	//action flags
-	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag, getTableRANSAC_flag, euclideanClustering_flag, showOnlyObject_flag, normal_segmentation_flag;
+	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag, getTableRANSAC_flag, euclideanClustering_flag, objectSelected_flag, normal_segmentation_flag;
 	
 	InnerModel *innermodel;
+	
+	//fitter
+	naiveRectangularPrismFitting* fitter;
 	
 Q_OBJECT
 public:
@@ -139,6 +143,8 @@ public:
 	//generic functions
 	void aprilFitModel(const string& model);
 	void fitModel(const string& model);
+	void fitPrismtoObject();
+	void naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape);
 	void getInliers(const string& model);
 	void ransac(const string& model);
 	void projectInliers(const string& model);

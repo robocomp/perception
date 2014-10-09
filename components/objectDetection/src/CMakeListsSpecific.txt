@@ -5,6 +5,7 @@ SET ( SOURCES
   specificmonitor.cpp
   shapes/basic/rectprism.cpp
   shapes/table.cpp
+  fitting/naive_rect_prism_fitting.cpp
 )
 
 # Headers set

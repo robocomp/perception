@@ -47,7 +47,7 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	box_offset.z = 26;
 	
 	//action flags
-	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = showOnlyObject_flag = false;
+	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = objectSelected_flag = false;
 	normal_segmentation_flag = false;
 	
 	saved_counter = 0;
@@ -78,7 +78,8 @@ void SpecificWorker::aprilFitModel(const string& model)
 
 void SpecificWorker::fitModel(const string& model)
 {
-	
+	if(model=="prism")
+		fitPrismtoObject();
 }
 
 void SpecificWorker::getInliers(const string& model)
@@ -180,7 +181,7 @@ void SpecificWorker::compute( )
 			euclideanClustering_flag = ! euclideanClustering_flag;
 		}
 		
-		if(showOnlyObject_flag)
+		if(objectSelected_flag)
 		{
 			drawThePointCloud(cluster_clouds[object_to_show]);
 		}
@@ -191,7 +192,44 @@ void SpecificWorker::compute( )
 void SpecificWorker::showObject(int object_to_show)
 {
 	this->object_to_show = object_to_show;
-	showOnlyObject_flag = true;
+	objectSelected_flag = true;
+}
+
+void SpecificWorker::fitPrismtoObject()
+{
+	if(objectSelected_flag)
+	{
+		//insert naive prism if not in innermodel
+		std::cout<<"Drawing the awesome cube"<<std::endl;
+		RoboCompInnerModelManager::meshType prism_mesh;
+		prism_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
+		prism_mesh.pose.x = prism_mesh.pose.y = prism_mesh.pose.z = prism_mesh.pose.rx = prism_mesh.pose.ry = prism_mesh.pose.rz = 10;
+		prism_mesh.scaleX = 1000;
+		prism_mesh.scaleY = 1000; 
+		prism_mesh.scaleZ = 1000; 
+		prism_mesh.render = 1;
+		
+		add_mesh_to_innermodels("prism", "robot", prism_mesh);
+ 		boost::shared_ptr<RectPrism> shape(new RectPrism());
+     fitter = new naiveRectangularPrismFitting( cluster_clouds[object_to_show] );
+ 		
+ 		boost::function<void (const boost::shared_ptr<RectPrism>&)> f = boost::bind (&SpecificWorker::naive_fit_cb, this, _1);
+		
+	}
+	
+}
+
+void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
+{
+	//update rectprism
+	
+	
+	
+// 	v->setPose("cube_0_t", shape->getCenter(), shape->getRotation(), shape->getWidth() );
+// 	v->setScale("cube_0", shape->getWidth()(0)/2, shape->getWidth()(1)/2, shape->getWidth()(2)/2);
+// 	
+// 	v->setPose("cube_best_t", fitter->getBest()->getCenter(), fitter->getBest()->getRotation(), fitter->getBest()->getWidth() );
+// 	v->setScale("cube_best", fitter->getBest()->getWidth()(0)/2, fitter->getBest()->getWidth()(1)/2, fitter->getBest()->getWidth()(2)/2);
 }
 
 bool
@@ -315,7 +353,7 @@ void SpecificWorker::vfh(int numObject)
 void SpecificWorker::reset()
 {
 	//action flags
-	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = showOnlyObject_flag = false;
+	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = objectSelected_flag = false;
 }
 
 void SpecificWorker::aprilFitTheBox()

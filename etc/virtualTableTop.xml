@@ -6,7 +6,7 @@
 				<pointcloud id="cloud" /> 
 				<translation id="pechote" ty="1077">
 					<translation id="pescuezo" ty="300">
-						<rotation id="cuellopabajo" rx="0.47">
+						<rotation id="cuellopabajo" rx="0.43">
 							<translation id="rgbd_t">
 								<rgbd id="rgbd" focal="525" width="640" height="480" port="10096" />
 							</translation>
@@ -38,7 +38,7 @@
 		</transform>
 		
 		<transform id="mesaT" tx="0" ty="810"  tz="1000" >
-			<transform id="aprilmesa" ty="-60" tz="-300">
+			<transform id="aprilmesa" ty="-60" tz="-300" tx="500">
 				<plane id="mesa" ny="-1" size="108,-139.5,5" texture="/home/robocomp/robocomp/files/innermodel/tar36h11-0-50.png" />
 			</transform>
 			<mesh id="table" file="/home/robocomp/robocomp/files/osgModels/mobiliario/mes_comedor.osg" scale="100" rx="1.57"  ty="-800" />
