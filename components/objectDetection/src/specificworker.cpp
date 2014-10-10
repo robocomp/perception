@@ -235,9 +235,9 @@ void SpecificWorker::fitPrismtoObject()
 		add_mesh_to_innermodels("prism", "prism_t", prism_mesh);
 		
 		
-// 		fitter->registerCallback (f);
+		fitter->registerCallback (f);
 		
-// 		fitter->start ();
+		fitter->start ();
 	}
 }
 
@@ -245,6 +245,8 @@ void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 {
 	//update rectprism
 	std::cout<<"I got called"<<std::endl;
+	
+	
 	
 	QVec translation = shape->get_center();
 	QVec rotation = shape->get_rotation();
@@ -262,6 +264,8 @@ void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 			pose.ry = rotation(1);
 			pose.rz = rotation(2);
 	
+	std::cout<<"Best weight: "<<fitter->getBestWeight()<<std::endl;
+			
 	update_transforms_on_innermodels("prism_t", pose);
 	innermodelmanager_proxy->setScale("prism", size(0), size(1), size(2));
 	

@@ -54,6 +54,8 @@ public:
   //do a step of the naive_fitting
   void adapt();
   
+	inline float getBestWeight () { return bestweight; }
+	
 protected:
   void initRectangularPrism ();
   void captureThreadFunction ();

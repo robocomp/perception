@@ -134,7 +134,9 @@ float naiveRectangularPrismFitting::computeWeight()
 
     //double dist = shape2Fit->distance(point,normal);
     double dist = shape2Fit->distance(point);
+// 		std::cout<<dist<<std::endl;
     weight += dist*dist;
+// 		std::cout<<weight<<std::endl;
     //normalint++;
   }
   
@@ -146,44 +148,44 @@ float naiveRectangularPrismFitting::computeWeight()
 void naiveRectangularPrismFitting::adapt()
 {
   std::cout<<"adapting"<<std::endl;
-  switch(rand()%9)
+//   switch(rand()%9)
   {
-    //x
-    case 0:
-      incTranslation(0);
-      break;
-    //y
-    case 1:
-      incTranslation(1);
-      break;
-    //z
-    case 2:
-      incTranslation(2);
-      break;
-    //Wx
-    case 3:
+//     //x
+//     case 0:
+//       incTranslation(0);
+//       break;
+//     //y
+//     case 1:
+//       incTranslation(1);
+//       break;
+//     //z
+//     case 2:
+//       incTranslation(2);
+//       break;
+//     //Wx
+//     case 3:
       incWidth(0);
-      break;
-    //Wy
-    case 4:
-      incWidth(1);
-      break;  
-    //Wz
-    case 5:
-      incWidth(2);
-      break;
-    //Rx
-    case 6:
-      incRotation(0);
-      break;
-    //Ry
-    case 7:
-      incRotation(1);
-      break;
-    //Rz
-    case 8:
-      incRotation(2);
-      break;       
+//       break;
+//     //Wy
+//     case 4:
+//       incWidth(1);
+//       break;  
+//     //Wz
+//     case 5:
+//       incWidth(2);
+//       break;
+//     //Rx
+//     case 6:
+//       incRotation(0);
+//       break;
+//     //Ry
+//     case 7:
+//       incRotation(1);
+//       break;
+//     //Rz
+//     case 8:
+//       incRotation(2);
+//       break; 
   }
 }
 
