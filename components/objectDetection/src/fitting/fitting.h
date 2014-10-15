@@ -17,7 +17,7 @@ public:
       
   inline bool isRunning () { return running; }
   
-  inline void start () { std::cout<<"lets get the party started!"<<std::endl; running=true; }
+  inline void start () { running=true; }
   inline void stop () { running=false; }
   
   template<typename T> boost::signals2::connection registerCallback (const boost::function<T> & callback);
@@ -82,7 +82,6 @@ fitting::registerCallback (const boost::function<T> & callback)
   connections[typeid (T).name ()].push_back (ret);
   shared_connections[typeid (T).name ()].push_back (boost::signals2::shared_connection_block (connections[typeid (T).name ()].back (), false));
  //signalsChanged ();
-	std::cout<<"Callback registered"<<std::endl;
   return (ret);
 }
 

@@ -1,5 +1,5 @@
-#ifndef OROL_NAIVE_RECT_PRISM_FITTING
-#define OROL_NAIVE_RECT_PRISM_FITTING
+#ifndef OROL_MCMC_RECT_PRISM_FITTING
+#define OROL_MCMC_RECT_PRISM_FITTING
 
 #include "../shapes/basic/rectprism.h"
 #include "fitting.h"
@@ -10,14 +10,14 @@
 #include <pcl/common/transforms.h>
 #include <pcl/features/normal_3d.h>
 
-/** \brief Fitting for rectangular prism
+/** \brief Marcov Chain Montecarlo fitting for rectangular prism
   * \author Marco A. Gutierrez <marcog@unex.es>
   * \ingroup fitting
   */
 
 typedef pcl::PointXYZRGB PointT;
 
-class naiveRectangularPrismFitting: public fitting
+class mcmcRectangularPrismFitting: public fitting
 {
   // Define callback signature typedefs
   typedef void (sig_cb_fitting_addapt) (const boost::shared_ptr<RectPrism>&);
@@ -30,36 +30,44 @@ class naiveRectangularPrismFitting: public fitting
   boost::thread captured_thread;
   mutable boost::mutex capture_mutex;
   boost::signals2::signal<sig_cb_fitting_addapt>* fitting_signal;
-  bool dimensionChanged[9];
   float MAX_WIDTH;
+
+  //Random variance variables
+  QVec varianceC;
+  QVec varianceS;
+  QVec varianceR;
   
 public:
-  naiveRectangularPrismFitting ( pcl::PointCloud<PointT>::Ptr cloud );
-  
-  //For dimension changing checking
-  void initDimensionChanged();
-  bool notAnyDimensionChanged();
-  
+  mcmcRectangularPrismFitting ( pcl::PointCloud<PointT>::Ptr cloud, QVec C, QVec S, QVec R );
   //Get and set cloud
-  inline void setCloud (pcl::PointCloud<PointT>::Ptr cloud) { pointCloud2Fit=cloud; }
-  inline pcl::PointCloud<PointT>::Ptr getCloud () { return pointCloud2Fit; }
-  
+  inline void setCloud (pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud) { cout<<"setcloud"<<endl; pointCloud2Fit=cloud; }
+  inline pcl::PointCloud<pcl::PointXYZRGBA>::Ptr getCloud () { return pointCloud2Fit; }
   //get and set rectangular prism
   inline void setRectangularPrism (boost::shared_ptr<RectPrism> shape) { shape2Fit=shape; }
+  
   inline boost::shared_ptr<RectPrism> getRectangularPrism () { return shape2Fit; }
   inline boost::shared_ptr<RectPrism> getBest () { return bestFit; }
   
+  inline void setVarianceCenter (QVec varianceC) { this->varianceC=varianceC; }
+  inline QVec getVarianceCenter () { return varianceC; }
+  
+  inline void setVarianceScale (QVec varianceS) { this->varianceS=varianceS; }
+  inline QVec getVarianceSize () { return varianceS; }
+  
+  inline void setVarianceRotation (QVec varianceR) { this->varianceR=varianceR; }
+  inline QVec getVarianceRotation () { return varianceR; }
+  
   //calcualte weight of the cloud and rectangular prism fitting
   float computeWeight();
-  //do a step of the naive_fitting
+  //do a step of the mcmc_fitting
   void adapt();
   
 protected:
   void initRectangularPrism ();
   void captureThreadFunction ();
-  void incTranslation (int index);
-  void incWidth (int index);
-  void incRotation (int index);
+  void MarkovChainStepOnAll();
+  void MarkovChainStepOnOne();
+  float getRandom(float var);
   
 };
 

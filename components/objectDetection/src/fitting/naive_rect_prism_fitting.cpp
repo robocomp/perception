@@ -47,8 +47,6 @@ void naiveRectangularPrismFitting::initRectangularPrism ()
   //calculate centroid, eigen values and eigen vectors
   pcl::computeMeanAndCovarianceMatrix(*pointCloud2Fit, covariance_matrix, centroid);
   pcl::eigen33(covariance_matrix, eigen_vectors, eigen_values);
-	
-	std::cout<<"To el centroide: "<<centroid(0)<<" "<<centroid(1)<<" "<<centroid(2)<<std::endl;
   
   //calculate ratio to resize the eigen_value 
   float max_distance=0;
@@ -79,8 +77,6 @@ void naiveRectangularPrismFitting::initRectangularPrism ()
   float ry = atan2(-eigen_vectors(2,0),sqrt(pow(eigen_vectors(2,1),2)+pow(eigen_vectors(2,2),2)));
   float rz = atan2(eigen_vectors(1,0),eigen_vectors(0,0));
   shape2Fit->set_rotation(QVec::vec3(rx,ry,rz));
-	
-	*bestFit = *shape2Fit;
 }
 
 void naiveRectangularPrismFitting::captureThreadFunction ()
@@ -134,9 +130,7 @@ float naiveRectangularPrismFitting::computeWeight()
 
     //double dist = shape2Fit->distance(point,normal);
     double dist = shape2Fit->distance(point);
-// 		std::cout<<dist<<std::endl;
     weight += dist*dist;
-// 		std::cout<<weight<<std::endl;
     //normalint++;
   }
   
@@ -147,45 +141,45 @@ float naiveRectangularPrismFitting::computeWeight()
 
 void naiveRectangularPrismFitting::adapt()
 {
-  std::cout<<"adapting"<<std::endl;
-//   switch(rand()%9)
+  
+  switch(rand()%9)
   {
-//     //x
-//     case 0:
-//       incTranslation(0);
-//       break;
-//     //y
-//     case 1:
-//       incTranslation(1);
-//       break;
-//     //z
-//     case 2:
-//       incTranslation(2);
-//       break;
-//     //Wx
-//     case 3:
+    //x
+    case 0:
+      incTranslation(0);
+      break;
+    //y
+    case 1:
+      incTranslation(1);
+      break;
+    //z
+    case 2:
+      incTranslation(2);
+      break;
+    //Wx
+    case 3:
       incWidth(0);
-//       break;
-//     //Wy
-//     case 4:
-//       incWidth(1);
-//       break;  
-//     //Wz
-//     case 5:
-//       incWidth(2);
-//       break;
-//     //Rx
-//     case 6:
-//       incRotation(0);
-//       break;
-//     //Ry
-//     case 7:
-//       incRotation(1);
-//       break;
-//     //Rz
-//     case 8:
-//       incRotation(2);
-//       break; 
+      break;
+    //Wy
+    case 4:
+      incWidth(1);
+      break;  
+    //Wz
+    case 5:
+      incWidth(2);
+      break;
+    //Rx
+    case 6:
+      incRotation(0);
+      break;
+    //Ry
+    case 7:
+      incRotation(1);
+      break;
+    //Rz
+    case 8:
+      incRotation(2);
+      break;       
   }
 }
 
