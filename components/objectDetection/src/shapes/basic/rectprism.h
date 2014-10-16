@@ -33,7 +33,6 @@ class RectPrism
 public:
   RectPrism();
   RectPrism(const QVec &center, const QVec &rotation, double Wx, double Wy, double Wz);
-  static double distance_p2p (double x1, double y1, double z1, double x2, double y2, double z2);
   inline const QVec get_center () { return center; }
   inline const QVec get_rotation () { return rotation; }
   inline const QVec get_size () { return QVec::vec3(Wx,Wy,Wz); }
@@ -42,14 +41,16 @@ public:
   inline void set_rotation ( const QVec  rotation ) { this->rotation=rotation; }
   inline void set_size ( const QVec Width ) { this->Wx=Width(0);this->Wy=Width(1);this->Wz=Width(2); }
   
-  bool check_point_inside(const QVec point);
-  
   QVec placePoint(const QVec &point);
+  QVec rotateNormal(const QVec &point);
+  double getInternalDistance(const QVec point, const QVec normal);
   uint8_t collisionVector(const QVec &point);
   
   double distance(const QVec &point);
   
 private:
+  void naiveIncRotation(int index);
+	
   QVec center;
   QVec rotation;
   double Wx, Wy, Wz;

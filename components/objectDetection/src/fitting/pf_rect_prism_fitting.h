@@ -3,12 +3,12 @@
 #include "rect_prism_cloud_particle.h"
 #include "fitting.h"
 
-typedef pcl::PointXYZRGBA PointT;
+typedef pcl::PointXYZRGB PointT;
 
 class PfRectPrismFitting: public fitting
 {
 	// Define callback signature typedefs
-	typedef void (sig_cb_fitting_addapt) (RectPrism);
+	typedef void (sig_cb_fitting_addapt) (const boost::shared_ptr<RectPrism>&);
 
 	boost::thread captured_thread;
 	mutable boost::mutex capture_mutex;
@@ -22,7 +22,10 @@ public:
 	void setPointCloud(  pcl::PointCloud<PointT>::Ptr cloud) { cloud2Fit=*cloud; }
 	float getRandom(float var);
 	inline double getRandom() { return (double(rand())/RAND_MAX); }
-	inline RectPrism getBestFit() { return bestParticle.getRectPrism(); }
+	inline  boost::shared_ptr<RectPrism> getBest() { boost::shared_ptr<RectPrism> rp(new RectPrism());
+		*rp=bestParticle.getRectPrism(); 
+		return rp; }
+		
 	inline RectPrismCloudParticle getBestParticle() { return bestParticle; }
 
 private:

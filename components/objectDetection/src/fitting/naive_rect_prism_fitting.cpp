@@ -76,7 +76,7 @@ void naiveRectangularPrismFitting::initRectangularPrism ()
   float rx = atan2(eigen_vectors(2,1), eigen_vectors(2,2));
   float ry = atan2(-eigen_vectors(2,0),sqrt(pow(eigen_vectors(2,1),2)+pow(eigen_vectors(2,2),2)));
   float rz = atan2(eigen_vectors(1,0),eigen_vectors(0,0));
-  shape2Fit->set_rotation(QVec::vec3(rx,ry,rz));
+//   shape2Fit->set_rotation(QVec::vec3(rx,ry,rz));
 }
 
 void naiveRectangularPrismFitting::captureThreadFunction ()
@@ -142,14 +142,14 @@ float naiveRectangularPrismFitting::computeWeight()
 void naiveRectangularPrismFitting::adapt()
 {
   
-//   switch(rand()%9)
+  switch(rand()%9)
   {
     //x
-//     case 0:
+    case 0:
       incTranslation(0);
-//       break;
+      break;
     //y
-/*    case 1:
+    case 1:
       incTranslation(1);
       break;
     //z
@@ -179,7 +179,7 @@ void naiveRectangularPrismFitting::adapt()
     //Rz
     case 8:
       incRotation(2);
-      break;*/       
+      break;       
   }
 }
 
@@ -209,7 +209,7 @@ void naiveRectangularPrismFitting::incTranslation(int index)
   
   computeWeight();
   
-    cout<<"positive: "<<positiveWeight<<" negative: "<<negativeWeight<<endl;
+//     cout<<"positive: "<<positiveWeight<<" negative: "<<negativeWeight<<endl;
   //if negative is good go with it
   if(negativeWeight<positiveWeight)
   {
@@ -224,10 +224,10 @@ void naiveRectangularPrismFitting::incTranslation(int index)
   else
     dimensionChanged[index]=false;
   
-  cout<<"Transformed: "<<transformedWeight<<" weight: "<<weight<<endl;
+//   cout<<"Transformed: "<<transformedWeight<<" weight: "<<weight<<endl;
   while(transformedWeight<weight)
   {
-    cout<<"INCT: "<<inc<<endl;
+//     cout<<"INCT: "<<inc<<endl;
     auxvec(index)=auxvec(index)+inc;
     shape2Fit->set_center(auxvec);
     weight=transformedWeight;

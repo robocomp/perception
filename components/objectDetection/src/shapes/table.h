@@ -55,8 +55,6 @@ public:
 	//normal segmentation
 	void normal_segmentation(const pcl::PointCloud<PointT>:: Ptr cloud_to_estimate, const int radius, const QVec viewpoint, const pcl::PointIndices::Ptr prism_indices, const pcl::PointCloud<PointT>::Ptr cloud_output);
 	
-	bool check_point_inside(const float x, const float y, const float z) { return board->check_point_inside(QVec::vec3(x,y,z)); }
-	
 	
 //   static double distance_p2p (double x1, double y1, double z1, double x2, double y2, double z2);
 //   inline const QVec getCenter () { return center; }

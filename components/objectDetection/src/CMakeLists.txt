@@ -13,7 +13,8 @@ SET ( SOURCES
   ${SOURCES}
   objectdetectioncomp.cpp
   objectdetectionI.cpp
-	apriltagsI.cpp
+apriltagsI.cpp
+
   genericmonitor.cpp
   commonbehaviorI.cpp
   genericworker.cpp
@@ -25,7 +26,7 @@ SET ( SOURCES
 SET ( HEADERS
   ${HEADERS}
   objectdetectionI.h
-	apriltagsI.h
+apriltagsI.h
 
   genericmonitor.h
   commonbehaviorI.h
@@ -49,5 +50,5 @@ QT4_WRAP_CPP( MOC_SOURCES ${HEADERS} )
 
 # Specify construction and link process
 ADD_EXECUTABLE( objectdetectioncomp ${SOURCES} ${MOC_SOURCES} ${RC_SOURCES} ${UI_HEADERS} )
-TARGET_LINK_LIBRARIES( objectdetectioncomp ${QT_LIBRARIES} ${LIBS} ${STATIC_LIBS} ${SPECIFIC_LIBS} -lhdf5)
+TARGET_LINK_LIBRARIES( objectdetectioncomp ${QT_LIBRARIES} ${LIBS} ${STATIC_LIBS} ${SPECIFIC_LIBS})
 INSTALL(FILES ${EXECUTABLE_OUTPUT_PATH}/objectdetectioncomp DESTINATION /opt/robocomp/bin/ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )

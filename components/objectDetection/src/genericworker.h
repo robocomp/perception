@@ -61,7 +61,7 @@ public:
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;
 	virtual void  aprilFitModel(const string& model) = 0;
-	virtual void  fitModel(const string& model) = 0;
+	virtual void  fitModel(const string& model, const string& method) = 0;
 	virtual void  getInliers(const string& model) = 0;
 	virtual void  projectInliers(const string& model) = 0;
 	virtual void  convexHull(const string& model) = 0;

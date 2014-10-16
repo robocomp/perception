@@ -11,11 +11,11 @@
 #include <pcl/features/normal_3d.h>
 
 #include "particle_filter/particle_filter.h"
-#include "../shapes/rectprism.h"
+#include "../shapes/basic/rectprism.h"
 
 #include <qmat/QMatAll>
 
-typedef pcl::PointXYZRGBA PointT;
+typedef pcl::PointXYZRGB PointT;
 
 class RectPrismCloudPFInputData
 {

@@ -58,11 +58,11 @@ void PfRectPrismFitting::captureThreadFunction()
     if(running)
     {
       pf->step(input, 0, false, -1);
-      bestParticle=pf->getBest();
+//       bestParticle=pf->getBest();
       
       // Check for shape slots
       if (num_slots<sig_cb_fitting_addapt> () > 0 )
-        fitting_signal->operator() (getBestFit ());
+        fitting_signal->operator() (getBest ());
     }
     capture_lock.unlock ();
   }

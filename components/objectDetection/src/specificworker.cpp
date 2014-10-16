@@ -76,10 +76,14 @@ void SpecificWorker::aprilFitModel(const string& model)
 	}
 }
 
-void SpecificWorker::fitModel(const string& model)
+void SpecificWorker::fitModel(const string& model, const string& method)
 {
 	if(model=="prism")
-		fitPrismtoObject();
+		if(method=="naive")
+			fitPrismtoObjectNaive();
+		else
+			if(method=="pf")
+				fitPrismtoObjectPf();
 }
 
 void SpecificWorker::getInliers(const string& model)
@@ -194,21 +198,28 @@ void SpecificWorker::showObject(int object_to_show)
 	this->object_to_show = object_to_show;
 	objectSelected_flag = true;
 }
-
-void SpecificWorker::fitPrismtoObject()
+void SpecificWorker::fitPrismtoObjectPf()
 {
 	if(objectSelected_flag)
 	{
+		//using the synthethic instead:
+// 		pcl::PointCloud<PointT>::Ptr thecloud = generate_sinthetic_cube();
+// 		std::cout<<thecloud->points.size()<<std::cout;
+// 		drawThePointCloud(thecloud);
 		//init fitter
 		boost::shared_ptr<RectPrism> shape(new RectPrism());
-     fitter = new naiveRectangularPrismFitting( cluster_clouds[object_to_show] );
+		
+		pf_fitter = new PfRectPrismFitting( 200, cluster_clouds[object_to_show] );
+		 
+// 		boost::shared_ptr<RectPrism> shape(new RectPrism());
+//      pf_fitter = new naiveRectangularPrismFitting( thecloud );
  		
  		boost::function<void (const boost::shared_ptr<RectPrism>&)> f = boost::bind (&SpecificWorker::naive_fit_cb, this, _1);
 		
 		//Insert and draw cube intialization
 		std::cout<<"Drawing the awesome cube"<<std::endl;
 		
-		const boost::shared_ptr<RectPrism> prism_fit = fitter->getBest();
+		const boost::shared_ptr<RectPrism> prism_fit = pf_fitter->getBest();
 		
 		QVec translation = prism_fit->get_center();
 		QVec rotation = prism_fit->get_rotation();
@@ -217,9 +228,9 @@ void SpecificWorker::fitPrismtoObject()
 		RoboCompInnerModelManager::meshType prism_mesh;
 		prism_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
 		prism_mesh.pose.x = prism_mesh.pose.y = prism_mesh.pose.z = prism_mesh.pose.rx = prism_mesh.pose.ry = prism_mesh.pose.rz = 0;
-		prism_mesh.scaleX = size(0);
-		prism_mesh.scaleY = size(1); 
-		prism_mesh.scaleZ = size(2);
+		prism_mesh.scaleX = size(0)/2;
+		prism_mesh.scaleY = size(1)/2; 
+		prism_mesh.scaleZ = size(2)/2;
 		prism_mesh.render = 1;
 		
 		RoboCompInnerModelManager::Pose3D pose;
@@ -235,10 +246,124 @@ void SpecificWorker::fitPrismtoObject()
 		add_mesh_to_innermodels("prism", "prism_t", prism_mesh);
 		
 		
-		fitter->registerCallback (f);
+		pf_fitter->registerCallback (f);
 		
-		fitter->start ();
+		pf_fitter->start ();
 	}
+}
+
+void SpecificWorker::fitPrismtoObjectNaive()
+{
+	if(objectSelected_flag)
+	{
+		//using the synthethic instead:
+// 		pcl::PointCloud<PointT>::Ptr thecloud = generate_sinthetic_cube();
+// 		std::cout<<thecloud->points.size()<<std::cout;
+// 		drawThePointCloud(thecloud);
+		//init fitter
+		boost::shared_ptr<RectPrism> shape(new RectPrism());
+		
+		naive_fitter = new naiveRectangularPrismFitting( cluster_clouds[object_to_show] );
+		 
+// 		boost::shared_ptr<RectPrism> shape(new RectPrism());
+//      naive_fitter = new naiveRectangularPrismFitting( thecloud );
+ 		
+ 		boost::function<void (const boost::shared_ptr<RectPrism>&)> f = boost::bind (&SpecificWorker::naive_fit_cb, this, _1);
+		
+		//Insert and draw cube intialization
+		std::cout<<"Drawing the awesome cube"<<std::endl;
+		
+		const boost::shared_ptr<RectPrism> prism_fit = naive_fitter->getBest();
+		
+		QVec translation = prism_fit->get_center();
+		QVec rotation = prism_fit->get_rotation();
+		QVec size = prism_fit->get_size();
+		
+		RoboCompInnerModelManager::meshType prism_mesh;
+		prism_mesh.meshPath = "/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds";
+		prism_mesh.pose.x = prism_mesh.pose.y = prism_mesh.pose.z = prism_mesh.pose.rx = prism_mesh.pose.ry = prism_mesh.pose.rz = 0;
+		prism_mesh.scaleX = size(0)/2;
+		prism_mesh.scaleY = size(1)/2; 
+		prism_mesh.scaleZ = size(2)/2;
+		prism_mesh.render = 1;
+		
+		RoboCompInnerModelManager::Pose3D pose;
+		pose.x = translation(0);
+		pose.y = translation(1);
+		pose.z = translation(2);
+		pose.rx = rotation(0);
+		pose.ry = rotation(1);
+		pose.rz = rotation(2);
+		
+		
+		add_transform_to_innermodels("prism_t",  "static", "robot", pose);
+		add_mesh_to_innermodels("prism", "prism_t", prism_mesh);
+		
+		
+		naive_fitter->registerCallback (f);
+		
+		naive_fitter->start ();
+	}
+}
+
+pcl::PointCloud<PointT>::Ptr SpecificWorker::generate_sinthetic_cube(const int tx, const int ty, const int tz, const int Wx, const int Wy, const int Wz, const int res)
+{
+	pcl::PointCloud<PointT>::Ptr cloud(new pcl::PointCloud<PointT>);
+
+  //Rot3D r(0.5, 0.2, 0.2);
+  //Faces front and back
+  for(float x=tx; x<=Wx; x=x+res)
+  {
+    for(float y=ty; y<=Wx; y=y+res)
+    {
+      //face front (x=0)
+      pcl::PointXYZRGB p;
+      p.x = x;
+      p.y = y;
+      p.z = tz;
+      cloud->push_back(p);
+      p.x = x;
+      p.y = y;
+      p.z = Wz;      
+      cloud->push_back(p);
+    }
+  }
+  //Faces up and down
+  for(float x=tx; x<=Wx; x=x+res)
+  {
+    for(float z=tz; z<=Wz; z=z+res)
+    {
+      //face front (x=0)
+      pcl::PointXYZRGB p;
+      p.x = x;
+      p.y = ty;
+      p.z = z;
+      cloud->push_back(p);
+      p.x = x;
+      p.y = Wy;
+      p.z = z;      
+      cloud->push_back(p);
+    }
+  }
+  //Faces right and left
+  for(float y=ty; y<=Wy; y=y+res)
+  {
+    for(float z=tz; z<=Wz; z=z+res)
+    {
+      //face front (x=0)
+      pcl::PointXYZRGB p;
+      p.x = tx;
+      p.y = y;
+      p.z = z;
+      cloud->push_back(p);
+      p.x = Wx;
+      p.y = y;
+      p.z = z;      
+      cloud->push_back(p);
+    }
+  }
+  
+  return cloud;
 }
 
 void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
@@ -311,7 +436,7 @@ void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 // 	std::cout<<"Best weight: "<<fitter->getBestWeight()<<std::endl;
 			
 	update_transforms_on_innermodels("prism_t", pose);
-	innermodelmanager_proxy->setScale("prism", size(0), size(1), size(2));
+	innermodelmanager_proxy->setScale("prism", size(0)/2, size(1)/2, size(2)/2);
 	
 // 	v->setPose("cube_0_t", shape->getCenter(), shape->getRotation(), shape->getWidth() );
 // 	v->setScale("cube_0", shape->getWidth()(0)/2, shape->getWidth()(1)/2, shape->getWidth()(2)/2);

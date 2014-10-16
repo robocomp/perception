@@ -44,6 +44,7 @@
 #include <innermodel/innermodel.h>
 
 #include "shapes/table.h"
+#include "fitting/pf_rect_prism_fitting.h"
 #include "fitting/naive_rect_prism_fitting.h"
 
 #include <opencv2/core/core.hpp>
@@ -133,7 +134,8 @@ class SpecificWorker : public GenericWorker
 	InnerModel *innermodel;
 	
 	//fitter
-	naiveRectangularPrismFitting* fitter;
+	naiveRectangularPrismFitting* naive_fitter;
+	PfRectPrismFitting* pf_fitter;
 	
 Q_OBJECT
 public:
@@ -142,8 +144,10 @@ public:
 	
 	//generic functions
 	void aprilFitModel(const string& model);
-	void fitModel(const string& model);
-	void fitPrismtoObject();
+	void fitModel(const string& model, const string& method);
+	void fitPrismtoObjectNaive();
+	void fitPrismtoObjectMCMC();
+	void fitPrismtoObjectPf();
 	void naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape);
 	void getInliers(const string& model);
 	void ransac(const string& model);
@@ -160,6 +164,9 @@ public:
 	void vfh(int numObject);
 	
 	void reset();
+	
+	//generate a sinthetic cube
+	pcl::PointCloud<PointT>::Ptr generate_sinthetic_cube(const int tx=0, const int ty=0, const int tz=0, const int Wx = 1000, const int Wy = 1000, const int Wz = 1000, const int res = 30);
 	
 	//utils
 	static void threePointsToPlane (const PointT &point_a, 

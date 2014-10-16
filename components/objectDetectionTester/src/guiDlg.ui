@@ -30,7 +30,7 @@
    <property name="geometry">
     <rect>
      <x>680</x>
-     <y>80</y>
+     <y>180</y>
      <width>101</width>
      <height>23</height>
     </rect>
@@ -159,17 +159,17 @@
     <string>SURF</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="fit_prism_button">
+  <widget class="QPushButton" name="fit_prism_naive_button">
    <property name="geometry">
     <rect>
      <x>680</x>
      <y>50</y>
-     <width>101</width>
+     <width>121</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>fit prism</string>
+    <string>fit prism (NAIVE)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="reset_button">
@@ -283,6 +283,32 @@
    </property>
    <property name="text">
     <string>april fit box</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="fit_prism_mcmc_button">
+   <property name="geometry">
+    <rect>
+     <x>680</x>
+     <y>80</y>
+     <width>121</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>fit prism (MCMC)</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="fit_prism_pf_button">
+   <property name="geometry">
+    <rect>
+     <x>680</x>
+     <y>110</y>
+     <width>121</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>fit prism (PF)</string>
    </property>
   </widget>
  </widget>

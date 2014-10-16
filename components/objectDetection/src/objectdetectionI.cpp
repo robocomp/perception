@@ -36,8 +36,8 @@ void objectDetectionI::aprilFitModel(const string& model, const Ice::Current&){
 	worker->aprilFitModel(model);
 }
 
-void objectDetectionI::fitModel(const string& model, const Ice::Current&){
-	worker->fitModel(model);
+void objectDetectionI::fitModel(const string& model, const string& method, const Ice::Current&){
+	worker->fitModel(model,method);
 }
 
 void objectDetectionI::getInliers(const string& model, const Ice::Current&){

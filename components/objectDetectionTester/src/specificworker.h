@@ -36,7 +36,9 @@ public:
 public slots:
  	void compute(); 	
 	
-	void fitPrism();
+	void fitPrismNaive();
+	void fitPrismMCMC();
+	void fitPrismPf();
 	void fitCylinder();
 	
 	void aprilFitTable();

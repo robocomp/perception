@@ -29,7 +29,7 @@
 			</transform> <!-- cambiocoordenadas -->
 		</differentialrobot> <!--base -->						
 	<transform id="tabletop" tz="100">
-		<transform id="target" tx="350" ty="750" tz="800" ry="0.7">
+		<transform id="target" tx="350" ty="750" tz="900" ry="0.7">
 			<transform id="aprilTransform" rx="1.57" tz="-100" ty="100">
 				<plane id="C1_6" ny="-1" size="108,-139.5,5" texture="/home/robocomp/robocomp/files/innermodel/tar36h11-3-50.png" />
 <!-- 				<plane id="C1_6" ny="1" size="216,-279,2" texture="/home/robocomp/robocomp/files/innermodel/tar36h11-3-50.png" /> -->

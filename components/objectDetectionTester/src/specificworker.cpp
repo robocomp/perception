@@ -41,7 +41,9 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(april_fit_box_button, SIGNAL(clicked()), this, SLOT(aprilFitBox()));
 	
 	//fitters
-	connect(fit_prism_button, SIGNAL(clicked()), this, SLOT(fitPrism()));
+	connect(fit_prism_naive_button, SIGNAL(clicked()), this, SLOT(fitPrismNaive()));
+	connect(fit_prism_mcmc_button, SIGNAL(clicked()), this, SLOT(fitPrismMCMC()));
+	connect(fit_prism_pf_button, SIGNAL(clicked()), this, SLOT(fitPrismPf()));
 	connect(fit_cylinder_button, SIGNAL(clicked()), this, SLOT(fitCylinder()));
 }
 
@@ -85,14 +87,25 @@ void SpecificWorker::normal_segmentation()
 	objectdetection_proxy->normalSegmentation("table");
 }
 
-void SpecificWorker::fitPrism()
+void SpecificWorker::fitPrismNaive()
 {
-	objectdetection_proxy->fitModel("prism");
+	objectdetection_proxy->fitModel("prism", "naive");
 }
+
+void SpecificWorker::fitPrismMCMC()
+{
+	objectdetection_proxy->fitModel("prism", "mcmc");
+}
+
+void SpecificWorker::fitPrismPf()
+{
+	objectdetection_proxy->fitModel("prism", "pf");
+}
+
 
 void SpecificWorker::fitCylinder()
 {
-	objectdetection_proxy->fitModel("cylinder");
+	objectdetection_proxy->fitModel("cylinder", "naive");
 }
 
 void SpecificWorker::aprilFitTable()

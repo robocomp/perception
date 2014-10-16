@@ -3,9 +3,9 @@
 #
 # This property is used to configure the endpoints of the subscriber adapter.
 #
-CommonBehavior.Endpoints=tcp -p 12217
+CommonBehavior.Endpoints=tcp -p 12223
 
 # Remote servers proxies example
 #RemoteProxy = remote:tcp -h remotehost -p 10001
 
-objectDetectionProxy = objectdetection:tcp -h localhost -p 12216
+objectDetectionProxy = objectdetection:tcp -h localhost -p 12224
