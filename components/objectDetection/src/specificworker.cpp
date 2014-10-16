@@ -244,25 +244,69 @@ void SpecificWorker::fitPrismtoObject()
 void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 {
 	//update rectprism
-	std::cout<<"I got called"<<std::endl;
+  static int tick = 0;
+
+  printf("\n------ Tick %d\n", tick++);
+  QVec rotation = shape->get_rotation();
+  
+  
+  //FIRST ROTATION: X
+  RTMat rx = RTMat(rotation(0),0, 0, QVec::vec3(0,0,0));
+  
+  rx.print("Rx: ");
+  
+  //SECOND ROTATION: Y
+  QVec y_prima = rx.getR().transpose()*QVec::vec3(0,1,0);
+  
+  y_prima.print("y_prima: ");
+    
+  Eigen::Vector3f k_vector1(y_prima(0),y_prima(1),y_prima(2));
+  Eigen::Affine3f rotate1 = (Eigen::Affine3f) Eigen::AngleAxisf(rotation(1), k_vector1);
+  
+  RTMat rotate1_rtmat;
+  rotate1_rtmat(0,0)=rotate1(0,0);  rotate1_rtmat(0,1)=rotate1(0,1);  rotate1_rtmat(0,2)= rotate1(0,2); rotate1_rtmat(0,3)= rotate1(0,3);
+  rotate1_rtmat(1,0)=rotate1(1,0);  rotate1_rtmat(1,1)=rotate1(1,1);  rotate1_rtmat(1,2)= rotate1(1,2); rotate1_rtmat(1,3)= rotate1(1,3);
+  rotate1_rtmat(2,0)=rotate1(2,0);  rotate1_rtmat(2,1)=rotate1(2,1);  rotate1_rtmat(2,2)= rotate1(2,2); rotate1_rtmat(2,3)= rotate1(2,3);
+  rotate1_rtmat(3,0)=rotate1(3,0);  rotate1_rtmat(3,1)=rotate1(3,1);  rotate1_rtmat(3,2)= rotate1(3,2); rotate1_rtmat(3,3)= rotate1(3,3);
+  
+  RTMat rx_y = rx*rotate1_rtmat;
+  
+  rx_y.print("rx_y_mat: ");
+  
+  rx_y.extractAnglesR().print("rx_y");
+  
+  //THIRD ROTATION: Z
+  QVec z_prima = rx_y.getR().transpose()*QVec::vec3(0,0,1);
+  
+  z_prima.print("z_prima: ");
+  
+  Eigen::Vector3f k_vector2(z_prima(0),z_prima(1),z_prima(2));
+  Eigen::Affine3f rotate2 = (Eigen::Affine3f) Eigen::AngleAxisf(rotation(2), k_vector2);
+  
+  RTMat rotate2_rtmat;
+  rotate2_rtmat(0,0)=rotate2(0,0);  rotate2_rtmat(0,1)=rotate2(0,1);  rotate2_rtmat(0,2)= rotate2(0,2); rotate2_rtmat(0,3)= rotate2(0,3);
+  rotate2_rtmat(1,0)=rotate2(1,0);  rotate2_rtmat(1,1)=rotate2(1,1);  rotate2_rtmat(1,2)= rotate2(1,2); rotate2_rtmat(1,3)= rotate2(1,3);
+  rotate2_rtmat(2,0)=rotate2(2,0);  rotate2_rtmat(2,1)=rotate2(2,1);  rotate2_rtmat(2,2)= rotate2(2,2); rotate2_rtmat(2,3)= rotate2(2,3);
+  rotate2_rtmat(3,0)=rotate2(3,0);  rotate2_rtmat(3,1)=rotate2(3,1);  rotate2_rtmat(3,2)= rotate2(3,2); rotate2_rtmat(3,3)= rotate2(3,3);
+  
+  RTMat rotationresult = rx_y*rotate2_rtmat;
+  rotationresult.print("rotationresult: ");
+    
+  QVec anglesresult = rotationresult.extractAnglesR();
+  
+  
+  QVec center = shape->get_center();
 	
-	
-	
-	QVec translation = shape->get_center();
-	QVec rotation = shape->get_rotation();
 	QVec size = shape->get_size();
 	
-	translation.print("translation");
-	rotation.print("rotation");
-	size.print("size");
 	
 	RoboCompInnerModelManager::Pose3D pose;
-	pose.x = translation(0);
-			pose.y = translation(1);
-			pose.z = translation(2);
-			pose.rx = rotation(0);
-			pose.ry = rotation(1);
-			pose.rz = rotation(2);
+	pose.x = center(0);
+			pose.y = center(1);
+			pose.z = center(2);
+			pose.rx = anglesresult(0);
+			pose.ry = anglesresult(1);
+			pose.rz = anglesresult(2);
 	
 // 	std::cout<<"Best weight: "<<fitter->getBestWeight()<<std::endl;
 			
