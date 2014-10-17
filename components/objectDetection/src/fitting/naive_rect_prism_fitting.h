@@ -48,6 +48,7 @@ public:
   inline void setRectangularPrism (boost::shared_ptr<RectPrism> shape) { shape2Fit=shape; }
   inline boost::shared_ptr<RectPrism> getRectangularPrism () { return shape2Fit; }
   inline boost::shared_ptr<RectPrism> getBest () { return bestFit; }
+  inline float getBestWeight () { return bestweight; }
   
   //calcualte weight of the cloud and rectangular prism fitting
   float computeWeight();

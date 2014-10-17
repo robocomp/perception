@@ -258,7 +258,7 @@ void SpecificWorker::fitPrismtoObjectNaive()
 	{
 		//using the synthethic instead:
 // 		pcl::PointCloud<PointT>::Ptr thecloud = generate_sinthetic_cube();
-// 		std::cout<<thecloud->points.size()<<std::cout;
+// 		std::cout<<thecloud->points.size()<<std::endl;
 // 		drawThePointCloud(thecloud);
 		//init fitter
 		boost::shared_ptr<RectPrism> shape(new RectPrism());
@@ -433,7 +433,7 @@ void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 			pose.ry = anglesresult(1);
 			pose.rz = anglesresult(2);
 	
-// 	std::cout<<"Best weight: "<<fitter->getBestWeight()<<std::endl;
+// 	std::cout<<"Best weight: "<<naive_fitter->getBestWeight()<<std::endl;
 			
 	update_transforms_on_innermodels("prism_t", pose);
 	innermodelmanager_proxy->setScale("prism", size(0)/2, size(1)/2, size(2)/2);
