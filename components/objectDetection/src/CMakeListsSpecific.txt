@@ -6,6 +6,7 @@ SET ( SOURCES
   shapes/basic/rectprism.cpp
   shapes/table.cpp
   fitting/naive_rect_prism_fitting.cpp
+  fitting/rect_prism_cloud_particle.cpp
   fitting/pf_rect_prism_fitting.cpp
 )
 

@@ -95,16 +95,16 @@ void RectPrismCloudParticle::initializeFromEigenValues(const RectPrismCloudPFInp
 //   float ratio=max_eigenvalue/max_distance;
   
   //set initial values for the rectangular prism
-  r.setCenter(QVec::vec3(centroid(0), centroid(1), centroid(2)));
-  r.setWidth(QVec::vec3((eigen_values(0)/max_eigenvalue)*max_distance,(eigen_values(1)/max_eigenvalue)*max_distance,(eigen_values(2)/max_eigenvalue)*max_distance));
+  r.set_center(QVec::vec3(centroid(0), centroid(1), centroid(2)));
+  r.set_size(QVec::vec3((eigen_values(0)/max_eigenvalue)*max_distance,(eigen_values(1)/max_eigenvalue)*max_distance,(eigen_values(2)/max_eigenvalue)*max_distance));
 
-//   shape2Fit->setCenter(QVec::vec3(440,0,0));
-//   shape2Fit->setWidth(QVec::vec3(100,100,400));
+//   shape2Fit->set_center(QVec::vec3(440,0,0));
+//   shape2Fit->set_size(QVec::vec3(100,100,400));
   
   float rx = atan2(eigen_vectors(2,1), eigen_vectors(2,2));
   float ry = atan2(-eigen_vectors(2,0),sqrt(pow(eigen_vectors(2,1),2)+pow(eigen_vectors(2,2),2)));
   float rz = atan2(eigen_vectors(1,0),eigen_vectors(0,0));
-  r.setRotation(QVec::vec3(rx,ry,rz));
+  r.set_rotation(QVec::vec3(rx,ry,rz));
 
 }
 
@@ -116,14 +116,14 @@ void RectPrismCloudParticle::initialize(const RectPrismCloudPFInputData &data, c
 void RectPrismCloudParticle::adapt(const int &controlBack, const int &controlNew, const bool noValidCandidates)
 {
   
-  QVec currentCenter = r.getCenter();
-  QVec currentWidth = r.getWidth();
-  QVec currentRotation = r.getRotation();
+  QVec currentCenter = r.get_center();
+  QVec currentWidth = r.get_size();
+  QVec currentRotation = r.get_rotation();
   
   
-  r.setCenter(QVec::vec3(currentCenter(0)+getRandom(varianceC(0)), currentCenter(1)+getRandom(varianceC(1)), currentCenter(2)+getRandom(varianceC(2))));
-  r.setWidth(QVec::vec3(currentWidth(0)+getRandom(varianceW(0)), currentWidth(1)+getRandom(varianceW(1)), currentWidth(2)+getRandom(varianceW(2))));
-  r.setRotation(QVec::vec3(currentRotation(0)+getRandom(varianceR(0)), currentRotation(1)+getRandom(varianceR(1)), currentRotation(2)+getRandom(varianceR(2))));
+  r.set_center(QVec::vec3(currentCenter(0)+getRandom(varianceC(0)), currentCenter(1)+getRandom(varianceC(1)), currentCenter(2)+getRandom(varianceC(2))));
+  r.set_size(QVec::vec3(currentWidth(0)+getRandom(varianceW(0)), currentWidth(1)+getRandom(varianceW(1)), currentWidth(2)+getRandom(varianceW(2))));
+  r.set_rotation(QVec::vec3(currentRotation(0)+getRandom(varianceR(0)), currentRotation(1)+getRandom(varianceR(1)), currentRotation(2)+getRandom(varianceR(2))));
    
   float annealing = 0.96;
   varianceC = varianceC.operator*(annealing);
@@ -159,17 +159,17 @@ RectPrismCloudParticle::~RectPrismCloudParticle()
 
 QVec RectPrismCloudParticle::getTranslation()
 {
-  return r.getCenter();
+  return r.get_center();
 }
 
 QVec RectPrismCloudParticle::getRotation()
 {
-  return r.getRotation();
+  return r.get_rotation();
 }
 
 QVec RectPrismCloudParticle::getScale()
 {
-  return r.getWidth();
+  return r.get_size();
 }
 
 float RectPrismCloudParticle::getRandom(float var)
@@ -181,9 +181,9 @@ float RectPrismCloudParticle::getRandom(float var)
 
 void RectPrismCloudParticle::setRectPrism (RectPrism r )
 {
-  this->r.setCenter ( r.getCenter() );
-  this->r.setRotation ( r.getRotation() );
-  this->r.setWidth ( r.getWidth() );
+  this->r.set_center ( r.get_center() );
+  this->r.set_rotation ( r.get_rotation() );
+  this->r.set_size ( r.get_size() );
   
 }
 
@@ -191,7 +191,7 @@ void RectPrismCloudParticle::print(std::string v)
 {
   printf("%s: \n", v.c_str());
   printf("RectPrism: Center (%f,%f,%f), Rotation (%f,%f,%f), Width (%f,%f,%f), Weight: %f\n", 
-   r.getCenter()(0),r.getCenter()(1),r.getCenter()(2),
-   r.getRotation()(0),r.getRotation()(1),r.getRotation()(2),
-   r.getWidth()(0),r.getWidth()(1),r.getWidth()(2), weight);
+   r.get_center()(0),r.get_center()(1),r.get_center()(2),
+   r.get_rotation()(0),r.get_rotation()(1),r.get_rotation()(2),
+   r.get_size()(0),r.get_size()(1),r.get_size()(2), weight);
 }   
