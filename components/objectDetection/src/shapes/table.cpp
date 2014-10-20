@@ -247,6 +247,7 @@ void Table::fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const floa
 	
 	seg.setInputCloud (cloud);
 	seg.segment (*inliers, *coefficients);
+	plane_coeff = QVec::vec4(coefficients->values[0], coefficients->values[1], coefficients->values[2], coefficients->values[3]);
 	QVec qcoef = QVec::vec3(coefficients->values[0], coefficients->values[1], coefficients->values[2]) * (-1);
 	QVec qcoef_d = QVec::vec4(coefficients->values[0], coefficients->values[1], coefficients->values[2], coefficients->values[3]);
 	

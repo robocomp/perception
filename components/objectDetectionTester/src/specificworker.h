@@ -36,6 +36,7 @@ public:
 public slots:
  	void compute(); 	
 	
+	void mirror();
 	void fitPrismNaive();
 	void fitPrismMCMC();
 	void fitPrismPf();

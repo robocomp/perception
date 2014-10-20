@@ -52,6 +52,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <pcl/features/normal_3d_omp.h>
 
+#include "tabletop_symmetry/mindGapper.h"
+
 #define VFH_FILES_EXTENSION ".pcd"
 
 /**
@@ -155,6 +157,8 @@ public:
 	void convexHull(const string& model);
 	void extractPolygon(const string& model);
 	void normalSegmentation(const string& model);
+	
+	void mirrorPC();
 	
 	void euclideanClustering(int &num_clusters);
 	void performEuclideanClustering();

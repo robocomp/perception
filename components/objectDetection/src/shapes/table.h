@@ -19,7 +19,8 @@ using namespace std;
 
 class Table
 {
-  
+  QVec plane_coeff;
+	
 public:
 	
 	Table();
@@ -36,6 +37,8 @@ public:
 	inline QVec get_board_size () { return board->get_size(); }
 	inline QVec get_board_center () { return board->get_center(); }
 	inline QVec get_board_rotation () { return board->get_rotation(); }
+	
+	inline QVec get_plane_coeff () { return plane_coeff; }
 	
 	void get_table_inliers(const pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointCloud<PointT>::Ptr inliers, const pcl::PointIndices::Ptr inliers_indices);
 	

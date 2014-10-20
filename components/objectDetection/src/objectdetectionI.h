@@ -37,7 +37,8 @@ Q_OBJECT
 public:
 	objectDetectionI( GenericWorker *_worker, QObject *parent = 0 );
 	~objectDetectionI();
-	void  aprilFitModel(const string& model, const Ice::Current& = Ice::Current());
+	void  mirrorPC(const Ice::Current& = Ice::Current());
+void  aprilFitModel(const string& model, const Ice::Current& = Ice::Current());
 void  fitModel(const string& model, const string& method, const Ice::Current& = Ice::Current());
 void  getInliers(const string& model, const Ice::Current& = Ice::Current());
 void  projectInliers(const string& model, const Ice::Current& = Ice::Current());

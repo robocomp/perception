@@ -8,6 +8,8 @@ SET ( SOURCES
   fitting/naive_rect_prism_fitting.cpp
   fitting/rect_prism_cloud_particle.cpp
   fitting/pf_rect_prism_fitting.cpp
+  tabletop_symmetry/mindGapper.cpp
+  tabletop_symmetry/dt/dt.cpp
 )
 
 # Headers set
@@ -18,6 +20,7 @@ SET ( HEADERS
 
 # pcl
 INCLUDE ($ENV{ROBOCOMP}/cmake/modules/pcl.cmake )
+# opencv2
 INCLUDE ($ENV{ROBOCOMP}/cmake/modules/opencv2.cmake )
 
 add_executable (createVFH createVFH.cpp)

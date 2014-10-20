@@ -32,6 +32,10 @@ objectDetectionI::~objectDetectionI()
 }
 
 // Component functions, implementation
+void objectDetectionI::mirrorPC(const Ice::Current&){
+	worker->mirrorPC();
+}
+
 void objectDetectionI::aprilFitModel(const string& model, const Ice::Current&){
 	worker->aprilFitModel(model);
 }

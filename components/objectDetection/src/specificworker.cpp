@@ -198,6 +198,36 @@ void SpecificWorker::showObject(int object_to_show)
 	this->object_to_show = object_to_show;
 	objectSelected_flag = true;
 }
+
+void SpecificWorker::mirrorPC()
+{
+	if(objectSelected_flag)
+	{
+		mindGapper mindgapper;
+		mindgapper.setFittingParams();
+		mindgapper.setDeviceParams();
+		
+		QVec plane_coeff = table->get_plane_coeff();
+		std::vector<double> plane_coeff_std;
+		plane_coeff_std.resize(4);
+		plane_coeff_std[0] = plane_coeff(0);
+		plane_coeff_std[1] = plane_coeff(1);
+		plane_coeff_std[2] = plane_coeff(2);
+		plane_coeff_std[3] = plane_coeff(3);
+		mindgapper.setTablePlane( plane_coeff_std );
+		
+		std::cout<<"About to complete"<<std::endl;
+		
+		int candidate = mindgapper.complete(cluster_clouds[object_to_show]);
+		
+		std::cout<<"Completed best candidate: "<<candidate<<std::endl;
+		
+		mindgapper.viewMirror(candidate);
+		
+ 	  writer.write<PointT> ("completed.pcd", *cluster_clouds[object_to_show], false); //*
+	}
+}
+
 void SpecificWorker::fitPrismtoObjectPf()
 {
 	if(objectSelected_flag)

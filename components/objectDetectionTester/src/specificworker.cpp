@@ -45,6 +45,9 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(fit_prism_mcmc_button, SIGNAL(clicked()), this, SLOT(fitPrismMCMC()));
 	connect(fit_prism_pf_button, SIGNAL(clicked()), this, SLOT(fitPrismPf()));
 	connect(fit_cylinder_button, SIGNAL(clicked()), this, SLOT(fitCylinder()));
+	
+	//mirror
+	connect(mirror_pc_button, SIGNAL(clicked()), this, SLOT(mirror()));
 }
 
 /**
@@ -65,6 +68,11 @@ void SpecificWorker::ransac_table()
 void SpecificWorker::getInliers()
 {
 	objectdetection_proxy->getInliers("table");
+}
+
+void SpecificWorker::mirror()
+{
+	objectdetection_proxy->mirrorPC();
 }
 
 void SpecificWorker::projectInliers()

@@ -311,6 +311,19 @@
     <string>fit prism (PF)</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="mirror_pc_button">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>230</y>
+     <width>131</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Mirror the PC</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
