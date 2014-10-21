@@ -52,6 +52,7 @@ class mindGapper {
   bool viewMirror( int _ind );
   void printMirror( int _ind );
   pcl::PointCloud<PointT>::Ptr getCandidate(int _ind) { return mCandidates[_ind]; }
+  inline int getNumCandidates() { return mCandidates.size(); }
   bool viewInitialParameters();
 
  private:

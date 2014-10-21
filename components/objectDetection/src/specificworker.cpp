@@ -26,7 +26,7 @@
 SpecificWorker::SpecificWorker(MapPrx& mprx) : table(new Table()), box(new RectPrism()),
 GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
 segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), projected_plane(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>), 
-euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<PointT>), prism_indices (new pcl::PointIndices)
+euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<PointT>), prism_indices (new pcl::PointIndices), vfh_matcher(new VFH())
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
@@ -208,6 +208,7 @@ void SpecificWorker::mirrorPC()
 		mindgapper.setDeviceParams();
 		
 		QVec plane_coeff = table->get_plane_coeff();
+		plane_coeff.print("plane_coeff");
 		std::vector<double> plane_coeff_std;
 		plane_coeff_std.resize(4);
 		plane_coeff_std[0] = plane_coeff(0);
@@ -216,13 +217,44 @@ void SpecificWorker::mirrorPC()
 		plane_coeff_std[3] = plane_coeff(3);
 		mindgapper.setTablePlane( plane_coeff_std );
 		
-		std::cout<<"About to complete"<<std::endl;
-		
 		int candidate = mindgapper.complete(cluster_clouds[object_to_show]);
+		
+		
+		
+// 		pcl::PointCloud<PointT>::Ptr cl (new pcl::PointCloud<PointT>);
+// 		
+// 		QMat PP = innermodel->getTransformationMatrix("rgbd_t", "robot");
+// 		
+// 		cl->points.resize(cluster_clouds[object_to_show]->points.size());
+// 
+// 		for (unsigned int i=0; i<cluster_clouds[object_to_show]->points.size(); i++)
+// 		{
+// 			QVec p1 = QVec::vec4(cluster_clouds[object_to_show]->points[i].x, cluster_clouds[object_to_show]->points[i].y, cluster_clouds[object_to_show]->points[i].z, 1);
+// 			QVec p2 = PP * p1;
+// 			QVec p22 = p2.fromHomogeneousCoordinates();
+// 
+// // 	// 			memcpy(&cloud->points[i],p22.data(),3*sizeof(float));
+// 			cl->points[i].x=p22(0);
+// 			cl->points[i].y=p22(1);
+// 			cl->points[i].z=p22(2);
+// 			cl->points[i].r=cluster_clouds[object_to_show]->points[i].r;
+// 			cl->points[i].g=cluster_clouds[object_to_show]->points[i].g;
+// 			cl->points[i].b=cluster_clouds[object_to_show]->points[i].b;
+// 		}
+// // 	std::vector< int > index;
+// // 	removeNaNFromPointCloud (*cloud, *cloud, index);
+// // 	
+// // 	//lets make a copy to maintain the origianl cloud
+// // 	*original_cloud = *cloud;
+// // 	
+// 	cl->width = 1;
+// 	cl->height = cluster_clouds[object_to_show]->points.size();
+// 	writer.write<PointT> ("box.pcd", *cl, false);
 		
 		std::cout<<"Completed best candidate: "<<candidate<<std::endl;
 		
-		mindgapper.viewMirror(candidate);
+// 		for(int i = 0; i < mindgapper.getNumCandidates(); i ++)
+// 			mindgapper.viewMirror(i);
 		
  	  writer.write<PointT> ("completed.pcd", *cluster_clouds[object_to_show], false); //*
 	}
@@ -475,117 +507,9 @@ void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 // 	v->setScale("cube_best", fitter->getBest()->getWidth()(0)/2, fitter->getBest()->getWidth()(1)/2, fitter->getBest()->getWidth()(2)/2);
 }
 
-bool
-loadHist (const boost::filesystem::path &path, vfh_model &vfh)
-{
-  int vfh_idx;
-  // Load the file as a PCD
-  try
-  {
-    pcl::PCLPointCloud2 cloud;
-    int version;
-    Eigen::Vector4f origin;
-    Eigen::Quaternionf orientation;
-    pcl::PCDReader r;
-    int type; unsigned int idx;
-    r.readHeader (path.string (), cloud, origin, orientation, version, type, idx);
-
-    vfh_idx = pcl::getFieldIndex (cloud, "vfh");
-    if (vfh_idx == -1)
-      return (false);
-    if ((int)cloud.width * cloud.height != 1)
-      return (false);
-  }
-  catch (pcl::InvalidConversionException e)
-  {
-    return (false);
-  }
-
-  // Treat the VFH signature as a single Point Cloud
-  pcl::PointCloud <pcl::VFHSignature308> point;
-  pcl::io::loadPCDFile (path.string (), point);
-  vfh.second.resize (308);
-
-  std::vector <pcl::PCLPointField> fields;
-  pcl::getFieldIndex (point, "vfh", fields);
-
-  for (size_t i = 0; i < fields[vfh_idx].count; ++i)
-  {
-    vfh.second[i] = point.points[0].histogram[i];
-  }
-  vfh.first = path.string ();
-  return (true);
-}
-
-void
-loadFeatureModels (const boost::filesystem::path &base_dir, const std::string &extension, 
-                   std::vector<vfh_model> &models)
-{
-  if (!boost::filesystem::exists (base_dir) && !boost::filesystem::is_directory (base_dir))
-    return;
-
-  for (boost::filesystem::directory_iterator it (base_dir); it != boost::filesystem::directory_iterator (); ++it)
-  {
-    if (boost::filesystem::is_directory (it->status ()))
-    {
-      std::stringstream ss;
-      ss << it->path ();
-      pcl::console::print_highlight ("Loading %s (%lu models loaded so far).\n", ss.str ().c_str (), (unsigned long)models.size ());
-      loadFeatureModels (it->path (), extension, models);
-    }
-    if(boost::filesystem::is_regular_file (it->status ()))
-			std::cout<<boost::filesystem::extension (it->path ())<<" "<<extension<<std::endl;
-		if(boost::filesystem::extension (it->path ()) == extension)
-			std::cout<<"YES"<<std::endl;
-		
-    if (boost::filesystem::is_regular_file (it->status ()) && boost::filesystem::extension (it->path ()) == extension)
-    {
-			cout<<"in"<<endl;
-      vfh_model m;
-      if (loadHist (base_dir / it->path ().filename (), m))
-        models.push_back (m);
-    }
-  }
-}
-
 void SpecificWorker::loadVFH()
 {
-	
-	std::string kdtree_idx_file_name = "kdtree.idx";
-	std::string training_data_h5_file_name = "training_data.h5";
-	std::string training_data_list_file_name = "training_data.list";
-	
-	std::vector<vfh_model> models;
-	
-	std::string model_directory ("/home/robocomp/robocomp/files/objectData/partial_clouds/");
-	
-	// Load the model histograms
-	loadFeatureModels (model_directory, ".vfh.pcd", models);
-  pcl::console::print_highlight ("Loaded %d VFH models. Creating training data %s/%s.\n", 
-      (int)models.size (), training_data_h5_file_name.c_str (), training_data_list_file_name.c_str ());
-	
-	 flann::Matrix<float> data (new float[models.size () * models[0].second.size ()], models.size (), models[0].second.size ());
-
-  for (size_t i = 0; i < data.rows; ++i)
-    for (size_t j = 0; j < data.cols; ++j)
-      data[i][j] = models[i].second[j];
-
-  // Save data to disk (list of models)
-  flann::save_to_file (data, training_data_h5_file_name, "training_data");
-  std::ofstream fs;
-  fs.open (training_data_list_file_name.c_str ());
-  for (size_t i = 0; i < models.size (); ++i)
-    fs << models[i].first << "\n";
-  fs.close ();
- 
-  // Build the tree index and save it to disk
-  pcl::console::print_error ("Building the kdtree index (%s) for %d elements...\n", kdtree_idx_file_name.c_str (), (int)data.rows);
-  flann::Index<flann::ChiSquareDistance<float> > index (data, flann::LinearIndexParams ());
-  //flann::Index<flann::ChiSquareDistance<float> > index (data, flann::KDTreeIndexParams (4));
-  index.buildIndex ();
-  index.save (kdtree_idx_file_name);
-  delete[] data.ptr ();
-	
+	vfh_matcher->loadVFH("/home/robocomp/robocomp/files/objectData/partial_clouds/");
 }
 
 void SpecificWorker::vfh(int numObject)

@@ -53,15 +53,12 @@
 #include <pcl/features/normal_3d_omp.h>
 
 #include "tabletop_symmetry/mindGapper.h"
-
-#define VFH_FILES_EXTENSION ".pcd"
+#include "vfh/vfh.h"
 
 /**
        \brief
        @author authorname
 */
-
-typedef std::pair<std::string, std::vector<float> > vfh_model;
 
 class AprilTagModel
 {
@@ -116,6 +113,9 @@ class SpecificWorker : public GenericWorker
 	pcl::PointCloud<PointT>::Ptr cloud_hull;
 	pcl::PointCloud<PointT>::Ptr cloud_to_normal_segment;
 	pcl::PointIndices::Ptr prism_indices;
+	
+	//VFH
+	boost::shared_ptr<VFH> vfh_matcher;
 	
 	//Normal estimation stuff:
 	pcl::NormalEstimationOMP<PointT, pcl::PointNormal> normal_estimation;
