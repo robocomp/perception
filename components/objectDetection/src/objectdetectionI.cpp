@@ -32,10 +32,6 @@ objectDetectionI::~objectDetectionI()
 }
 
 // Component functions, implementation
-void objectDetectionI::mirrorPC(const Ice::Current&){
-	worker->mirrorPC();
-}
-
 void objectDetectionI::aprilFitModel(const string& model, const Ice::Current&){
 	worker->aprilFitModel(model);
 }
@@ -80,12 +76,20 @@ void objectDetectionI::reset(const Ice::Current&){
 	worker->reset();
 }
 
-void objectDetectionI::vfh(Ice::Int numObject, const Ice::Current&){
-	worker->vfh(numObject);
+void objectDetectionI::mirrorPC(const Ice::Current&){
+	worker->mirrorPC();
 }
 
-void objectDetectionI::loadVFH(const Ice::Current&){
-	worker->loadVFH();
+void objectDetectionI::reloadVFH(const Ice::Current&){
+	worker->reloadVFH();
+}
+
+void objectDetectionI::loadTrainedVFH(const Ice::Current&){
+	worker->loadTrainedVFH();
+}
+
+void objectDetectionI::vfh(const Ice::Current&){
+	worker->vfh();
 }
 
 

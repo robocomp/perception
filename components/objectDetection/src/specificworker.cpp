@@ -79,11 +79,17 @@ void SpecificWorker::aprilFitModel(const string& model)
 void SpecificWorker::fitModel(const string& model, const string& method)
 {
 	if(model=="prism")
+    {
 		if(method=="naive")
+        {
 			fitPrismtoObjectNaive();
+        }
 		else
+        {
 			if(method=="pf")
 				fitPrismtoObjectPf();
+        }
+    }
 }
 
 void SpecificWorker::getInliers(const string& model)
@@ -203,24 +209,6 @@ void SpecificWorker::mirrorPC()
 {
 	if(objectSelected_flag)
 	{
-		mindGapper mindgapper;
-		mindgapper.setFittingParams();
-		mindgapper.setDeviceParams();
-		
-		QVec plane_coeff = table->get_plane_coeff();
-		plane_coeff.print("plane_coeff");
-		std::vector<double> plane_coeff_std;
-		plane_coeff_std.resize(4);
-		plane_coeff_std[0] = plane_coeff(0);
-		plane_coeff_std[1] = plane_coeff(1);
-		plane_coeff_std[2] = plane_coeff(2);
-		plane_coeff_std[3] = plane_coeff(3);
-		mindgapper.setTablePlane( plane_coeff_std );
-		
-		int candidate = mindgapper.complete(cluster_clouds[object_to_show]);
-		
-		
-		
 // 		pcl::PointCloud<PointT>::Ptr cl (new pcl::PointCloud<PointT>);
 // 		
 // 		QMat PP = innermodel->getTransformationMatrix("rgbd_t", "robot");
@@ -247,9 +235,28 @@ void SpecificWorker::mirrorPC()
 // // 	//lets make a copy to maintain the origianl cloud
 // // 	*original_cloud = *cloud;
 // // 	
-// 	cl->width = 1;
-// 	cl->height = cluster_clouds[object_to_show]->points.size();
-// 	writer.write<PointT> ("box.pcd", *cl, false);
+// 		cl->width = 1;
+// 		cl->height = cluster_clouds[object_to_show]->points.size();
+// 		writer.write<PointT> ("box.pcd", *cl, false);
+		
+		
+		
+		mindGapper mindgapper;
+		mindgapper.setFittingParams();
+		mindgapper.setDeviceParams();
+		
+		QVec plane_coeff = table->get_plane_coeff();
+		plane_coeff.print("plane_coeff");
+		
+		std::vector<double> plane_coeff_std;
+		plane_coeff_std.resize(4);
+		plane_coeff_std[0] = plane_coeff(0);
+		plane_coeff_std[1] = plane_coeff(1);
+		plane_coeff_std[2] = plane_coeff(2);
+		plane_coeff_std[3] = plane_coeff(3);
+		mindgapper.setTablePlane( plane_coeff_std );
+		
+		int candidate = mindgapper.complete(cluster_clouds[object_to_show]);
 		
 		std::cout<<"Completed best candidate: "<<candidate<<std::endl;
 		
@@ -258,6 +265,8 @@ void SpecificWorker::mirrorPC()
 		
  	  writer.write<PointT> ("completed.pcd", *cluster_clouds[object_to_show], false); //*
 	}
+	else
+		std::cout<<"Please select an object first"<<std::endl;
 }
 
 void SpecificWorker::fitPrismtoObjectPf()
@@ -507,14 +516,25 @@ void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 // 	v->setScale("cube_best", fitter->getBest()->getWidth()(0)/2, fitter->getBest()->getWidth()(1)/2, fitter->getBest()->getWidth()(2)/2);
 }
 
-void SpecificWorker::loadVFH()
+void SpecificWorker::reloadVFH()
 {
-	vfh_matcher->loadVFH("/home/robocomp/robocomp/files/objectData/partial_clouds/");
+	vfh_matcher->reloadVFH("/home/robocomp/robocomp/files/objectData/partial_clouds/");
 }
 
-void SpecificWorker::vfh(int numObject)
+void SpecificWorker::loadTrainedVFH()
 {
-	
+	vfh_matcher->loadTrainingData();
+	std::cout<<"Training data loaded"<<std::endl;
+}
+
+void SpecificWorker::vfh()
+{
+	if(objectSelected_flag)
+	{
+		vfh_matcher->doTheGuess(cluster_clouds[object_to_show]);
+	}
+	else
+		std::cout<<"please select an object first"<<std::endl;
 }
 
 void SpecificWorker::reset()

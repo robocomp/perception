@@ -164,8 +164,10 @@ public:
 	void performEuclideanClustering();
 	void showObject(int object_to_show);
 	
-	void loadVFH();
-	void vfh(int numObject);
+	//vfh calls
+	void reloadVFH();
+	void loadTrainedVFH();
+	void vfh();
 	
 	void reset();
 	

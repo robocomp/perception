@@ -45,6 +45,10 @@ public slots:
 	void aprilFitTable();
 	void aprilFitBox();
 	
+	void reloadVFH();
+	void loadTrainedVFH();
+	void vfh();
+	
 	void getInliers();
 	void projectInliers();
 	void convexHull();
@@ -53,7 +57,6 @@ public slots:
 	void euclidean_clustering();
 	void showObject(QListWidgetItem *item);
 	void reset();
-	void loadVFH();
 	void normal_segmentation();
 };
 

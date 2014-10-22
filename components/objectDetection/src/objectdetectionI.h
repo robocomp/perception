@@ -37,8 +37,7 @@ Q_OBJECT
 public:
 	objectDetectionI( GenericWorker *_worker, QObject *parent = 0 );
 	~objectDetectionI();
-	void  mirrorPC(const Ice::Current& = Ice::Current());
-void  aprilFitModel(const string& model, const Ice::Current& = Ice::Current());
+	void  aprilFitModel(const string& model, const Ice::Current& = Ice::Current());
 void  fitModel(const string& model, const string& method, const Ice::Current& = Ice::Current());
 void  getInliers(const string& model, const Ice::Current& = Ice::Current());
 void  projectInliers(const string& model, const Ice::Current& = Ice::Current());
@@ -49,8 +48,10 @@ void  normalSegmentation(const string& model, const Ice::Current& = Ice::Current
 void  euclideanClustering(Ice::Int& numClusters, const Ice::Current& = Ice::Current());
 void  showObject(Ice::Int numObject, const Ice::Current& = Ice::Current());
 void  reset(const Ice::Current& = Ice::Current());
-void  vfh(Ice::Int numObject, const Ice::Current& = Ice::Current());
-void  loadVFH(const Ice::Current& = Ice::Current());
+void  mirrorPC(const Ice::Current& = Ice::Current());
+void  reloadVFH(const Ice::Current& = Ice::Current());
+void  loadTrainedVFH(const Ice::Current& = Ice::Current());
+void  vfh(const Ice::Current& = Ice::Current());
 
 
 	QMutex *mutex;

@@ -42,19 +42,18 @@ bool VFH::loadHist (const boost::filesystem::path &path, vfh_model &vfh)
 }
 
 //Function that computes the Viewpoint Feature Histogram
-void VFH::computeVFHistogram(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, const boost::filesystem::path &filename)
+void VFH::computeVFHistogram(pcl::PointCloud<PointT>::Ptr cloud, const pcl::PointCloud<pcl::VFHSignature308>::Ptr vfhs)
 {
-	pcl::console::print_highlight ("Computing VFH for %s.\n", filename.string().c_str());
 	//---compute normals---
 	pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
 
 	//create normal estimation class, and pass the input cloud
-	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+	pcl::NormalEstimation<PointT, pcl::Normal> ne;
 	ne.setInputCloud (cloud);
 
 	//Create empty kdetree representation, and pass it to the normal estimation object.
 	//its content will be filled inside the object based on the given input.
-	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ> ());
+	pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT> ());
 	ne.setSearchMethod (tree);
 	//set radious of the neighbors to use (1 cm)
 	ne.setRadiusSearch(0.01);
@@ -62,35 +61,26 @@ void VFH::computeVFHistogram(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, const bo
 	ne.compute(*cloud_normals);
 
 	//---proceed to compute VFH---
-	pcl::PointCloud<pcl::VFHSignature308>::Ptr vfhs(new pcl::PointCloud<pcl::VFHSignature308> ());
 
 	//Create the VFH estimation class and pas the input to it
-	pcl::VFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::VFHSignature308> vfh;
+	pcl::VFHEstimation<PointT, pcl::Normal, pcl::VFHSignature308> vfh;
 	vfh.setInputCloud (cloud);
 	vfh.setInputNormals (cloud_normals);
 
 	//create an empty kdtree representation and pass it to the vfh estimation object
 	//its content will be filled inside the object based on the given input.
-	pcl::search::KdTree<pcl::PointXYZ>::Ptr vfhtree (new pcl::search::KdTree<pcl::PointXYZ> ());
+	pcl::search::KdTree<PointT>::Ptr vfhtree (new pcl::search::KdTree<PointT> ());
 	vfh.setSearchMethod (vfhtree);
 
 	//compute the features
 	vfh.compute (*vfhs);
-
-	//save them to file
-	pcl::PCDWriter writer;
-	std::stringstream ss;
-	ss << filename.branch_path().string() << "/" << boost::filesystem::basename(filename) << ".vfh.pcd";
-	pcl::console::print_highlight ("writing %s\n", ss.str().c_str());
-	writer.write<pcl::VFHSignature308> (ss.str(), *vfhs, false);
-	
 }
 
 //Function that recursively reads all files and computes the VFH for them
 void VFH::readFilesAndComputeVFH (const boost::filesystem::path &base_dir)
 {
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-
+	pcl::PointCloud<PointT>::Ptr cloud (new pcl::PointCloud<PointT>);
+	pcl::PointCloud<pcl::VFHSignature308>::Ptr vfhs(new pcl::PointCloud<pcl::VFHSignature308> ());
 	//Recursively read all files and compute VFH
 	for(boost::filesystem::directory_iterator it (base_dir); it!=boost::filesystem::directory_iterator (); ++it)
 	{
@@ -106,12 +96,21 @@ void VFH::readFilesAndComputeVFH (const boost::filesystem::path &base_dir)
 		//if not, go ahead and read and process the file
         if (boost::filesystem::is_regular_file (it->status()) && boost::filesystem::extension (it->path()) == VFH_FILES_EXTENSION )
 		{
-			if(pcl::io::loadPCDFile<pcl::PointXYZ> (it->path().string(), *cloud) == -1)
+			if(pcl::io::loadPCDFile<PointT> (it->path().string(), *cloud) == -1)
 				PCL_ERROR ("Couldn't read the file %s.", it->path().string().c_str());
 			else
 			{
+				pcl::console::print_highlight ("Computing VFH for %s.\n", boost::filesystem::path(*it).string().c_str());
+				
 				//Finally compute the vfh and save it
-				computeVFHistogram(cloud, *it);
+				computeVFHistogram(cloud, vfhs);
+				
+				//save them to file
+				pcl::PCDWriter writer;
+				std::stringstream ss;
+				ss <<boost::filesystem::path(*it).branch_path()<< "/" << boost::filesystem::basename(*it) << ".vfh.pcd";
+				pcl::console::print_highlight ("writing %s\n", ss.str().c_str());
+				writer.write<pcl::VFHSignature308> (ss.str(), *vfhs, false);
 			}
 		}
 	}
@@ -147,12 +146,12 @@ void VFH::loadFeatureModels (const boost::filesystem::path &base_dir, const std:
   }
 }
 
-void VFH::loadVFH(std::string path_to_dir)
+void VFH::reloadVFH(std::string path_to_dir)
 {
 	
-	std::string kdtree_idx_file_name = "kdtree.idx";
-	std::string training_data_h5_file_name = "training_data.h5";
-	std::string training_data_list_file_name = "training_data.list";
+	kdtree_idx_file_name = "kdtree.idx";
+	training_data_h5_file_name = "training_data.h5";
+	training_data_list_file_name = "training_data.list";
 	
 	std::vector<vfh_model> models;
 	
@@ -163,7 +162,7 @@ void VFH::loadVFH(std::string path_to_dir)
   pcl::console::print_highlight ("Loaded %d VFH models. Creating training data %s/%s.\n", 
       (int)models.size (), training_data_h5_file_name.c_str (), training_data_list_file_name.c_str ());
 	
-	 flann::Matrix<float> data (new float[models.size () * models[0].second.size ()], models.size (), models[0].second.size ());
+	flann::Matrix<float> data (new float[models.size () * models[0].second.size ()], models.size (), models[0].second.size ());
 
   for (size_t i = 0; i < data.rows; ++i)
     for (size_t j = 0; j < data.cols; ++j)
@@ -184,5 +183,64 @@ void VFH::loadVFH(std::string path_to_dir)
   index.buildIndex ();
   index.save (kdtree_idx_file_name);
   delete[] data.ptr ();
+	
+}
+
+
+bool VFH::loadFileList (std::vector<vfh_model> &models, const std::string &filename)
+{
+	std::ifstream fs;
+	fs.open (filename.c_str ());
+	if (!fs.is_open () || fs.fail ())
+		return (false);
+
+	std::string line;
+	while (!fs.eof ())
+	{
+		getline (fs, line);
+		if (line.empty ())
+			continue;
+		vfh_model m;
+		m.first = line;
+		models.push_back (m);
+	}
+	fs.close ();
+	return (true);
+}
+
+void VFH::loadTrainingData()
+{
+	if (!boost::filesystem::exists ("training_data.h5") || !boost::filesystem::exists ("training_data.list"))
+	{
+		pcl::console::print_error ("Could not find training data models files %s and %s!\n", 
+				training_data_h5_file_name.c_str (), training_data_list_file_name.c_str ());
+		return;
+	}
+	else
+	{
+		loadFileList (models, training_data_list_file_name);
+		flann::load_from_file (data, training_data_h5_file_name, "training_data");
+		pcl::console::print_highlight ("Training data found. Loaded %d VFH models from %s/%s.\n", 
+				(int)data.rows, training_data_h5_file_name.c_str (), training_data_list_file_name.c_str ());
+	}
+	
+	if (!boost::filesystem::exists (kdtree_idx_file_name))
+	{
+		pcl::console::print_error ("Could not find kd-tree index in file %s!", kdtree_idx_file_name.c_str ());
+		return;
+	}
+	else
+	{
+		flann::Index<flann::ChiSquareDistance<float> > index (data, flann::SavedIndexParams ("kdtree.idx"));
+		index.buildIndex ();
+	}
+}
+
+void VFH::doTheGuess(const pcl::PointCloud<PointT>::Ptr object)
+{
+	pcl::PointCloud<pcl::VFHSignature308>::Ptr vfhs(new pcl::PointCloud<pcl::VFHSignature308> ());
+	computeVFHistogram(object, vfhs);
+	
+	
 	
 }

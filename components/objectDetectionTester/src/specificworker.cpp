@@ -33,8 +33,12 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(ec_button, SIGNAL(clicked()), this, SLOT(euclidean_clustering()));
 	connect(list_clouds, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(showObject(QListWidgetItem*)));
 	connect(reset_button, SIGNAL(clicked()), this, SLOT(reset()));
-	connect(load_vfh_button, SIGNAL(clicked()), this, SLOT(loadVFH()));
 	connect(normal_segmentation_button, SIGNAL(clicked()), this, SLOT(normal_segmentation()));
+	
+	//aspect recognition
+	connect(reload_vfh_button, SIGNAL(clicked()), this, SLOT(reloadVFH()));
+	connect(load_trained_vfh_button, SIGNAL(clicked()), this, SLOT(loadTrainedVFH()));
+	connect(vfh_button, SIGNAL(clicked()), this, SLOT(vfh()));
 	
 	//april fits
 	connect(april_fit_table_button, SIGNAL(clicked()), this, SLOT(aprilFitTable()));
@@ -126,6 +130,11 @@ void SpecificWorker::aprilFitBox()
 	objectdetection_proxy->aprilFitModel("box");
 }
 
+void SpecificWorker::vfh()
+{
+	objectdetection_proxy->vfh();
+}
+
 void SpecificWorker::euclidean_clustering()
 {
 	int num_clusters;
@@ -152,9 +161,14 @@ void SpecificWorker::showObject(QListWidgetItem *item)
 	objectdetection_proxy->showObject(num_object);
 }
 
-void SpecificWorker::loadVFH()
+void SpecificWorker::reloadVFH()
 {
-	objectdetection_proxy->loadVFH();
+	objectdetection_proxy->reloadVFH();
+}
+
+void SpecificWorker::loadTrainedVFH()
+{
+	objectdetection_proxy->loadTrainedVFH();
 }
 
 void SpecificWorker::reset()

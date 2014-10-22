@@ -60,7 +60,6 @@ public:
 
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;
-	virtual void  mirrorPC() = 0;
 	virtual void  aprilFitModel(const string& model) = 0;
 	virtual void  fitModel(const string& model, const string& method) = 0;
 	virtual void  getInliers(const string& model) = 0;
@@ -72,8 +71,10 @@ public:
 	virtual void  euclideanClustering(Ice::Int& numClusters) = 0;
 	virtual void  showObject(int numObject) = 0;
 	virtual void  reset() = 0;
-	virtual void  vfh(int numObject) = 0;
-	virtual void  loadVFH() = 0;
+	virtual void  mirrorPC() = 0;
+	virtual void  reloadVFH() = 0;
+	virtual void  loadTrainedVFH() = 0;
+	virtual void  vfh() = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:
