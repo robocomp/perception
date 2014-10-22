@@ -54,6 +54,16 @@ public:
 	//laod training data
 	void loadTrainingData();
 	
+	/** \brief Search for the closest k neighbors
+	* \param index the tree
+	* \param model the query model
+	* \param k the number of neighbors to search for
+	* \param indices the resultant neighbor indices
+	* \param distances the resultant neighbor distances
+	*/
+	void nearestKSearch (flann::Index<flann::ChiSquareDistance<float> > &index, const vfh_model &model, 
+				int k, flann::Matrix<int> &indices, flann::Matrix<float> &distances);
+	
 	//guess with trained data
 	void doTheGuess(const pcl::PointCloud<PointT>::Ptr object);
 };

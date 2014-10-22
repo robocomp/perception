@@ -236,11 +236,50 @@ void VFH::loadTrainingData()
 	}
 }
 
+void VFH::nearestKSearch (flann::Index<flann::ChiSquareDistance<float> > &index, const vfh_model &model, 
+				int k, flann::Matrix<int> &indices, flann::Matrix<float> &distances)
+{
+	// Query point
+	flann::Matrix<float> p = flann::Matrix<float>(new float[model.second.size ()], 1, model.second.size ());
+	memcpy (&p.ptr ()[0], &model.second[0], p.cols * p.rows * sizeof (float));
+
+	indices = flann::Matrix<int>(new int[k], 1, k);
+	distances = flann::Matrix<float>(new float[k], 1, k);
+	index.knnSearch (p, indices, distances, k, flann::SearchParams (512));
+	delete[] p.ptr ();
+}
 void VFH::doTheGuess(const pcl::PointCloud<PointT>::Ptr object)
 {
 	pcl::PointCloud<pcl::VFHSignature308>::Ptr vfhs(new pcl::PointCloud<pcl::VFHSignature308> ());
 	computeVFHistogram(object, vfhs);
+	vfh_model histogram;
 	
+	pcl::PointCloud <pcl::VFHSignature308> point;
+
+	histogram.second.resize (308);
+
+	std::vector <pcl::PCLPointField> fields;
+	int vfh_idx = pcl::getFieldIndex (*vfhs, "vfh", fields);
+
+	for (size_t i = 0; i < fields[vfh_idx].count; ++i)
+	{
+		histogram.second[i] = vfhs->points[0].histogram[i];
+	}
+	histogram.first = "cloud_from_object.vfh";
 	
+	//let look for the match
+	flann::Index<flann::ChiSquareDistance<float> > index (data, flann::SavedIndexParams ("kdtree.idx"));
 	
+	index.buildIndex ();
+	nearestKSearch (index, histogram, 16, k_indices, k_distances);
+	
+	pcl::console::print_highlight ("The closest 16 neighbors are:\n");
+	for (int i = 0; i < 16; ++i)
+	{
+		Eigen::Vector4f centroid;
+		pcl::compute3DCentroid (*object, centroid);
+		std::cerr<<centroid[0]<<centroid[1]<<centroid[2]<<centroid[3]<<std::endl;
+		pcl::console::print_info ("    %d - %s (%d) with a distance of: %f\n", 
+				i, models.at (k_indices[0][i]).first.c_str (), k_indices[0][i], k_distances[0][i]);
+	}
 }
