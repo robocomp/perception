@@ -74,7 +74,7 @@ public:
 	virtual void  mirrorPC() = 0;
 	virtual void  reloadVFH() = 0;
 	virtual void  loadTrainedVFH() = 0;
-	virtual void  vfh() = 0;
+	virtual void  vfh(listType& guesses) = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:

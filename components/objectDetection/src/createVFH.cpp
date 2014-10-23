@@ -28,7 +28,7 @@ void computeVFHistogram(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, const boost::
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ> ());
 	ne.setSearchMethod (tree);
 	//set radious of the neighbors to use (1 cm)
-	ne.setRadiusSearch(0.01);
+	ne.setRadiusSearch(10);
 	//computing normals
 	ne.compute(*cloud_normals);
 
@@ -51,7 +51,7 @@ void computeVFHistogram(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, const boost::
 	//save them to file
 	pcl::PCDWriter writer;
 	std::stringstream ss;
-	ss << filename.branch_path().string() << "/" << boost::filesystem::basename(filename) << ".vfh.pcd";
+	ss << filename.branch_path().string() << "/" << boost::filesystem::basename(filename) << ".vfh";
 	pcl::console::print_highlight ("writing %s\n", ss.str().c_str());
 	writer.write<pcl::VFHSignature308> (ss.str(), *vfhs, false);
 	
@@ -101,7 +101,6 @@ int main (int argc, char *argv[] )
 		std::cout<<"It should be the path to the training data in pcd format"<<std::endl;
 		return -1;
 	}
-
 
 	//----Reading poinclouds----
 	const boost::filesystem::path base_dir = argv[1];

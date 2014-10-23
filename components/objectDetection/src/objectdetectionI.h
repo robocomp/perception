@@ -51,7 +51,7 @@ void  reset(const Ice::Current& = Ice::Current());
 void  mirrorPC(const Ice::Current& = Ice::Current());
 void  reloadVFH(const Ice::Current& = Ice::Current());
 void  loadTrainedVFH(const Ice::Current& = Ice::Current());
-void  vfh(const Ice::Current& = Ice::Current());
+void  vfh(listType& guesses, const Ice::Current& = Ice::Current());
 
 
 	QMutex *mutex;

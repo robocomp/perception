@@ -56,7 +56,7 @@ void VFH::computeVFHistogram(pcl::PointCloud<PointT>::Ptr cloud, const pcl::Poin
 	pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT> ());
 	ne.setSearchMethod (tree);
 	//set radious of the neighbors to use (1 cm)
-	ne.setRadiusSearch(0.01);
+	ne.setRadiusSearch(10);
 	//computing normals
 	ne.compute(*cloud_normals);
 
@@ -108,7 +108,7 @@ void VFH::readFilesAndComputeVFH (const boost::filesystem::path &base_dir)
 				//save them to file
 				pcl::PCDWriter writer;
 				std::stringstream ss;
-				ss <<boost::filesystem::path(*it).branch_path()<< "/" << boost::filesystem::basename(*it) << ".vfh.pcd";
+				ss <<boost::filesystem::path(*it).branch_path()<< "/" << boost::filesystem::basename(*it) << ".vfh";
 				pcl::console::print_highlight ("writing %s\n", ss.str().c_str());
 				writer.write<pcl::VFHSignature308> (ss.str(), *vfhs, false);
 			}
@@ -231,7 +231,7 @@ void VFH::loadTrainingData()
 	}
 	else
 	{
-		flann::Index<flann::ChiSquareDistance<float> > index (data, flann::SavedIndexParams ("kdtree.idx"));
+		flann::Index<flann::ChiSquareDistance<float> > index (data, flann::SavedIndexParams (kdtree_idx_file_name));
 		index.buildIndex ();
 	}
 }
@@ -248,7 +248,7 @@ void VFH::nearestKSearch (flann::Index<flann::ChiSquareDistance<float> > &index,
 	index.knnSearch (p, indices, distances, k, flann::SearchParams (512));
 	delete[] p.ptr ();
 }
-void VFH::doTheGuess(const pcl::PointCloud<PointT>::Ptr object)
+void VFH::doTheGuess(const pcl::PointCloud<PointT>::Ptr object, std::vector<std::string> &guesses)
 {
 	pcl::PointCloud<pcl::VFHSignature308>::Ptr vfhs(new pcl::PointCloud<pcl::VFHSignature308> ());
 	computeVFHistogram(object, vfhs);
@@ -264,6 +264,7 @@ void VFH::doTheGuess(const pcl::PointCloud<PointT>::Ptr object)
 	for (size_t i = 0; i < fields[vfh_idx].count; ++i)
 	{
 		histogram.second[i] = vfhs->points[0].histogram[i];
+		std::cout<<histogram.second[i]<<std::endl;
 	}
 	histogram.first = "cloud_from_object.vfh";
 	
@@ -281,5 +282,6 @@ void VFH::doTheGuess(const pcl::PointCloud<PointT>::Ptr object)
 		std::cerr<<centroid[0]<<centroid[1]<<centroid[2]<<centroid[3]<<std::endl;
 		pcl::console::print_info ("    %d - %s (%d) with a distance of: %f\n", 
 				i, models.at (k_indices[0][i]).first.c_str (), k_indices[0][i], k_distances[0][i]);
+		guesses.push_back(models.at (k_indices[0][i]).first);
 	}
 }

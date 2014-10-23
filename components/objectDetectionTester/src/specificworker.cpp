@@ -132,7 +132,17 @@ void SpecificWorker::aprilFitBox()
 
 void SpecificWorker::vfh()
 {
-	objectdetection_proxy->vfh();
+	std::vector<string> guesses;
+	objectdetection_proxy->vfh(guesses);
+	
+	for(int i = 0; i < guesses.size(); i++)
+	{
+		QStandardItem* Items = new QStandardItem(guesses[i].c_str());
+    QStandardItemModel* ListModel = new QStandardItemModel();
+    vfh_listView->addItem(Items);
+
+		std::cout<<guesses[i]<<std::endl;
+	}
 }
 
 void SpecificWorker::euclidean_clustering()

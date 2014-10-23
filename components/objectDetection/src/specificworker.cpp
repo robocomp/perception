@@ -177,7 +177,7 @@ void SpecificWorker::compute( )
 		
 		if(extractTablePolygon_flag)
 		{
-			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 15, 1500, prism_indices, this->cloud);
+			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 20, 1500, prism_indices, this->cloud);
 		}
 		
 		if(normal_segmentation_flag)
@@ -527,11 +527,11 @@ void SpecificWorker::loadTrainedVFH()
 	std::cout<<"Training data loaded"<<std::endl;
 }
 
-void SpecificWorker::vfh()
+void SpecificWorker::vfh(std::vector<string> &guesses)
 {
 	if(objectSelected_flag)
 	{
-		vfh_matcher->doTheGuess(cluster_clouds[object_to_show]);
+		vfh_matcher->doTheGuess(cluster_clouds[object_to_show], guesses);
 	}
 	else
 		std::cout<<"please select an object first"<<std::endl;

@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <string>
 
 #include <pcl/point_types.h>
 #include <pcl/features/normal_3d.h>
@@ -65,7 +66,7 @@ public:
 				int k, flann::Matrix<int> &indices, flann::Matrix<float> &distances);
 	
 	//guess with trained data
-	void doTheGuess(const pcl::PointCloud<PointT>::Ptr object);
+	void doTheGuess(const pcl::PointCloud<PointT>::Ptr object, std::vector<std::string> &guesses);
 };
 
 #endif

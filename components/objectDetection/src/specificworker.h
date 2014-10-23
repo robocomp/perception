@@ -167,7 +167,7 @@ public:
 	//vfh calls
 	void reloadVFH();
 	void loadTrainedVFH();
-	void vfh();
+	void vfh(std::vector<string> &guesses);
 	
 	void reset();
 	

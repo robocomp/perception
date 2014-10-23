@@ -236,7 +236,7 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QListView" name="listView"/>
+     <widget class="QListView" name="vfh_listView"/>
     </item>
     <item>
      <widget class="QListView" name="listView_2"/>

@@ -88,8 +88,8 @@ void objectDetectionI::loadTrainedVFH(const Ice::Current&){
 	worker->loadTrainedVFH();
 }
 
-void objectDetectionI::vfh(const Ice::Current&){
-	worker->vfh();
+void objectDetectionI::vfh(listType& guesses, const Ice::Current&){
+	worker->vfh(guesses);
 }
 
 
