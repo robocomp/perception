@@ -134,14 +134,15 @@ void SpecificWorker::vfh()
 {
 	std::vector<string> guesses;
 	objectdetection_proxy->vfh(guesses);
+	QStringList pieces;
+	QString path_to_pcd, name_of_object;
 	
 	for(int i = 0; i < guesses.size(); i++)
 	{
-		QStandardItem* Items = new QStandardItem(guesses[i].c_str());
-    QStandardItemModel* ListModel = new QStandardItemModel();
-    vfh_listView->addItem(Items);
-
-		std::cout<<guesses[i]<<std::endl;
+		path_to_pcd = QString::fromStdString(guesses[i]);
+		pieces = path_to_pcd.split( "/" );
+		name_of_object = pieces.at( pieces.length() - 2 );
+		vfh_listView->addItem(name_of_object);
 	}
 }
 

@@ -19,6 +19,7 @@
 #ifndef SPECIFICWORKER_H
 #define SPECIFICWORKER_H
 
+#include <QStringList>
 #include <genericworker.h>
 /**
        \brief

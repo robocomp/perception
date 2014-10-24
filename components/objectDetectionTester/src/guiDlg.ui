@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>956</width>
-    <height>301</height>
+    <width>967</width>
+    <height>424</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,8 +29,8 @@
   <widget class="QPushButton" name="fit_cylinder_button">
    <property name="geometry">
     <rect>
-     <x>680</x>
-     <y>180</y>
+     <x>830</x>
+     <y>160</y>
      <width>101</width>
      <height>23</height>
     </rect>
@@ -120,50 +120,11 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="vfh_button">
-   <property name="geometry">
-    <rect>
-     <x>380</x>
-     <y>50</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>VFH</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton_2">
-   <property name="geometry">
-    <rect>
-     <x>380</x>
-     <y>80</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>SIFT</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton_3">
-   <property name="geometry">
-    <rect>
-     <x>380</x>
-     <y>110</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>SURF</string>
-   </property>
-  </widget>
   <widget class="QPushButton" name="fit_prism_naive_button">
    <property name="geometry">
     <rect>
-     <x>680</x>
-     <y>50</y>
+     <x>830</x>
+     <y>70</y>
      <width>121</width>
      <height>23</height>
     </rect>
@@ -175,8 +136,8 @@
   <widget class="QPushButton" name="reset_button">
    <property name="geometry">
     <rect>
-     <x>370</x>
-     <y>260</y>
+     <x>350</x>
+     <y>380</y>
      <width>261</width>
      <height>23</height>
     </rect>
@@ -196,9 +157,9 @@
    <property name="geometry">
     <rect>
      <x>471</x>
-     <y>52</y>
-     <width>43</width>
-     <height>81</height>
+     <y>62</y>
+     <width>45</width>
+     <height>281</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -230,19 +191,19 @@
     <rect>
      <x>520</x>
      <y>50</y>
-     <width>111</width>
-     <height>197</height>
+     <width>141</width>
+     <height>291</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QListView" name="vfh_listView"/>
+     <widget class="QListWidget" name="vfh_listView"/>
     </item>
     <item>
-     <widget class="QListView" name="listView_2"/>
+     <widget class="QListWidget" name="listWidget_3"/>
     </item>
     <item>
-     <widget class="QListView" name="listView_3"/>
+     <widget class="QListWidget" name="listWidget"/>
     </item>
    </layout>
   </widget>
@@ -288,8 +249,8 @@
   <widget class="QPushButton" name="fit_prism_mcmc_button">
    <property name="geometry">
     <rect>
-     <x>680</x>
-     <y>80</y>
+     <x>830</x>
+     <y>100</y>
      <width>121</width>
      <height>23</height>
     </rect>
@@ -301,8 +262,8 @@
   <widget class="QPushButton" name="fit_prism_pf_button">
    <property name="geometry">
     <rect>
-     <x>680</x>
-     <y>110</y>
+     <x>830</x>
+     <y>130</y>
      <width>121</width>
      <height>23</height>
     </rect>
@@ -336,6 +297,39 @@
    <property name="text">
     <string>LOAD trained VFH</string>
    </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>376</x>
+     <y>55</y>
+     <width>91</width>
+     <height>291</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_4">
+    <item>
+     <widget class="QPushButton" name="vfh_button">
+      <property name="text">
+       <string>VFH</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_2">
+      <property name="text">
+       <string>SIFT</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_3">
+      <property name="text">
+       <string>SURF</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>
