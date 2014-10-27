@@ -205,45 +205,49 @@ void SpecificWorker::showObject(int object_to_show)
 	objectSelected_flag = true;
 }
 
-void SpecificWorker::mirrorPC()
+void SpecificWorker::mindTheGapPC()
 {
 	if(objectSelected_flag)
 	{
-// 		pcl::PointCloud<PointT>::Ptr cl (new pcl::PointCloud<PointT>);
-// 		
-// 		QMat PP = innermodel->getTransformationMatrix("rgbd_t", "robot");
-// 		
-// 		cl->points.resize(cluster_clouds[object_to_show]->points.size());
-// 
-// 		for (unsigned int i=0; i<cluster_clouds[object_to_show]->points.size(); i++)
-// 		{
-// 			QVec p1 = QVec::vec4(cluster_clouds[object_to_show]->points[i].x, cluster_clouds[object_to_show]->points[i].y, cluster_clouds[object_to_show]->points[i].z, 1);
-// 			QVec p2 = PP * p1;
-// 			QVec p22 = p2.fromHomogeneousCoordinates();
-// 
-// // 	// 			memcpy(&cloud->points[i],p22.data(),3*sizeof(float));
-// 			cl->points[i].x=p22(0);
-// 			cl->points[i].y=p22(1);
-// 			cl->points[i].z=p22(2);
-// 			cl->points[i].r=cluster_clouds[object_to_show]->points[i].r;
-// 			cl->points[i].g=cluster_clouds[object_to_show]->points[i].g;
-// 			cl->points[i].b=cluster_clouds[object_to_show]->points[i].b;
-// 		}
-// // 	std::vector< int > index;
-// // 	removeNaNFromPointCloud (*cloud, *cloud, index);
-// // 	
-// // 	//lets make a copy to maintain the origianl cloud
-// // 	*original_cloud = *cloud;
-// // 	
-// 		cl->width = 1;
-// 		cl->height = cluster_clouds[object_to_show]->points.size();
-// 		writer.write<PointT> ("box.pcd", *cl, false);
+		
+		//-------------grab pcd
+		
+		pcl::PointCloud<PointT>::Ptr cl (new pcl::PointCloud<PointT>);
+		
+		QMat PP = innermodel->getTransformationMatrix("rgbd_t", "robot");
+		
+		cl->points.resize(cluster_clouds[object_to_show]->points.size());
+
+		for (unsigned int i=0; i<cluster_clouds[object_to_show]->points.size(); i++)
+		{
+			QVec p1 = QVec::vec4(cluster_clouds[object_to_show]->points[i].x, cluster_clouds[object_to_show]->points[i].y, cluster_clouds[object_to_show]->points[i].z, 1);
+			QVec p2 = PP * p1;
+			QVec p22 = p2.fromHomogeneousCoordinates();
+
+// 	// 			memcpy(&cloud->points[i],p22.data(),3*sizeof(float));
+			cl->points[i].x=p22(0);
+			cl->points[i].y=p22(1);
+			cl->points[i].z=p22(2);
+			cl->points[i].r=cluster_clouds[object_to_show]->points[i].r;
+			cl->points[i].g=cluster_clouds[object_to_show]->points[i].g;
+			cl->points[i].b=cluster_clouds[object_to_show]->points[i].b;
+		}
+// 	std::vector< int > index;
+// 	removeNaNFromPointCloud (*cloud, *cloud, index);
+// 	
+// 	//lets make a copy to maintain the origianl cloud
+// 	*original_cloud = *cloud;
+// 	
+		cl->width = 1;
+		cl->height = cluster_clouds[object_to_show]->points.size();
+		writer.write<PointT> ("box.pcd", *cl, false);
+		
+		//------------end of pcd grab
 		
 		
-		
-		mindGapper mindgapper;
-		mindgapper.setFittingParams();
-		mindgapper.setDeviceParams();
+		Mirror mirror;
+		mirror.setFittingParams();
+		mirror.setDeviceParams();
 		
 		QVec plane_coeff = table->get_plane_coeff();
 		plane_coeff.print("plane_coeff");
@@ -254,9 +258,9 @@ void SpecificWorker::mirrorPC()
 		plane_coeff_std[1] = plane_coeff(1);
 		plane_coeff_std[2] = plane_coeff(2);
 		plane_coeff_std[3] = plane_coeff(3);
-		mindgapper.setTablePlane( plane_coeff_std );
+		mirror.setTablePlane( plane_coeff_std );
 		
-		int candidate = mindgapper.complete(cluster_clouds[object_to_show]);
+		int candidate = mirror.complete(cluster_clouds[object_to_show]);
 		
 		std::cout<<"Completed best candidate: "<<candidate<<std::endl;
 		
@@ -267,6 +271,16 @@ void SpecificWorker::mirrorPC()
 	}
 	else
 		std::cout<<"Please select an object first"<<std::endl;
+}
+
+void SpecificWorker::mirrorPC()
+{
+	
+}
+
+void SpecificWorker::surfHomography(std::vector<string> &guesses)
+{
+	
 }
 
 void SpecificWorker::fitPrismtoObjectPf()

@@ -1,5 +1,5 @@
 /**
- * @file mindGapper.h
+ * @file mirror.h
  * @brief Generates an object's full pointcloud from a partial view using symmetries w.r.t. a given resting plane
  */
 #pragma once
@@ -13,16 +13,16 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 /**
- * @class mindGapper
+ * @class Mirror
  */
 
 typedef pcl::PointXYZRGB PointT;
 
-class mindGapper {
+class Mirror {
 
  public:
-  mindGapper();
-  ~mindGapper();
+  Mirror();
+  ~Mirror();
   
   /**< Set table plane where the object rests and its partial cloud */
   void setTablePlane( std::vector<double> planeCoeff );
@@ -32,12 +32,12 @@ class mindGapper {
   void setFittingParams( int _n = 6, int _m = 5, 
 			 double _dj = 0.01, double _alpha = 20.0*M_PI / 180.0 );
 
-  /**< Set Kinect params to calculate mirror errors */
+  /**< Set Kinect params to calculate Mirror errors */
   void setDeviceParams( int _width = 640, int _height = 480, 
 			double _focal_length_in_pixels = 525,
 			double _cx = 320, double _cy = 240 );
 
-  /**< Generates mirroring cloud */
+  /**< Generates Mirroring cloud */
   int complete( pcl::PointCloud<PointT>::Ptr &_cloud );
 
 

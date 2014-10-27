@@ -1,5 +1,5 @@
 /**
- * @file mindGapper.cpp
+ * @file mirror.cpp
  * @brief Implementation of paper by Bohg, 2010: Mind the Gap: Robotic Grasping under Incomplete Observation
  * @author A. Huaman Quispe <ahuaman3@gatech.edu>
  * @date 2014/08/07
@@ -9,24 +9,24 @@
 #include <pcl/common/pca.h>
 #include <pcl/common/centroid.h>
 
-#include "mindGapper.h"
+#include "mirror.h"
 #include <tabletop_symmetry/dt/dt.h>
 
 
 /**
- * @function mindGapper
+ * @function mirror
  * @brief Constructor 
  */
-mindGapper::mindGapper() :
+Mirror::Mirror() :
   mCloud( new pcl::PointCloud<PointT>() ),
   mProjected( new pcl::PointCloud<PointT>() ){
 }
 
 /**
- * @function ~mindGapper
+ * @function ~Mirror
  * @brief Destructor 
  */
-mindGapper::~mindGapper() {
+Mirror::~Mirror() {
 
 }
 
@@ -34,7 +34,7 @@ mindGapper::~mindGapper() {
  * @function setTablePlane
  * @brief Set resting plane and object to complete based on symmetry
  */
-void mindGapper::setTablePlane( std::vector<double> _planeCoeffs ) {
+void Mirror::setTablePlane( std::vector<double> _planeCoeffs ) {
   
   mPlaneCoeffs.resize( _planeCoeffs.size() );
   for( int i = 0; i < _planeCoeffs.size(); ++i ) {
@@ -51,7 +51,7 @@ void mindGapper::setTablePlane( std::vector<double> _planeCoeffs ) {
  * @function setFittingParams
  * @brief n: Distance steps, m: Orientation steps, dj: Distance step size, alpha: +- rotation step size
  */
-void mindGapper::setFittingParams( int _n, int _m, 
+void Mirror::setFittingParams( int _n, int _m, 
 				   double _dj, double _alpha ) {
   mN = _n;
   mM = _m;
@@ -63,7 +63,7 @@ void mindGapper::setFittingParams( int _n, int _m,
  * @function setDeviceParams
  * @brief Set parameters of Kinect to calculate fitness functions for optimization process
  */
-void mindGapper::setDeviceParams( int _width, int _height, 
+void Mirror::setDeviceParams( int _width, int _height, 
 				  double _focal_length_in_pixels,
 				  double _cx, double _cy ) {
   
@@ -78,7 +78,7 @@ void mindGapper::setDeviceParams( int _width, int _height,
  * @function complete
  * @brief Use symmetries on plane to complete pointcloud 
  */
-int mindGapper::complete( pcl::PointCloud<PointT>::Ptr &_cloud ) {
+int Mirror::complete( pcl::PointCloud<PointT>::Ptr &_cloud ) {
   
   // 0. Store cloud, its visibility mask, its depth in a 2D matrix and the distance transform of it
   mCloud = _cloud;
@@ -246,7 +246,7 @@ int mindGapper::complete( pcl::PointCloud<PointT>::Ptr &_cloud ) {
  * @function projectToPlane
  * @brief Project _cloud to plane (set by setTablePlane), results in a 2D cloud
  */
-pcl::PointCloud<PointT>::Ptr mindGapper::projectToPlane( pcl::PointCloud<PointT>::Ptr _cloud ) {
+pcl::PointCloud<PointT>::Ptr Mirror::projectToPlane( pcl::PointCloud<PointT>::Ptr _cloud ) {
 
   // 0. Init
   pcl::PointCloud<PointT>::Ptr projected( new pcl::PointCloud<PointT>() );
@@ -282,7 +282,7 @@ pcl::PointCloud<PointT>::Ptr mindGapper::projectToPlane( pcl::PointCloud<PointT>
  * @function mirrorFromPlane
  * @brief Mirror pointcloud around _plane 
  */
-pcl::PointCloud<PointT>::Ptr mindGapper::mirrorFromPlane( pcl::PointCloud<PointT>::Ptr _cloud,
+pcl::PointCloud<PointT>::Ptr Mirror::mirrorFromPlane( pcl::PointCloud<PointT>::Ptr _cloud,
 								 Eigen::VectorXd _plane,
 								 bool _joinMirrored ) {
 
@@ -326,7 +326,7 @@ pcl::PointCloud<PointT>::Ptr mindGapper::mirrorFromPlane( pcl::PointCloud<PointT
 /**
  * @function viewMirror
  */
-bool mindGapper::viewMirror( int _ind ) {
+bool Mirror::viewMirror( int _ind ) {
 
   if( _ind >= mCandidates.size() || _ind < 0 ) {
     return false; 
@@ -356,7 +356,7 @@ bool mindGapper::viewMirror( int _ind ) {
 /**
  * @function printMirror
  */
-void mindGapper::printMirror( int _ind ) {
+void Mirror::printMirror( int _ind ) {
 
   if( _ind < 0 || _ind >= mCandidates.size() ) { std::cout << "NO PRINTING"<< std::endl; return; }
 
@@ -406,7 +406,7 @@ void mindGapper::printMirror( int _ind ) {
  * @function viewInitialParameters
  * @brief View projected cloud, centroid and 2 eigenvalues Ea and Eb
  */
-bool mindGapper::viewInitialParameters() {
+bool Mirror::viewInitialParameters() {
 
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("Initial") );
   viewer->setBackgroundColor(0,0,0);
@@ -453,7 +453,7 @@ bool mindGapper::viewInitialParameters() {
  * @function generate2DMask
  * @brief Generates image with visible segmented pixels from _segmented_cloud, _depthMask stores the depth of each
  */
-bool mindGapper::generate2DMask( pcl::PointCloud<PointT>::Ptr _segmented_cloud,
+bool Mirror::generate2DMask( pcl::PointCloud<PointT>::Ptr _segmented_cloud,
 				 cv::Mat &_markMask,
 				 cv::Mat &_depthMask ) {
 

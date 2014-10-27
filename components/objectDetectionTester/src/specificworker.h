@@ -38,6 +38,8 @@ public slots:
  	void compute(); 	
 	
 	void mirror();
+	void mindTheGap();
+	
 	void fitPrismNaive();
 	void fitPrismMCMC();
 	void fitPrismPf();
@@ -49,6 +51,7 @@ public slots:
 	void reloadVFH();
 	void loadTrainedVFH();
 	void vfh();
+	void surfHomography();
 	
 	void getInliers();
 	void projectInliers();

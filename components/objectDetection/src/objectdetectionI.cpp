@@ -80,6 +80,10 @@ void objectDetectionI::mirrorPC(const Ice::Current&){
 	worker->mirrorPC();
 }
 
+void objectDetectionI::mindTheGapPC(const Ice::Current&){
+	worker->mindTheGapPC();
+}
+
 void objectDetectionI::reloadVFH(const Ice::Current&){
 	worker->reloadVFH();
 }
@@ -90,6 +94,10 @@ void objectDetectionI::loadTrainedVFH(const Ice::Current&){
 
 void objectDetectionI::vfh(listType& guesses, const Ice::Current&){
 	worker->vfh(guesses);
+}
+
+void objectDetectionI::surfHomography(listType& guesses, const Ice::Current&){
+	worker->surfHomography(guesses);
 }
 
 

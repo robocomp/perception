@@ -52,7 +52,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <pcl/features/normal_3d_omp.h>
 
-#include "tabletop_symmetry/mindGapper.h"
+#include "tabletop_symmetry/mirror.h"
 #include "vfh/vfh.h"
 
 /**
@@ -158,7 +158,9 @@ public:
 	void extractPolygon(const string& model);
 	void normalSegmentation(const string& model);
 	
+	//PC mirroring
 	void mirrorPC();
+	void mindTheGapPC();
 	
 	void euclideanClustering(int &num_clusters);
 	void performEuclideanClustering();
@@ -168,6 +170,7 @@ public:
 	void reloadVFH();
 	void loadTrainedVFH();
 	void vfh(std::vector<string> &guesses);
+	void surfHomography(std::vector<string> &guesses);
 	
 	void reset();
 	

@@ -39,6 +39,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(reload_vfh_button, SIGNAL(clicked()), this, SLOT(reloadVFH()));
 	connect(load_trained_vfh_button, SIGNAL(clicked()), this, SLOT(loadTrainedVFH()));
 	connect(vfh_button, SIGNAL(clicked()), this, SLOT(vfh()));
+	connect(SURF_button, SIGNAL(clicked()), this, SLOT(surfHomography()));
 	
 	//april fits
 	connect(april_fit_table_button, SIGNAL(clicked()), this, SLOT(aprilFitTable()));
@@ -52,6 +53,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	
 	//mirror
 	connect(mirror_pc_button, SIGNAL(clicked()), this, SLOT(mirror()));
+	connect(mind_the_gap_button, SIGNAL(clicked()), this, SLOT(mindTheGap()));
 }
 
 /**
@@ -77,6 +79,11 @@ void SpecificWorker::getInliers()
 void SpecificWorker::mirror()
 {
 	objectdetection_proxy->mirrorPC();
+}
+
+void SpecificWorker::mindTheGap()
+{
+	objectdetection_proxy->mindTheGapPC();
 }
 
 void SpecificWorker::projectInliers()
@@ -144,6 +151,12 @@ void SpecificWorker::vfh()
 		name_of_object = pieces.at( pieces.length() - 2 );
 		vfh_listView->addItem(name_of_object);
 	}
+}
+
+void SpecificWorker::surfHomography()
+{
+	std::vector<string> guesses;
+	objectdetection_proxy->surfHomography(guesses);
 }
 
 void SpecificWorker::euclidean_clustering()
