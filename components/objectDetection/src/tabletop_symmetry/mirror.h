@@ -4,9 +4,14 @@
  */
 #pragma once
 
+#include <qmat/QMatAll>
+
 #include <vector>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/common/centroid.h>
+#include <pcl/search/kdtree.h>
+#include <pcl/io/pcd_io.h>
 
 //-- OpenCV headers
 #include <opencv2/highgui/highgui.hpp>
@@ -39,6 +44,9 @@ class Mirror {
 
   /**< Generates Mirroring cloud */
   int complete( pcl::PointCloud<PointT>::Ptr &_cloud );
+	
+	/** Generates centroid based mirroring cloud */
+	int centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud );
 
 
   bool generate2DMask(  pcl::PointCloud<PointT>::Ptr _segmented_cloud,

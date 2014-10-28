@@ -11,6 +11,7 @@ SET ( SOURCES
   tabletop_symmetry/mirror.cpp
   tabletop_symmetry/dt/dt.cpp
   vfh/vfh.cpp
+  geometry/plane.cpp
 )
 
 # Headers set

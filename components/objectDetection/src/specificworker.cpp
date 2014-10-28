@@ -276,6 +276,32 @@ void SpecificWorker::mindTheGapPC()
 void SpecificWorker::mirrorPC()
 {
 	
+	Mirror mirror;
+// 	QVec plane_coeff = table->get_plane_coeff();
+// 	
+// 	std::vector<double> plane_coeff_std;
+// 	plane_coeff_std.resize(4);
+// 	plane_coeff_std[0] = plane_coeff(0);
+// 	plane_coeff_std[1] = plane_coeff(1);
+// 	plane_coeff_std[2] = plane_coeff(2);
+// 	plane_coeff_std[3] = plane_coeff(3);
+// 	mirror.setTablePlane( plane_coeff_std );
+	
+	pcl::PointCloud<PointT>::Ptr pointcloud_test(new pcl::PointCloud<PointT>);
+	
+// 	mirror.centroidBasedComplete(cluster_clouds[object_to_show]);
+	mirror.centroidBasedComplete(pointcloud_test);
+
+	std::cout<<"ended"<<std::endl;
+	
+	for(int i = 0 ; i<pointcloud_test->points.size();i++)
+	{
+		pointcloud_test->points[i].x = pointcloud_test->points[i].x/1000;
+		pointcloud_test->points[i].y = pointcloud_test->points[i].y/1000;
+		pointcloud_test->points[i].z = pointcloud_test->points[i].z/1000;
+	}
+	
+	writer.write<PointT> ("completed_test.pcd", *pointcloud_test, false);
 }
 
 void SpecificWorker::surfHomography(std::vector<string> &guesses)

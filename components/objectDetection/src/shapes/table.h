@@ -12,6 +12,7 @@
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/features/normal_3d_omp.h>
+#include <geometry/plane.h>
 
 typedef pcl::PointXYZRGB PointT;
 

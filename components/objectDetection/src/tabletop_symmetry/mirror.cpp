@@ -242,6 +242,136 @@ int Mirror::complete( pcl::PointCloud<PointT>::Ptr &_cloud ) {
 }
 
 
+
+float min_distance (pcl::PointCloud<PointT>::Ptr _cloud, pcl::PointCloud<PointT>::Ptr _cloud2 )
+{
+	pcl::search::KdTree<PointT>::Ptr tree (new pcl::search::KdTree<PointT>);
+	tree->setInputCloud (_cloud);
+	std::vector<int> point_idx_nkn_search(1);
+  std::vector<float> point_nkn_squared_distance(1);
+	float distance = -1;
+	float point_nkn_distance = -1;
+	for(int i=0;i<_cloud2->size(); ++i)
+	{
+		std::cout<<"DISTANCE "<<i<<" :"<<distance<<std::endl;
+		tree->nearestKSearch(_cloud2->points[i], 1, point_idx_nkn_search, point_nkn_squared_distance );
+		point_nkn_distance = sqrt(point_nkn_squared_distance[0]);
+		if( distance == -1 or distance > point_nkn_distance)
+			distance = point_nkn_distance;
+	}
+	
+	return point_nkn_distance;
+}
+
+/**
+ * @function centroidBasedComplete
+ * @brief Project _cloud to plane (set by setTablePlane), results in a 2D cloud
+ */
+int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
+{
+	
+	if (pcl::io::loadPCDFile<PointT> ("/home/spyke/robocomp/components/perception/components/objectDetection/build/omniWheel.pcd", *_cloud) == -1) //* load the file
+  {
+    PCL_ERROR ("Couldn't read file omniWheel.pcd \n");
+    return (-1);
+  }
+	
+	if(_cloud->points.size() < 0)
+	{
+		std::cout<<"Point cloud size must be > 0!! "<<std::endl;
+		return -1;
+	}
+	
+	std::cout<<"Size of cloud: "<<_cloud->points.size()<<std::endl;
+	
+	float min_calc_distance = -1;
+	float max_z_distance  = 0;
+	QVec min_vector = QVec::zeros(3);
+	QVec max_z = QVec::zeros(3);
+	QVec center = QVec::zeros(3);
+	QVec qcentroid = QVec::zeros(3); 
+	Eigen::Vector4f centroid;
+	
+	// 0- Lets look for min distance and max_z for centroid moving
+	for( int i =0; i < _cloud->points.size(); ++i)
+	{
+		QVec point = QVec::vec3(_cloud->points[i].x, _cloud->points[i].y, _cloud->points[i].z);
+		
+		float norm = point.norm2();
+/*		
+		if ( min_calc_distance < 0 or norm < min_calc_distance )
+		{
+			min_calc_distance = norm;
+			min_vector = point;
+		}*/
+		if ( max_z_distance < point[2] )
+		{
+			max_z_distance = point[2];
+			max_z = point;
+		}
+	}
+	
+	std::cout<<"Max z distance: "<<max_z_distance<<std::endl;
+	
+	// 1- lets get the center to reflect and increment step
+	compute3DCentroid (*_cloud, centroid);
+
+	qcentroid = QVec::vec3(centroid(0), centroid(1), centroid(2));
+	float multiplication_term = max_z_distance/qcentroid(1);
+
+	qcentroid.print("qcentroid");
+	
+	center = qcentroid * multiplication_term;
+		
+	QVec inc = center - qcentroid;
+	float incU = inc.norm2();
+	
+	//2- construct the mirror
+	pcl::PointCloud<PointT>::Ptr mirrored_point_cloud (new pcl::PointCloud<PointT>());
+	mirrored_point_cloud->points.resize(_cloud->points.size());
+	for( int i = 0; i< _cloud->points.size(); ++i)
+	{
+		QVec point = QVec::vec3(_cloud->points[i].x, _cloud->points[i].y, _cloud->points[i].z);
+		QVec mirrored_point = center - point + center  + (inc*2); //leaving it far away
+		mirrored_point_cloud->points[i].x = mirrored_point(0);
+		mirrored_point_cloud->points[i].y = mirrored_point(1);
+		mirrored_point_cloud->points[i].z = mirrored_point(2);
+		mirrored_point_cloud->points[i].r = _cloud->points[i].r;
+		mirrored_point_cloud->points[i].g = _cloud->points[i].g;
+		mirrored_point_cloud->points[i].b = _cloud->points[i].b;
+	}
+	
+	std::cout<<"Mirrored_point_cloud_size: "<<mirrored_point_cloud->points.size()<<std::endl;
+	
+	//2- get the two clouds together
+	min_calc_distance = min_distance(_cloud, mirrored_point_cloud);
+	std::cout<<"Min dist: "<<min_calc_distance<<std::endl;
+	
+	while(min_calc_distance > 20)
+	{
+		std::cout<<"Lets get the point_clouds"<<std::endl;
+		//lets get them closer
+		for(int i = 0; i< mirrored_point_cloud->points.size(); i++)
+		{
+			std::cout<<mirrored_point_cloud->points.size()<<std::endl;
+			QVec point = QVec::vec3(mirrored_point_cloud->points[i].x,mirrored_point_cloud->points[i].y,mirrored_point_cloud->points[i].z);
+			point = point - (incU*min_calc_distance);
+			mirrored_point_cloud->points[i].x = point(0);
+			mirrored_point_cloud->points[i].y = point(1);
+			mirrored_point_cloud->points[i].z = point(2);
+		}
+		std::cout<<"About to get min dist"<<std::endl;
+		min_calc_distance = min_distance(_cloud, mirrored_point_cloud);
+		std::cout<<"Min dist: "<<min_calc_distance<<std::endl;
+	}
+	
+	//lets push_back result to the original pc
+	*_cloud += *mirrored_point_cloud;
+	
+	
+}
+
+
 /**
  * @function projectToPlane
  * @brief Project _cloud to plane (set by setTablePlane), results in a 2D cloud
