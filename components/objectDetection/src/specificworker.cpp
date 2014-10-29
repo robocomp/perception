@@ -316,12 +316,11 @@ void SpecificWorker::mirrorPC()
 	mirror.centroidBasedComplete(cl);
 	
 	//leaving the object respect to the robot
-		
 	PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
-	cluster_clouds[object_to_show]->clear();
-	cluster_clouds[object_to_show]->points.resize(cl->points.size());
-	cluster_clouds[object_to_show]->width = 1;
-	cluster_clouds[object_to_show]->height = cl->points.size();
+// 	cluster_clouds[object_to_show]->clear();
+// 	cluster_clouds[object_to_show]->points.resize(cl->points.size());
+// 	cluster_clouds[object_to_show]->width = 1;
+// 	cluster_clouds[object_to_show]->height = cl->points.size();
 	
 	for (unsigned int i=0; i<cl->points.size(); i++)
 	{
@@ -329,26 +328,86 @@ void SpecificWorker::mirrorPC()
 		QVec p2 = PP * p1;
 		QVec p22 = p2.fromHomogeneousCoordinates();
 
-		cluster_clouds[object_to_show]->points[i].x=p22(0);
-		cluster_clouds[object_to_show]->points[i].y=p22(1);
-		cluster_clouds[object_to_show]->points[i].z=p22(2);
-		cluster_clouds[object_to_show]->points[i].r=cl->points[i].r;
-		cluster_clouds[object_to_show]->points[i].g=cl->points[i].g;
-		cluster_clouds[object_to_show]->points[i].b=cl->points[i].b;
+		cl->points[i].x=p22(0);
+		cl->points[i].y=p22(1);
+		cl->points[i].z=p22(2);
+		cl->points[i].r=cluster_clouds[object_to_show]->points[i].r;
+		cl->points[i].g=cluster_clouds[object_to_show]->points[i].g;
+		cl->points[i].b=cluster_clouds[object_to_show]->points[i].b;
+	}
+	
+	
+	//3.- Reason for the what I should see point cloud
+	cv::Mat M(480,640,CV_8UC1, cv::Scalar::all(0));
+	for (int i = 0; i<cluster_clouds[object_to_show]->points.size(); i++)
+	{
+		QVec xy = innermodel->project("robot", QVec::vec3(cluster_clouds[object_to_show]->points[i].x, cluster_clouds[object_to_show]->points[i].y, cluster_clouds[object_to_show]->points[i].z), "rgbd"); 
+
+		if (xy(0)>=0 and xy(0) < 640 and xy(1)>=0 and xy(1) < 480 )
+		{
+			M.at<uchar> ((int)xy(1), (int)xy(0)) = 255;
+		}
+		else if (not (isinf(xy(1)) or isinf(xy(0))))
+		{
+			std::cout<<"Accediendo a -noinf: "<<xy(1)<<" "<<xy(0)<<std::endl;
+		}
+	}
+	
+	//dilate
+	cv::Mat dilated_M, z;
+	cv::dilate( M, dilated_M, cv::Mat(), cv::Point(-1, -1), 2, 1, 1 );
+	
+	//find contour
+	vector<vector<cv::Point> > contours;
+	vector<cv::Vec4i> hierarchy;
+	
+	cv::findContours( dilated_M, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+	
+		/// Draw contours
+	cv::Mat mask = cv::Mat::zeros( dilated_M.size(), CV_8UC1 );
+// 		int contour_index = 1;
+
+// 		cv::Scalar color = cv::Scalar( 0, 255, 0 );
+// 		cv::drawContours( drawing, contours, contour_index, color, 2, 8, hierarchy, 0, cv::Point() );
+	
+	cv::drawContours(mask, contours, -1, cv::Scalar(255, 255, 255), CV_FILLED);
+	
+// 	for (int x = 0; x < 480; x++)
+// 	{
+// 		for (int y = 0; y < 640; y++)
+// 		{
+// 			
+// 			std::cout<<(int)mask.at<uchar> (x, y);
+// 		}
+// 	}
+	
+	//check if points lie in the mask
+	for (int i = 0; i<cl->points.size(); i++)
+	{
+		QVec xy = innermodel->project("robot", QVec::vec3(cl->points[i].x, cl->points[i].y, cl->points[i].z), "rgbd"); 
+		if (xy(0)>=0 and xy(0) < 640 and xy(1)>=0 and xy(1) < 480 )
+		{
+			if ((int)mask.at<uchar> (xy(1), xy(0)) == 255 )
+			{
+				std::cout<<"Inside"<<std::endl;
+				cluster_clouds[object_to_show]->points.push_back(cl->points[i]);
+			}
+		}
+		else if (not (isinf(xy(1)) or isinf(xy(0))))
+		{
+			std::cout<<"Accediendo a -noinf: "<<xy(1)<<" "<<xy(0)<<std::endl;
+		}
 	}
 
-// 	mirror.centroidBasedComplete(pointcloud_test);
-
-	std::cout<<"ended"<<std::endl;
 	
-// 	for(int i = 0 ; i<pointcloud_test->points.size();i++)
-// 	{
-// 		pointcloud_test->points[i].x = pointcloud_test->points[i].x/1000;
-// 		pointcloud_test->points[i].y = pointcloud_test->points[i].y/1000;
-// 		pointcloud_test->points[i].z = pointcloud_test->points[i].z/1000;
-// 	}
-// 	
-// 	writer.write<PointT> ("completed_test.pcd", *pointcloud_test, false);
+	cv::namedWindow( "Display what I see", cv::WINDOW_AUTOSIZE );// Create a window for display.
+  cv::imshow( "Display what I see", mask );
+	
+	//lets put them together
+// 	*cluster_clouds[object_to_show] += *cl;
+	
+	std::cout<<"Mirror ended"<<std::endl;
+	
 }
 
 void SpecificWorker::surfHomography(std::vector<string> &guesses)

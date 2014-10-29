@@ -282,7 +282,7 @@ int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 		return -1;
 	}
 	
-	std::cout<<"Size of cloud: "<<_cloud->points.size()<<std::endl;
+// 	std::cout<<"Size of cloud: "<<_cloud->points.size()<<std::endl;
 	
 	float min_calc_distance = -1;
 	float max_z_distance  = 0;
@@ -311,7 +311,7 @@ int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 		}
 	}
 	
-	std::cout<<"Max z distance: "<<max_z_distance<<std::endl;
+// 	std::cout<<"Max z distance: "<<max_z_distance<<std::endl;
 	
 	// 1- lets get the center to reflect and increment step
 	compute3DCentroid (*_cloud, centroid);
@@ -323,12 +323,12 @@ int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 	
 	center = qcentroid * multiplication_term;
 	
-	std::cout<<"Centroid : "<<centroid(0)<<" "<<centroid(1)<<" "<<centroid(2)<<std::endl;
+// 	std::cout<<"Centroid : "<<centroid(0)<<" "<<centroid(1)<<" "<<centroid(2)<<std::endl;
 		
 	QVec inc = qcentroid - center;
 	QVec incU = inc.normalize();
 	
-	std::cout<<"IncU "<<incU<<std::endl;
+// 	std::cout<<"IncU "<<incU<<std::endl;
 	
 	//2- construct the mirror
 	pcl::PointCloud<PointT>::Ptr mirrored_point_cloud (new pcl::PointCloud<PointT>());
@@ -351,7 +351,7 @@ int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 	min_calc_distance = min_distance(_cloud, mirrored_point_cloud);
 	std::cout<<"min dist: "<<min_calc_distance<<std::endl;
 	
-	while(min_calc_distance > 20)
+	while(min_calc_distance > 15)
 	{
 // 		std::cout<<"Lets get the point_clouds"<<std::endl;
 		//lets get them closer
@@ -364,9 +364,10 @@ int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 		min_calc_distance = min_distance(_cloud, mirrored_point_cloud);
 		std::cout<<"min dist: "<<min_calc_distance<<std::endl;
 	}
+	_cloud = mirrored_point_cloud;
 	
 	//lets push_back result to the original pc
-	*_cloud += *mirrored_point_cloud;
+// 	*_cloud += *mirrored_point_cloud;
 	
 	
 }
