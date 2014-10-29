@@ -287,21 +287,68 @@ void SpecificWorker::mirrorPC()
 // 	plane_coeff_std[3] = plane_coeff(3);
 // 	mirror.setTablePlane( plane_coeff_std );
 	
-	pcl::PointCloud<PointT>::Ptr pointcloud_test(new pcl::PointCloud<PointT>);
+	//moving the object point cloud to the rgbd
+	pcl::PointCloud<PointT>::Ptr cl (new pcl::PointCloud<PointT>);
+		
+	QMat PP = innermodel->getTransformationMatrix("rgbd_t", "robot");
 	
-// 	mirror.centroidBasedComplete(cluster_clouds[object_to_show]);
-	mirror.centroidBasedComplete(pointcloud_test);
+	cl->points.resize(cluster_clouds[object_to_show]->points.size());
+	cl->width = 1;
+	cl->height = cluster_clouds[object_to_show]->points.size();
+	
+	for (unsigned int i=0; i<cluster_clouds[object_to_show]->points.size(); i++)
+	{
+		QVec p1 = QVec::vec4(cluster_clouds[object_to_show]->points[i].x, cluster_clouds[object_to_show]->points[i].y, cluster_clouds[object_to_show]->points[i].z, 1);
+		QVec p2 = PP * p1;
+		QVec p22 = p2.fromHomogeneousCoordinates();
+
+		cl->points[i].x=p22(0);
+		cl->points[i].y=p22(1);
+		cl->points[i].z=p22(2);
+		cl->points[i].r=cluster_clouds[object_to_show]->points[i].r;
+		cl->points[i].g=cluster_clouds[object_to_show]->points[i].g;
+		cl->points[i].b=cluster_clouds[object_to_show]->points[i].b;
+	}
+	
+	writer.write<PointT> ("box_test.pcd", *cl, false);
+
+	
+	mirror.centroidBasedComplete(cl);
+	
+	//leaving the object respect to the robot
+		
+	PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
+	cluster_clouds[object_to_show]->clear();
+	cluster_clouds[object_to_show]->points.resize(cl->points.size());
+	cluster_clouds[object_to_show]->width = 1;
+	cluster_clouds[object_to_show]->height = cl->points.size();
+	
+	for (unsigned int i=0; i<cl->points.size(); i++)
+	{
+		QVec p1 = QVec::vec4(cl->points[i].x, cl->points[i].y, cl->points[i].z, 1);
+		QVec p2 = PP * p1;
+		QVec p22 = p2.fromHomogeneousCoordinates();
+
+		cluster_clouds[object_to_show]->points[i].x=p22(0);
+		cluster_clouds[object_to_show]->points[i].y=p22(1);
+		cluster_clouds[object_to_show]->points[i].z=p22(2);
+		cluster_clouds[object_to_show]->points[i].r=cl->points[i].r;
+		cluster_clouds[object_to_show]->points[i].g=cl->points[i].g;
+		cluster_clouds[object_to_show]->points[i].b=cl->points[i].b;
+	}
+
+// 	mirror.centroidBasedComplete(pointcloud_test);
 
 	std::cout<<"ended"<<std::endl;
 	
-	for(int i = 0 ; i<pointcloud_test->points.size();i++)
-	{
-		pointcloud_test->points[i].x = pointcloud_test->points[i].x/1000;
-		pointcloud_test->points[i].y = pointcloud_test->points[i].y/1000;
-		pointcloud_test->points[i].z = pointcloud_test->points[i].z/1000;
-	}
-	
-	writer.write<PointT> ("completed_test.pcd", *pointcloud_test, false);
+// 	for(int i = 0 ; i<pointcloud_test->points.size();i++)
+// 	{
+// 		pointcloud_test->points[i].x = pointcloud_test->points[i].x/1000;
+// 		pointcloud_test->points[i].y = pointcloud_test->points[i].y/1000;
+// 		pointcloud_test->points[i].z = pointcloud_test->points[i].z/1000;
+// 	}
+// 	
+// 	writer.write<PointT> ("completed_test.pcd", *pointcloud_test, false);
 }
 
 void SpecificWorker::surfHomography(std::vector<string> &guesses)

@@ -253,7 +253,7 @@ float min_distance (pcl::PointCloud<PointT>::Ptr _cloud, pcl::PointCloud<PointT>
 	float point_nkn_distance = -1;
 	for(int i=0;i<_cloud2->size(); ++i)
 	{
-		std::cout<<"DISTANCE "<<i<<" :"<<distance<<std::endl;
+// 		std::cout<<"DISTANCE "<<i<<" :"<<distance<<std::endl;
 		tree->nearestKSearch(_cloud2->points[i], 1, point_idx_nkn_search, point_nkn_squared_distance );
 		point_nkn_distance = sqrt(point_nkn_squared_distance[0]);
 		if( distance == -1 or distance > point_nkn_distance)
@@ -270,12 +270,12 @@ float min_distance (pcl::PointCloud<PointT>::Ptr _cloud, pcl::PointCloud<PointT>
 int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 {
 	
-	if (pcl::io::loadPCDFile<PointT> ("/home/spyke/robocomp/components/perception/components/objectDetection/build/omniWheel.pcd", *_cloud) == -1) //* load the file
-  {
-    PCL_ERROR ("Couldn't read file omniWheel.pcd \n");
-    return (-1);
-  }
-	
+// 	if (pcl::io::loadPCDFile<PointT> ("/home/spyke/robocomp/components/perception/components/objectDetection/build/box.pcd", *_cloud) == -1) //* load the file
+//   {
+//     PCL_ERROR ("Couldn't read file omniWheel.pcd \n");
+//     return (-1);
+//   }
+// 	
 	if(_cloud->points.size() < 0)
 	{
 		std::cout<<"Point cloud size must be > 0!! "<<std::endl;
@@ -322,9 +322,13 @@ int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 	qcentroid.print("qcentroid");
 	
 	center = qcentroid * multiplication_term;
+	
+	std::cout<<"Centroid : "<<centroid(0)<<" "<<centroid(1)<<" "<<centroid(2)<<std::endl;
 		
-	QVec inc = center - qcentroid;
-	float incU = inc.norm2();
+	QVec inc = qcentroid - center;
+	QVec incU = inc.normalize();
+	
+	std::cout<<"IncU "<<incU<<std::endl;
 	
 	//2- construct the mirror
 	pcl::PointCloud<PointT>::Ptr mirrored_point_cloud (new pcl::PointCloud<PointT>());
@@ -332,7 +336,7 @@ int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 	for( int i = 0; i< _cloud->points.size(); ++i)
 	{
 		QVec point = QVec::vec3(_cloud->points[i].x, _cloud->points[i].y, _cloud->points[i].z);
-		QVec mirrored_point = center - point + center  + (inc*2); //leaving it far away
+		QVec mirrored_point = center - point + center  + (inc*2000); //leaving it far away
 		mirrored_point_cloud->points[i].x = mirrored_point(0);
 		mirrored_point_cloud->points[i].y = mirrored_point(1);
 		mirrored_point_cloud->points[i].z = mirrored_point(2);
@@ -345,24 +349,20 @@ int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 	
 	//2- get the two clouds together
 	min_calc_distance = min_distance(_cloud, mirrored_point_cloud);
-	std::cout<<"Min dist: "<<min_calc_distance<<std::endl;
+	std::cout<<"min dist: "<<min_calc_distance<<std::endl;
 	
 	while(min_calc_distance > 20)
 	{
-		std::cout<<"Lets get the point_clouds"<<std::endl;
+// 		std::cout<<"Lets get the point_clouds"<<std::endl;
 		//lets get them closer
 		for(int i = 0; i< mirrored_point_cloud->points.size(); i++)
 		{
-			std::cout<<mirrored_point_cloud->points.size()<<std::endl;
-			QVec point = QVec::vec3(mirrored_point_cloud->points[i].x,mirrored_point_cloud->points[i].y,mirrored_point_cloud->points[i].z);
-			point = point - (incU*min_calc_distance);
-			mirrored_point_cloud->points[i].x = point(0);
-			mirrored_point_cloud->points[i].y = point(1);
-			mirrored_point_cloud->points[i].z = point(2);
+			mirrored_point_cloud->points[i].x = mirrored_point_cloud->points[i].x - (incU(0)*min_calc_distance);
+			mirrored_point_cloud->points[i].y = mirrored_point_cloud->points[i].y - (incU(1)*min_calc_distance);
+			mirrored_point_cloud->points[i].z = mirrored_point_cloud->points[i].z - (incU(2)*min_calc_distance);
 		}
-		std::cout<<"About to get min dist"<<std::endl;
 		min_calc_distance = min_distance(_cloud, mirrored_point_cloud);
-		std::cout<<"Min dist: "<<min_calc_distance<<std::endl;
+		std::cout<<"min dist: "<<min_calc_distance<<std::endl;
 	}
 	
 	//lets push_back result to the original pc
