@@ -277,15 +277,15 @@ void SpecificWorker::mirrorPC()
 {
 	
 	Mirror mirror;
-// 	QVec plane_coeff = table->get_plane_coeff();
-// 	
-// 	std::vector<double> plane_coeff_std;
-// 	plane_coeff_std.resize(4);
-// 	plane_coeff_std[0] = plane_coeff(0);
-// 	plane_coeff_std[1] = plane_coeff(1);
-// 	plane_coeff_std[2] = plane_coeff(2);
-// 	plane_coeff_std[3] = plane_coeff(3);
-// 	mirror.setTablePlane( plane_coeff_std );
+	QVec plane_coeff = table->get_plane_coeff();
+	
+	std::vector<double> plane_coeff_std;
+	plane_coeff_std.resize(4);
+	plane_coeff_std[0] = plane_coeff(0);
+	plane_coeff_std[1] = plane_coeff(1);
+	plane_coeff_std[2] = plane_coeff(2);
+	plane_coeff_std[3] = plane_coeff(3);
+	mirror.setTablePlane( plane_coeff_std );
 	
 	//moving the object point cloud to the rgbd
 	pcl::PointCloud<PointT>::Ptr cl (new pcl::PointCloud<PointT>);
@@ -1035,9 +1035,9 @@ void SpecificWorker::updatePointCloud()
 	bool first=true;
 	for (unsigned int i=0; i<points_kinect.size(); i++)
 	{
-		QVec p1 = QVec::vec4(points_kinect[i].x, points_kinect[i].y, points_kinect[i].z, 1);
-		QVec p2 = PP * p1;
-		QVec p22 = p2.fromHomogeneousCoordinates();
+ 		QVec p1 = QVec::vec4(points_kinect[i].x, points_kinect[i].y, points_kinect[i].z, 1);
+ 		QVec p2 = PP * p1;
+ 		QVec p22 = p2.fromHomogeneousCoordinates();
 
 		if (not isnan(points_kinect[i].x) and first)
 		{
