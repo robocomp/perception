@@ -893,7 +893,7 @@ void SpecificWorker::performEuclideanClustering()
 	cluster_clouds.clear();
 	pcl::EuclideanClusterExtraction<PointT> ec;
 	
-	ec.setClusterTolerance (30); // 2cm
+	ec.setClusterTolerance (70); // 2cm
   ec.setMinClusterSize (100);
   ec.setMaxClusterSize (25000);
   ec.setSearchMethod (tree);

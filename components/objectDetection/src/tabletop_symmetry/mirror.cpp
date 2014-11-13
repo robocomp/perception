@@ -317,7 +317,7 @@ int Mirror::centroidBasedComplete( pcl::PointCloud<PointT>::Ptr &_cloud )
 	compute3DCentroid (*_cloud, centroid);
 
 	qcentroid = QVec::vec3(centroid(0), centroid(1), centroid(2));
-	float multiplication_term = max_z_distance/qcentroid(1);
+	float multiplication_term = max_z_distance/qcentroid(2);
 
 	qcentroid.print("qcentroid");
 	
