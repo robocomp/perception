@@ -143,6 +143,7 @@ void SpecificWorker::vfh()
 	objectdetection_proxy->vfh(guesses);
 	QStringList pieces;
 	QString path_to_pcd, name_of_object;
+	vfh_listView->clear();
 	
 	for(int i = 0; i < guesses.size(); i++)
 	{

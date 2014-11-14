@@ -677,6 +677,7 @@ void SpecificWorker::vfh(std::vector<string> &guesses)
 {
 	if(objectSelected_flag)
 	{
+		std::cout<<"[DEBUG] Cluster SIZE: "<<cluster_clouds[object_to_show]->points.size()<<std::endl;
 		vfh_matcher->doTheGuess(cluster_clouds[object_to_show], guesses);
 	}
 	else

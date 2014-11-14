@@ -168,12 +168,16 @@ void VFH::reloadVFH(std::string path_to_dir)
     for (size_t j = 0; j < data.cols; ++j)
       data[i][j] = models[i].second[j];
 
+	std::cout<<"Saving data to disk"<<std::endl;
   // Save data to disk (list of models)
   flann::save_to_file (data, training_data_h5_file_name, "training_data");
   std::ofstream fs;
   fs.open (training_data_list_file_name.c_str ());
   for (size_t i = 0; i < models.size (); ++i)
+	{
+		std::cout<<models[i].first<<std::endl;
     fs << models[i].first << "\n";
+	}
   fs.close ();
  
   // Build the tree index and save it to disk
