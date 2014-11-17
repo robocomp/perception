@@ -52,6 +52,7 @@ void  mirrorPC(const Ice::Current& = Ice::Current());
 void  mindTheGapPC(const Ice::Current& = Ice::Current());
 void  reloadVFH(const Ice::Current& = Ice::Current());
 void  loadTrainedVFH(const Ice::Current& = Ice::Current());
+void  fitTheViewVFH(const Ice::Current& = Ice::Current());
 void  vfh(listType& guesses, const Ice::Current& = Ice::Current());
 void  surfHomography(listType& guesses, const Ice::Current& = Ice::Current());
 

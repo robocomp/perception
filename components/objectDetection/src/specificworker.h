@@ -36,7 +36,10 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/features/don.h>
-
+#include <pcl/common/time.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/features/fpfh_omp.h>
+#include <pcl/registration/sample_consensus_prerejective.h>
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -74,6 +77,13 @@ public:
 };
 
 typedef std::map<int, AprilTagModel> TagModelMap;
+
+typedef pcl::PointNormal PointNT;
+typedef pcl::PointCloud<PointNT> PointCloudT;
+typedef pcl::FPFHSignature33 FeatureT;
+typedef pcl::FPFHEstimationOMP<PointT,PointNT,FeatureT> FeatureEstimationT;
+typedef pcl::PointCloud<FeatureT> FeatureCloudT;
+typedef pcl::visualization::PointCloudColorHandlerCustom<PointT> ColorHandlerT;
 
 class SpecificWorker : public GenericWorker
 { 
@@ -116,6 +126,7 @@ class SpecificWorker : public GenericWorker
 	
 	//VFH
 	boost::shared_ptr<VFH> vfh_matcher;
+	std::vector<string> vfh_guesses;
 	
 	//Normal estimation stuff:
 	pcl::NormalEstimationOMP<PointT, pcl::PointNormal> normal_estimation;
@@ -171,6 +182,8 @@ public:
 	void loadTrainedVFH();
 	void vfh(std::vector<string> &guesses);
 	void surfHomography(std::vector<string> &guesses);
+	
+	void fitTheViewVFH();
 	
 	void reset();
 	

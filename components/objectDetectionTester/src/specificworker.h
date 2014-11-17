@@ -52,6 +52,7 @@ public slots:
 	void loadTrainedVFH();
 	void vfh();
 	void surfHomography();
+	void fitTheViewVFH();
 	
 	void getInliers();
 	void projectInliers();

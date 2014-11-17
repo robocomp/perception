@@ -92,6 +92,10 @@ void objectDetectionI::loadTrainedVFH(const Ice::Current&){
 	worker->loadTrainedVFH();
 }
 
+void objectDetectionI::fitTheViewVFH(const Ice::Current&){
+	worker->fitTheViewVFH();
+}
+
 void objectDetectionI::vfh(listType& guesses, const Ice::Current&){
 	worker->vfh(guesses);
 }

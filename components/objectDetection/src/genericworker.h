@@ -75,6 +75,7 @@ public:
 	virtual void  mindTheGapPC() = 0;
 	virtual void  reloadVFH() = 0;
 	virtual void  loadTrainedVFH() = 0;
+	virtual void  fitTheViewVFH() = 0;
 	virtual void  vfh(listType& guesses) = 0;
 	virtual void  surfHomography(listType& guesses) = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;

@@ -41,6 +41,9 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(vfh_button, SIGNAL(clicked()), this, SLOT(vfh()));
 	connect(SURF_button, SIGNAL(clicked()), this, SLOT(surfHomography()));
 	
+	//vfh fit
+	connect(fit_the_view_button, SIGNAL(clicked()), this, SLOT(fitTheViewVFH()));
+	
 	//april fits
 	connect(april_fit_table_button, SIGNAL(clicked()), this, SLOT(aprilFitTable()));
 	connect(april_fit_box_button, SIGNAL(clicked()), this, SLOT(aprilFitBox()));
@@ -135,6 +138,11 @@ void SpecificWorker::aprilFitTable()
 void SpecificWorker::aprilFitBox()
 {
 	objectdetection_proxy->aprilFitModel("box");
+}
+
+void SpecificWorker::fitTheViewVFH()
+{
+	objectdetection_proxy->fitTheViewVFH();
 }
 
 void SpecificWorker::vfh()

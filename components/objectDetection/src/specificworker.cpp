@@ -678,10 +678,100 @@ void SpecificWorker::vfh(std::vector<string> &guesses)
 	if(objectSelected_flag)
 	{
 		std::cout<<"[DEBUG] Cluster SIZE: "<<cluster_clouds[object_to_show]->points.size()<<std::endl;
-		vfh_matcher->doTheGuess(cluster_clouds[object_to_show], guesses);
+		vfh_matcher->doTheGuess(cluster_clouds[object_to_show], vfh_guesses);
+		guesses = vfh_guesses;
 	}
 	else
 		std::cout<<"please select an object first"<<std::endl;
+}
+
+void SpecificWorker::fitTheViewVFH()
+{
+	if(!vfh_guesses.empty())
+	{
+		
+		FeatureCloudT::Ptr  object_features(new pcl::PointCloud<pcl::FPFHSignature33>);
+		FeatureCloudT::Ptr  scene_features(new pcl::PointCloud<pcl::FPFHSignature33>);
+		pcl::PointCloud<PointT>::Ptr object (new pcl::PointCloud<PointT>);
+// 		pcl::PointCloud<PointT>::Ptr scene (new pcl::PointCloud<PointT>);
+		PointCloudT::Ptr scene_normals (new PointCloudT);
+		PointCloudT::Ptr object_normals (new PointCloudT);
+		pcl::PointCloud<PointT>::Ptr object_aligned (new pcl::PointCloud<PointT>);
+		
+		//read object view
+		string filename = vfh_guesses[0].substr(0,vfh_guesses[0].find_last_of(".")) + ".pcd";
+		
+		if (pcl::io::loadPCDFile<PointT> (filename, *object) < 0)
+		{
+			pcl::console::print_error ("Error loading object/scene file: ", filename.c_str());
+			return;
+		}
+		
+		//Estimate normals
+		pcl::console::print_highlight ("Estimating scene normals...\n");
+		pcl::NormalEstimationOMP<PointT,pcl::PointNormal> nest;
+		nest.setRadiusSearch (10);
+		nest.setInputCloud (cluster_clouds[object_to_show]);
+		nest.compute (*scene_normals);
+		
+		nest.setInputCloud (object);
+		nest.compute (*object_normals);
+		
+		// Estimate features
+		pcl::console::print_highlight ("Estimating features...\n");
+		FeatureEstimationT fest;
+		fest.setRadiusSearch (25);
+		fest.setInputCloud (object);
+		fest.setInputNormals (object_normals);
+		fest.compute (*object_features);
+		fest.setInputCloud (cluster_clouds[object_to_show]);
+		fest.setInputNormals (scene_normals);
+		fest.compute (*scene_features);
+		
+		// Perform alignment
+		pcl::console::print_highlight ("Starting alignment...\n");
+		pcl::SampleConsensusPrerejective<PointT,PointT,FeatureT> align;
+		align.setInputSource (object);
+		align.setSourceFeatures (object_features);
+		align.setInputTarget (cluster_clouds[object_to_show]);
+		align.setTargetFeatures (scene_features);
+		align.setMaximumIterations (10000); // Number of RANSAC iterations
+		align.setNumberOfSamples (3); // Number of points to sample for generating/prerejecting a pose
+		align.setCorrespondenceRandomness (2); // Number of nearest features to use
+		align.setSimilarityThreshold (0.9f); // Polygonal edge length similarity threshold
+		align.setMaxCorrespondenceDistance (1500); // Inlier threshold
+		align.setInlierFraction (0.25f); // Required inlier fraction for accepting a pose hypothesis
+		{
+			pcl::ScopeTime t("Alignment");
+			align.align (*object_aligned);
+		}
+		
+		if (align.hasConverged ())
+		{
+			// Print results
+			printf ("\n");
+			Eigen::Matrix4f transformation = align.getFinalTransformation ();
+			pcl::console::print_info ("    | %6.3f %6.3f %6.3f | \n", transformation (0,0), transformation (0,1), transformation (0,2));
+			pcl::console::print_info ("R = | %6.3f %6.3f %6.3f | \n", transformation (1,0), transformation (1,1), transformation (1,2));
+			pcl::console::print_info ("    | %6.3f %6.3f %6.3f | \n", transformation (2,0), transformation (2,1), transformation (2,2));
+			pcl::console::print_info ("\n");
+			pcl::console::print_info ("t = < %0.3f, %0.3f, %0.3f >\n", transformation (0,3), transformation (1,3), transformation (2,3));
+			pcl::console::print_info ("\n");
+			pcl::console::print_info ("Inliers: %i/%i\n", align.getInliers ().size (), object->size ());
+			
+			// Show alignment
+			pcl::visualization::PCLVisualizer visu("Alignment");
+			visu.addPointCloud (cluster_clouds[object_to_show], ColorHandlerT (cluster_clouds[object_to_show], 0.0, 255.0, 0.0), "scene");
+			visu.addPointCloud (object_aligned, ColorHandlerT (object_aligned, 0.0, 0.0, 255.0), "object_aligned");
+			visu.spin ();
+		}
+		else
+		{
+			pcl::console::print_error ("Alignment failed!\n");
+			return;
+		}
+		
+	}
 }
 
 void SpecificWorker::reset()

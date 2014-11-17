@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>967</width>
-    <height>424</height>
+    <width>1099</width>
+    <height>411</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,8 +29,8 @@
   <widget class="QPushButton" name="fit_cylinder_button">
    <property name="geometry">
     <rect>
-     <x>830</x>
-     <y>160</y>
+     <x>940</x>
+     <y>140</y>
      <width>101</width>
      <height>23</height>
     </rect>
@@ -123,8 +123,8 @@
   <widget class="QPushButton" name="fit_prism_naive_button">
    <property name="geometry">
     <rect>
-     <x>830</x>
-     <y>70</y>
+     <x>940</x>
+     <y>50</y>
      <width>121</width>
      <height>23</height>
     </rect>
@@ -249,8 +249,8 @@
   <widget class="QPushButton" name="fit_prism_mcmc_button">
    <property name="geometry">
     <rect>
-     <x>830</x>
-     <y>100</y>
+     <x>940</x>
+     <y>80</y>
      <width>121</width>
      <height>23</height>
     </rect>
@@ -262,8 +262,8 @@
   <widget class="QPushButton" name="fit_prism_pf_button">
    <property name="geometry">
     <rect>
-     <x>830</x>
-     <y>130</y>
+     <x>940</x>
+     <y>110</y>
      <width>121</width>
      <height>23</height>
     </rect>
@@ -342,6 +342,29 @@
    </property>
    <property name="text">
     <string>mind the gap</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="fit_the_view_button">
+   <property name="geometry">
+    <rect>
+     <x>680</x>
+     <y>90</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>fitTheView</string>
+   </property>
+  </widget>
+  <widget class="QListWidget" name="fit_the_view_listView">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>50</y>
+     <width>139</width>
+     <height>92</height>
+    </rect>
    </property>
   </widget>
  </widget>
