@@ -177,7 +177,7 @@ void SpecificWorker::compute( )
 		
 		if(extractTablePolygon_flag)
 		{
-			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 20, 1500, prism_indices, this->cloud);
+			table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 10, 1500, prism_indices, this->cloud);
 		}
 		
 		if(normal_segmentation_flag)
@@ -664,7 +664,7 @@ void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 
 void SpecificWorker::reloadVFH()
 {
-	vfh_matcher->reloadVFH("/home/robocomp/robocomp/files/objectData/partial_clouds/");
+	vfh_matcher->reloadVFH("/home/robocomp/robocomp/files/objectData/Rockin_set_labeled/");
 }
 
 void SpecificWorker::loadTrainedVFH()
@@ -687,6 +687,9 @@ void SpecificWorker::vfh(std::vector<string> &guesses)
 
 void SpecificWorker::fitTheViewVFH()
 {
+	static bool first3 = true;
+	static bool first0 = true;
+	
 	if(!vfh_guesses.empty())
 	{
 		
@@ -746,11 +749,61 @@ void SpecificWorker::fitTheViewVFH()
 			align.align (*object_aligned);
 		}
 		
+		
 		if (align.hasConverged ())
 		{
+			Eigen::Matrix4f transformation = align.getFinalTransformation ();
+			
+			//calculate transform and rotation
+			
+			//get the filename with no extension, it is a number corresponding to its rotation
+			string filename_no_extension = vfh_guesses[0].substr(vfh_guesses[0].find_last_of("/")+1);
+			filename_no_extension = filename_no_extension.substr(0,filename_no_extension.find_last_of("."));
+			//dataset of views are rotated 24 deg., 0.41887902 rad
+			int rotation_numb = atoi( filename_no_extension.c_str() ) - 1;
+			float rotation = 0.41887902*rotation_numb;
+
+			
+			InnerModel innermodel_location;
+			InnerModelNode *parent = innermodel_location.getNode(QString::fromStdString("root"));
+			innermodel_location.newTransform(QString::fromStdString("stored_view"), QString::fromStdString("static") ,parent, 380, 290, 0, 0, rotation, 0);
+			
+			RTMat transform_view_to_object;
+			
+			transform_view_to_object(0,0) = transformation (0,0);
+			transform_view_to_object(0,1) = transformation (0,1);
+			transform_view_to_object(0,2) = transformation (0,2);
+			transform_view_to_object(1,0) = transformation (1,0);
+			transform_view_to_object(1,1) = transformation (1,1);
+			transform_view_to_object(1,2) = transformation (1,2);
+			transform_view_to_object(2,0) = transformation (2,0);
+			transform_view_to_object(2,1) = transformation (2,1);
+			transform_view_to_object(2,2) = transformation (2,2);
+			//add translation this is 3x4!!
+			
+			
+			QVec tr = transform_view_to_object.getTr(); 
+			QVec r = transform_view_to_object.extractAnglesR_min();
+			
+			std::cout<<"Tx: "<<tr(0)<<" Ty: "<<tr(1)<<" Tz: "<<tr(2)<<std::endl;
+			std::cout<<"Rx: "<<r(0)<<" Ry: "<<r(1)<<" Rz: "<<r(2)<<std::endl;
+			
+			parent = innermodel_location.getNode(QString::fromStdString("stored_view"));
+			innermodel_location.newTransform(QString::fromStdString("real"), QString::fromStdString("static") ,parent, tr(0), tr(1), tr(2), r(0), r(1), r(2));
+			
+			RTMat t_wrt_table;
+			t_wrt_table = innermodel_location.getTransformationMatrix("real","root");
+			
+			tr = t_wrt_table.getTr();
+			r = t_wrt_table.extractAnglesR_min();
+			
+			std::cout<<"Tx: "<<tr(0)<<" Ty: "<<tr(1)<<" Tz: "<<tr(2)<<std::endl;
+			std::cout<<"Rx: "<<r(0)<<" Ry: "<<r(1)<<" Rz: "<<r(2)<<std::endl;
+			
+// 			innermodel_location->newTransform(QString::fromStdString(""), QString::fromStdString("static") ,parent, 380, 290, 0, 0, 0,0);
+			
 			// Print results
 			printf ("\n");
-			Eigen::Matrix4f transformation = align.getFinalTransformation ();
 			pcl::console::print_info ("    | %6.3f %6.3f %6.3f | \n", transformation (0,0), transformation (0,1), transformation (0,2));
 			pcl::console::print_info ("R = | %6.3f %6.3f %6.3f | \n", transformation (1,0), transformation (1,1), transformation (1,2));
 			pcl::console::print_info ("    | %6.3f %6.3f %6.3f | \n", transformation (2,0), transformation (2,1), transformation (2,2));
@@ -772,6 +825,51 @@ void SpecificWorker::fitTheViewVFH()
 		}
 		
 	}
+	//to test rotation and translation from one mark to another
+	else
+	{
+		InnerModel innermodel_pos;
+		mutex->lock();
+		
+		for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
+		{
+			if (itMap->second.id == 3)
+			{
+				if(first3)
+				{
+					InnerModelNode *parent = innermodel->getNode(QString::fromStdString("root"));
+					innermodel->newTransform(QString::fromStdString("tag3"), QString::fromStdString("static") ,parent, itMap->second.tx, itMap->second.ty, itMap->second.tz, itMap->second.rx, itMap->second.ry, itMap->second.rz);
+					first3 = false;
+				}
+				else
+				{
+					innermodel->updateTransformValues("tag3", itMap->second.tx, itMap->second.ty, itMap->second.tz, itMap->second.rx, itMap->second.ry, itMap->second.rz, "root");
+				}
+			}
+			if (itMap->second.id == 0)
+			{
+				if(first0)
+				{
+					InnerModelNode *parent = innermodel->getNode(QString::fromStdString("root"));
+					innermodel->newTransform(QString::fromStdString("tag0"), QString::fromStdString("static") ,parent, itMap->second.tx, itMap->second.ty, itMap->second.tz, itMap->second.rx, itMap->second.ry, itMap->second.rz);
+					first0 = false;
+				}
+				else
+				{
+					innermodel->updateTransformValues("tag0", itMap->second.tx, itMap->second.ty, itMap->second.tz, itMap->second.rx, itMap->second.ry, itMap->second.rz, "root");
+				}
+			}
+		}
+		mutex->unlock();
+		
+// 		const RTMat transform = innermodel->getTransformationMatrix("tag0", "tag3");
+// 		const QVec tr = transform.getTr();
+// 		const QVec r = transform.extractAnglesR_min();
+// 		
+// 		std::cout<<"Tx: "<<tr(0)<<" Ty: "<<tr(1)<<" Tz: "<<tr(2)<<std::endl;
+// 		std::cout<<"Rx: "<<r(0)<<" Ry: "<<r(1)<<" Rz: "<<r(2)<<std::endl;
+	}
+		
 }
 
 void SpecificWorker::reset()
@@ -1076,6 +1174,7 @@ void SpecificWorker::performEuclideanClustering()
 		
 		cv::namedWindow( "Display window2", cv::WINDOW_AUTOSIZE );// Create a window for display.
     cv::imshow( "Display window2", rgbd_image );
+		cv::imwrite( "scene.png", rgbd_image );
 		
 		cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
     cv::imshow( "Display window", crop );
@@ -1137,22 +1236,23 @@ void SpecificWorker::updatePointCloud()
 // 			p22.print("p22");
 // 			first = false;
 		}
-// 			memcpy(&cloud->points[i],p22.data(),3*sizeof(float));
-		cloud->points[i].x=p22(0);
-		cloud->points[i].y=p22(1);
-		cloud->points[i].z=p22(2);
+			memcpy(&cloud->points[i],p22.data(),3*sizeof(float));
+// 		cloud->points[i].x=p22(0);
+// 		cloud->points[i].y=p22(1);
+// 		cloud->points[i].z=p22(2);
 		cloud->points[i].r=rgbMatrix[i].red;
 		cloud->points[i].g=rgbMatrix[i].green;
 		cloud->points[i].b=rgbMatrix[i].blue;
 	}
+	cloud->width = 1;
+	cloud->height = points_kinect.size();
+	
 	std::vector< int > index;
 	removeNaNFromPointCloud (*cloud, *cloud, index);
 	
 	//lets make a copy to maintain the origianl cloud
 	*original_cloud = *cloud;
-	
-	cloud->width = 1;
-	cloud->height = cloud->points.size();
+
 	writer.write<PointT> ("out.pcd", *cloud, false);
 	
 	//Downsample the point cloud:
@@ -1196,7 +1296,7 @@ void SpecificWorker::drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud)
   
 //   try
 //   {
-    add_point_cloud_to_innermodels("cloud", pointcloud);
+	add_point_cloud_to_innermodels("cloud", pointcloud);
 		
 //   }
 //   catch(Ice::Exception e)
