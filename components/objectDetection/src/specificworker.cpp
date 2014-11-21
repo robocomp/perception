@@ -1202,7 +1202,52 @@ void SpecificWorker::updatePointCloud()
   {
 		qDebug()<<"Error talking to rgbd_proxy: "<<e.what();
 	}
-
+	
+// 	cv::Mat depth_image(480,640, CV_32F, cv::Scalar::all(0));
+// 
+// 
+// 	for(int i=0; i<distanceMatrix.size(); i++)
+// 	{
+// 
+// 					int row = i/640;
+// 					int column = i-(row*640);
+// 					if (distanceMatrix[i]==NAN){
+// 
+// 									depth_image.at<float>(row,column) =0;
+// 					}else{
+// 
+// 									depth_image.at<float>(row,column) = distanceMatrix[i];
+// 					}
+// 	}
+// 	double min,max;
+// 
+// 	cv::minMaxIdx(distanceMatrix,&min,&max);
+// 
+// 	cout<<"Minimo: "<<min<<"Maximo: "<<max<<endl;
+// 
+// 	cv::Mat disparityImage;
+// 	cv::convertScaleAbs(depth_image, disparityImage,255/max);
+// 
+// 	cv::namedWindow( "Depth image", cv::WINDOW_AUTOSIZE );//
+// 	//Create a window for display.
+// 	cv::imshow( "Depth image", disparityImage );
+// 
+// 	cv::imwrite( "Depth.png", disparityImage);
+// 
+// 	cv::Mat rgbd_image(480,640, CV_8UC3, cv::Scalar::all(0));
+// 	
+// 	//lets transform the image to opencv
+// 	cout<<rgbMatrix.size()<<endl;
+// 	for(int i=0; i<rgbMatrix.size(); i++)
+// 	{
+// // 		std::cout<<"the first one: " <<i<<std::endl;
+// 		int row = i/640;
+// 		int column = i-(row*640);
+// 		
+// 		rgbd_image.at<cv::Vec3b>(row,column) = cv::Vec3b(rgbMatrix[i].blue, rgbMatrix[i].green, rgbMatrix[i].red);
+// 	}
+// 	cv::imwrite( "rgbd.png", rgbd_image);
+	
 	cloud->points.resize(points_kinect.size());
 
 		
