@@ -771,15 +771,20 @@ void SpecificWorker::fitTheViewVFH()
 			RTMat transform_view_to_object;
 			
 			transform_view_to_object(0,0) = transformation (0,0);
-			transform_view_to_object(0,1) = transformation (0,1);
-			transform_view_to_object(0,2) = transformation (0,2);
 			transform_view_to_object(1,0) = transformation (1,0);
-			transform_view_to_object(1,1) = transformation (1,1);
-			transform_view_to_object(1,2) = transformation (1,2);
 			transform_view_to_object(2,0) = transformation (2,0);
+			
+			transform_view_to_object(0,1) = transformation (0,1);
+			transform_view_to_object(1,1) = transformation (1,1);
 			transform_view_to_object(2,1) = transformation (2,1);
+			
+			transform_view_to_object(0,2) = transformation (0,2);
+			transform_view_to_object(1,2) = transformation (1,2);
 			transform_view_to_object(2,2) = transformation (2,2);
-			//add translation this is 3x4!!
+			
+			transform_view_to_object(0,3) = transformation (0,3);
+			transform_view_to_object(1,3) = transformation (1,3);
+			transform_view_to_object(2,3) = transformation (2,3);
 			
 			
 			QVec tr = transform_view_to_object.getTr(); 
