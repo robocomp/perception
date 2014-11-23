@@ -8,7 +8,7 @@
 <!-- 					<rotation id="cuellopabajo" rx="0.37"> -->
 					<rotation id="cuellopabajo" rx="0.37">
 						<translation id="rgbd_t">
-							<rgbd id="rgbd" focal="525" width="640" height="480" port="20096" />
+							<rgbd id="rgbd" focal="525" width="640" height="480" port="3096" />
 							<camera id="kakaka" focal="525" width="640" height="480" />
 						</translation>
 					</rotation>
@@ -19,7 +19,7 @@
 						
 						
 						
-		<differentialrobot id="roboaat" port="10004" ty="10" >
+		<differentialrobot id="roboaat" port="18884" ty="10" >
 			<transform  id="base_trans" >
 				<mesh id="base_mesh" file="/home/robocomp/robocomp/files/osgModels/robex/robex.ive"  tx="0" ty="0" tz="0" scale="1000"  />
 				<transform id="base_body" rx="-1.5707963267948966" ty="0" tz="-100" >
