@@ -25,6 +25,7 @@
 
 SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx)	
 {
+	connect(doTheGuessButton, SIGNAL(clicked()), this, SLOT(doTheGuess()));
 }
 
 /**
@@ -36,7 +37,14 @@ SpecificWorker::~SpecificWorker()
 }
 void SpecificWorker::compute( )
 {
+	
 }
+
+void SpecificWorker::doTheGuess()
+{
+	
+}
+
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 {
 	timer.start(Period);

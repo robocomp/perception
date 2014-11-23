@@ -35,7 +35,8 @@ public:
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 
 public slots:
- 	void compute(); 	
+ 	void compute(); 
+	void doTheGuess();
 };
 
 #endif
