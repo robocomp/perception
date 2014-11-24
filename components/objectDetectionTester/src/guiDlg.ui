@@ -158,7 +158,7 @@
     <rect>
      <x>471</x>
      <y>62</y>
-     <width>45</width>
+     <width>46</width>
      <height>281</height>
     </rect>
    </property>
@@ -237,7 +237,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>250</y>
+     <y>270</y>
      <width>81</width>
      <height>23</height>
     </rect>
@@ -303,7 +303,7 @@
     <rect>
      <x>376</x>
      <y>55</y>
-     <width>91</width>
+     <width>105</width>
      <height>291</height>
     </rect>
    </property>
@@ -365,6 +365,45 @@
      <width>139</width>
      <height>92</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="grab_pc_button">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>10</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>grab PC</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pass_through_button">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>90</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>passThrough</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="statistical_outliers_removal_button">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>230</y>
+     <width>111</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>statisticalOutR</string>
    </property>
   </widget>
  </widget>

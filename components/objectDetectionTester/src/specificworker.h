@@ -39,6 +39,9 @@ public slots:
 	
 	void mirror();
 	void mindTheGap();
+	void grab_pc();
+	void passThrough();
+	void statisticalOutliersRemoval();
 	
 	void fitPrismNaive();
 	void fitPrismMCMC();

@@ -34,13 +34,15 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(list_clouds, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(showObject(QListWidgetItem*)));
 	connect(reset_button, SIGNAL(clicked()), this, SLOT(reset()));
 	connect(normal_segmentation_button, SIGNAL(clicked()), this, SLOT(normal_segmentation()));
+	connect(grab_pc_button, SIGNAL(clicked()), this, SLOT(grab_pc()));
+	connect(pass_through_button, SIGNAL(clicked()), this, SLOT(passThrough()));
+	connect(statistical_outliers_removal_button, SIGNAL(clicked()), this, SLOT(passThrough()));
 	
 	//aspect recognition
 	connect(reload_vfh_button, SIGNAL(clicked()), this, SLOT(reloadVFH()));
 	connect(load_trained_vfh_button, SIGNAL(clicked()), this, SLOT(loadTrainedVFH()));
 	connect(vfh_button, SIGNAL(clicked()), this, SLOT(vfh()));
 	connect(SURF_button, SIGNAL(clicked()), this, SLOT(surfHomography()));
-	
 	//vfh fit
 	connect(fit_the_view_button, SIGNAL(clicked()), this, SLOT(fitTheViewVFH()));
 	
@@ -65,6 +67,11 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 SpecificWorker::~SpecificWorker()
 {
 	
+}
+
+void SpecificWorker::grab_pc()
+{
+	objectdetection_proxy->grabThePointCloud();
 }
 
 void SpecificWorker::ransac_table()
@@ -162,6 +169,16 @@ void SpecificWorker::vfh()
 	}
 }
 
+void SpecificWorker::statisticalOutliersRemoval()
+{
+	objectdetection_proxy->statisticalOutliersRemoval();
+}
+
+void SpecificWorker::passThrough()
+{
+	objectdetection_proxy->passThrough();
+}
+
 void SpecificWorker::surfHomography()
 {
 	std::vector<string> guesses;
@@ -172,6 +189,7 @@ void SpecificWorker::euclidean_clustering()
 {
 	int num_clusters;
 	objectdetection_proxy->euclideanClustering(num_clusters);
+	std::cout<<"euclidean_clustering done!"<<std::endl;
 	list_clouds->clear();
 	stringstream ss;
 	for(int i=0; i<num_clusters; i++)
@@ -179,6 +197,7 @@ void SpecificWorker::euclidean_clustering()
 		ss << i;
 		string name = "cloud_" + ss.str();
 		ss.str("");
+		std::cout<<ss<<std::endl;
 		list_clouds->addItem(QString::fromStdString(name));
 	}
 		
