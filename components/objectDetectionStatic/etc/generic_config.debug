@@ -1,0 +1,19 @@
+# Debug config file
+
+#
+# This property is used to configure the endpoints of the subscriber adapter.
+#
+objectDetectionComp.Endpoints=tcp -p 12224
+CommonBehavior.Endpoints=tcp -p 12240
+AprilTagsTopic.Endpoints=tcp -p 10261
+
+# Remote servers proxies example
+#RemoteProxy = remote:tcp -h remotehost -p 10001
+
+InnerModelManagerProxy = innermodelmanager:tcp -h localhost -p 11175
+RGBDProxy = rgbd:tcp -h localhost -p 10096
+
+#
+# This property is used by the clients to connect to IceStorm.
+#
+TopicManager.Proxy=DemoIceStorm/TopicManager:default -p 10000

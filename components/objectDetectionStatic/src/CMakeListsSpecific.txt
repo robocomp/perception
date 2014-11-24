@@ -1,0 +1,31 @@
+
+# Sources set
+SET ( SOURCES
+  specificworker.cpp
+  specificmonitor.cpp
+  shapes/basic/rectprism.cpp
+  shapes/table.cpp
+  fitting/naive_rect_prism_fitting.cpp
+  fitting/rect_prism_cloud_particle.cpp
+  fitting/pf_rect_prism_fitting.cpp
+  tabletop_symmetry/mirror.cpp
+  tabletop_symmetry/dt/dt.cpp
+  vfh/vfh.cpp
+  geometry/plane.cpp
+)
+
+# Headers set
+SET ( HEADERS
+  specificworker.h
+  specificmonitor.h
+)
+
+# pcl
+INCLUDE ($ENV{ROBOCOMP}/cmake/modules/pcl.cmake )
+# opencv2
+INCLUDE ($ENV{ROBOCOMP}/cmake/modules/opencv2.cmake )
+
+SET ( LIBS ${LIBS} -lhdf5 )
+
+add_executable (createVFH createVFH.cpp)
+target_link_libraries (createVFH ${PCL_LIBRARIES} ${FLANN_LIBRARIES} ${Boost_LIBRARIES})
