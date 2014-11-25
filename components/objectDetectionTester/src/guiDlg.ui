@@ -419,8 +419,8 @@
   <widget class="QPushButton" name="centroid_based_pose_button">
    <property name="geometry">
     <rect>
-     <x>680</x>
-     <y>170</y>
+     <x>690</x>
+     <y>180</y>
      <width>111</width>
      <height>23</height>
     </rect>

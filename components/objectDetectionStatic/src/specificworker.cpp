@@ -247,7 +247,22 @@ void SpecificWorker::centroidBasedPose()
 	Eigen::Vector4f centroid;
 	pcl::compute3DCentroid (*(this->cloud), centroid);
 	
-	std::cout<<"Centroid : "<<centroid(0)<<" "<<centroid(1)<<" "<<centroid(2)<<std::endl;
+ 	InnerModelNode *parent = innermodel->getNode(QString::fromStdString("rgbd"));
+ 	innermodel->newTransform(QString::fromStdString("marca"), QString::fromStdString("static") ,parent, 420.556, -108.324, 870.775, 0.56, 0, 0);
+	
+ 	QMat PP = innermodel->getTransformationMatrix("marca", "robot");
+	
+	QVec c1 = QVec::vec4(centroid(0), centroid(1), centroid(2), 1);
+	
+ 	QVec p2 = PP * c1;
+	
+	p2 = p2.fromHomogeneousCoordinates();
+	
+	p2.print("centroid moved");
+	
+// 	std::cout<<"Centroid : "<<p2(0)<<" "<<p2(1)<<" "<<p2(2)<<std::endl;
+	
+	c1.print("centroid: ");
 	
 	
 }
