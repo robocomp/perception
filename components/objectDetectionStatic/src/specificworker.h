@@ -42,6 +42,7 @@
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/common/centroid.h>
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -59,6 +60,8 @@
 
 #include "tabletop_symmetry/mirror.h"
 #include "vfh/vfh.h"
+
+// #define SAVE_DATA
 
 /**
        \brief
@@ -173,6 +176,7 @@ public:
 	void grabThePointCloud();
 	void passThrough();
 	void statisticalOutliersRemoval();
+	void centroidBasedPose();
 	
 	//PC mirroring
 	void mirrorPC();

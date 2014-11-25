@@ -81,6 +81,7 @@ public:
 	virtual void  fitTheViewVFH() = 0;
 	virtual void  vfh(listType& guesses) = 0;
 	virtual void  surfHomography(listType& guesses) = 0;
+	virtual void  centroidBasedPose() = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:

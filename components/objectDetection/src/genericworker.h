@@ -60,6 +60,9 @@ public:
 
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;
+	virtual void  statisticalOutliersRemoval() = 0;
+	virtual void  passThrough() = 0;
+	virtual void  grabThePointCloud() = 0;
 	virtual void  aprilFitModel(const string& model) = 0;
 	virtual void  fitModel(const string& model, const string& method) = 0;
 	virtual void  getInliers(const string& model) = 0;
@@ -78,6 +81,7 @@ public:
 	virtual void  fitTheViewVFH() = 0;
 	virtual void  vfh(listType& guesses) = 0;
 	virtual void  surfHomography(listType& guesses) = 0;
+	virtual void  centroidBasedPose() = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:

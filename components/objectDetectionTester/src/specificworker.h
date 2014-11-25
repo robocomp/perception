@@ -42,6 +42,7 @@ public slots:
 	void grab_pc();
 	void passThrough();
 	void statisticalOutliersRemoval();
+	void centroidBasedPose();
 	
 	void fitPrismNaive();
 	void fitPrismMCMC();

@@ -276,10 +276,10 @@ void VFH::doTheGuess(const pcl::PointCloud<PointT>::Ptr object, std::vector<std:
 	flann::Index<flann::ChiSquareDistance<float> > index (data, flann::SavedIndexParams ("kdtree.idx"));
 	
 	index.buildIndex ();
-	nearestKSearch (index, histogram, 16, k_indices, k_distances);
+	nearestKSearch (index, histogram, 1, k_indices, k_distances);
 	
 	pcl::console::print_highlight ("The closest 16 neighbors are:\n");
-	for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		Eigen::Vector4f centroid;
 		pcl::compute3DCentroid (*object, centroid);

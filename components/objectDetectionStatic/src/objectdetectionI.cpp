@@ -116,4 +116,8 @@ void objectDetectionI::surfHomography(listType& guesses, const Ice::Current&){
 	worker->surfHomography(guesses);
 }
 
+void objectDetectionI::centroidBasedPose(const Ice::Current&){
+	worker->centroidBasedPose();
+}
+
 
