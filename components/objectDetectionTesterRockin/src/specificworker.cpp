@@ -25,9 +25,8 @@
 
 SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx)
 {
-// 	public_channel_ = shared_ptr<PublicChannel<>>(host, port);
-// 	private_channel_mutex_ = boost::mutex();
-// 	private_channel_ = shared_ptr<PrivateChannel<>>();
+	public_channel_ = shared_ptr<PublicChannel<>>(new PublicChannel<>(host, port));
+	private_channel_ = shared_ptr<PrivateChannel<>>();
 	
 	cout << "Connected public channel to " << host << ":" << port << endl << flush;
 	public_channel_->signal_rsbb_beacon_received().connect (boost::bind (&SpecificWorker::receive_rsbb_beacon, this, _1, _2, _3, _4));
