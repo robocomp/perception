@@ -111,7 +111,7 @@ class SpecificWorker : public GenericWorker
 	RoboCompDifferentialRobot::TBaseState b;
 	
 	//color Segmentation
-// 	Segmentator seg;
+ 	Segmentator seg;
 	
 	TagModelMap tagMap;
 	QMutex *mutex;

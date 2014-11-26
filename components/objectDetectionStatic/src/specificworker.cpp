@@ -26,7 +26,7 @@
 SpecificWorker::SpecificWorker(MapPrx& mprx) : table(new Table()), box(new RectPrism()),
 GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
 segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), projected_plane(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>), 
-euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<PointT>), prism_indices (new pcl::PointIndices), vfh_matcher(new VFH())
+euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<PointT>), prism_indices (new pcl::PointIndices), vfh_matcher(new VFH()), rgb_image(480,640, CV_8UC3, cv::Scalar::all(0))
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
@@ -61,7 +61,7 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 */
 SpecificWorker::~SpecificWorker()
 {
-  
+
 }
 
 void SpecificWorker::aprilFitModel(const string& model)
@@ -116,7 +116,13 @@ void SpecificWorker::ransac(const string& model)
 
 void SpecificWorker::segmentImage()
 {
- 
+  std::cout<<"setting image"<<std::endl;
+  seg.set_image(&rgb_image);
+  cv::Mat segmented(480,640, CV_8UC3, cv::Scalar::all(0));
+  std::cout<<"Segmenting image"<<std::endl;
+  segmented = seg.segment();
+  cv::imwrite("Segmentada.png",segmented);
+  std::cout<<"Segmented"<<std::endl;
 }
 
 void SpecificWorker::projectInliers(const string& model)
@@ -1177,7 +1183,7 @@ void SpecificWorker::performEuclideanClustering()
 	ec.setInputCloud (this->cloud);
   ec.extract (cluster_indices);
 	 
-	cv::Mat rgbd_image(480,640, CV_8UC3, cv::Scalar::all(0));
+// 	cv::Mat rgb_image(480,640, CV_8UC3, cv::Scalar::all(0));
 	
 	//lets transform the image to opencv
 	cout<<rgbMatrix.size()<<endl;
@@ -1187,7 +1193,7 @@ void SpecificWorker::performEuclideanClustering()
 		int row = i/640;
 		int column = i-(row*640);
 		
-		rgbd_image.at<cv::Vec3b>(row,column) = cv::Vec3b(rgbMatrix[i].blue, rgbMatrix[i].green, rgbMatrix[i].red);
+		rgb_image.at<cv::Vec3b>(row,column) = cv::Vec3b(rgbMatrix[i].blue, rgbMatrix[i].green, rgbMatrix[i].red);
 	}
 	
 	 
@@ -1248,18 +1254,18 @@ void SpecificWorker::performEuclideanClustering()
 			
 			
 		// let's create a new image now
-		cv::Mat crop(rgbd_image.rows, rgbd_image.cols, CV_8UC3);
+		cv::Mat crop(rgb_image.rows, rgb_image.cols, CV_8UC3);
 
 		// set background to green
 		crop.setTo(cv::Scalar(255,255,255));
 			
-			rgbd_image.copyTo(crop, mask);
+			rgb_image.copyTo(crop, mask);
 			
 			normalize(mask.clone(), mask, 0.0, 255.0, CV_MINMAX, CV_8UC1);
 			
 			cv::namedWindow( "Display window2", cv::WINDOW_AUTOSIZE );// Create a window for display.
-		cv::imshow( "Display window2", rgbd_image );
-			cv::imwrite( "scene.png", rgbd_image );
+		cv::imshow( "Display window2", rgb_image );
+			cv::imwrite( "scene.png", rgb_image );
 			
 			cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
 		cv::imshow( "Display window", crop );
@@ -1340,7 +1346,7 @@ void SpecificWorker::updatePointCloud()
 // 
 // 	cv::imwrite( "Depth.png", disparityImage);
 // 
-// 	cv::Mat rgbd_image(480,640, CV_8UC3, cv::Scalar::all(0));
+// 	cv::Mat rgb_image(480,640, CV_8UC3, cv::Scalar::all(0));
 // 	
 // 	//lets transform the image to opencv
 // 	cout<<rgbMatrix.size()<<endl;
@@ -1350,9 +1356,9 @@ void SpecificWorker::updatePointCloud()
 // 		int row = i/640;
 // 		int column = i-(row*640);
 // 		
-// 		rgbd_image.at<cv::Vec3b>(row,column) = cv::Vec3b(rgbMatrix[i].blue, rgbMatrix[i].green, rgbMatrix[i].red);
+// 		rgb_image.at<cv::Vec3b>(row,column) = cv::Vec3b(rgbMatrix[i].blue, rgbMatrix[i].green, rgbMatrix[i].red);
 // 	}
-// 	cv::imwrite( "rgbd.png", rgbd_image);
+// 	cv::imwrite( "rgbd.png", rgb_image);
 	
 	cloud->points.resize(points_kinect.size());
 
