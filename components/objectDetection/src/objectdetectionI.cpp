@@ -32,6 +32,18 @@ objectDetectionI::~objectDetectionI()
 }
 
 // Component functions, implementation
+void objectDetectionI::statisticalOutliersRemoval(const Ice::Current&){
+	worker->statisticalOutliersRemoval();
+}
+
+void objectDetectionI::passThrough(const Ice::Current&){
+	worker->passThrough();
+}
+
+void objectDetectionI::grabThePointCloud(const Ice::Current&){
+	worker->grabThePointCloud();
+}
+
 void objectDetectionI::aprilFitModel(const string& model, const Ice::Current&){
 	worker->aprilFitModel(model);
 }
@@ -102,6 +114,10 @@ void objectDetectionI::vfh(listType& guesses, const Ice::Current&){
 
 void objectDetectionI::surfHomography(listType& guesses, const Ice::Current&){
 	worker->surfHomography(guesses);
+}
+
+void objectDetectionI::centroidBasedPose(const Ice::Current&){
+	worker->centroidBasedPose();
 }
 
 

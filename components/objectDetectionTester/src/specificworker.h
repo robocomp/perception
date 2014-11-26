@@ -43,6 +43,7 @@ public slots:
 	void passThrough();
 	void statisticalOutliersRemoval();
 	void segmentImage();
+	void centroidBasedPose();
 	
 	void fitPrismNaive();
 	void fitPrismMCMC();

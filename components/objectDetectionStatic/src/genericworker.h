@@ -61,6 +61,7 @@ public:
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;
 	virtual void  segmentImage() = 0;
+	virtual void  centroidBasedPose() = 0;
 	virtual void  statisticalOutliersRemoval() = 0;
 	virtual void  passThrough() = 0;
 	virtual void  grabThePointCloud() = 0;

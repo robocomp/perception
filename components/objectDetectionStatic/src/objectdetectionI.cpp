@@ -36,6 +36,10 @@ void objectDetectionI::segmentImage(const Ice::Current&){
 	worker->segmentImage();
 }
 
+void objectDetectionI::centroidBasedPose(const Ice::Current&){
+	worker->centroidBasedPose();
+}
+
 void objectDetectionI::statisticalOutliersRemoval(const Ice::Current&){
 	worker->statisticalOutliersRemoval();
 }

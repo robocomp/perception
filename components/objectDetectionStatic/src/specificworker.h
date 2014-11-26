@@ -42,6 +42,7 @@
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/common/centroid.h>
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -61,6 +62,8 @@
 #include "vfh/vfh.h"
 
 #include "color_segmentation/Segmentator.h"
+
+// #define SAVE_DATA
 
 /**
        \brief
@@ -181,6 +184,7 @@ public:
 	void passThrough();
 	void statisticalOutliersRemoval();
 	void segmentImage();
+	void centroidBasedPose();
 	
 	//PC mirroring
 	void mirrorPC();

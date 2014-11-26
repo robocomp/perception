@@ -247,6 +247,31 @@ void SpecificWorker::mindTheGapPC()
 		std::cout<<"Please select an object first"<<std::endl;
 }
 
+void SpecificWorker::centroidBasedPose()
+{
+	Eigen::Vector4f centroid;
+	pcl::compute3DCentroid (*(this->cloud), centroid);
+	
+ 	InnerModelNode *parent = innermodel->getNode(QString::fromStdString("rgbd"));
+ 	innermodel->newTransform(QString::fromStdString("marca"), QString::fromStdString("static") ,parent, 420.556, -108.324, 870.775, 0.56, 0, 0);
+	
+ 	QMat PP = innermodel->getTransformationMatrix("marca", "robot");
+	
+	QVec c1 = QVec::vec4(centroid(0), centroid(1), centroid(2), 1);
+	
+ 	QVec p2 = PP * c1;
+	
+	p2 = p2.fromHomogeneousCoordinates();
+	
+	p2.print("centroid moved");
+	
+// 	std::cout<<"Centroid : "<<p2(0)<<" "<<p2(1)<<" "<<p2(2)<<std::endl;
+	
+	c1.print("centroid: ");
+	
+	
+}
+
 void SpecificWorker::mirrorPC()
 {
 	
@@ -390,7 +415,7 @@ void SpecificWorker::passThrough()
   pcl::PassThrough<PointT> pass;
   pass.setInputCloud (this->cloud);
   pass.setFilterFieldName ("z");
-  pass.setFilterLimits (0.0, 900);
+  pass.setFilterLimits (0.0, 1100);
   //pass.setFilterLimitsNegative (true);
   pass.filter (*this->cloud);
   drawThePointCloud(this->cloud);
@@ -650,7 +675,8 @@ void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 
 void SpecificWorker::reloadVFH()
 {
-	vfh_matcher->reloadVFH("/home/robocomp/robocomp/files/objectData/Rockin_set_labeled/");
+// 	vfh_matcher->reloadVFH("/home/robocomp/robocomp/files/objectData/Rockin_set_labeled/");
+	vfh_matcher->reloadVFH("/home/spyke/robocomp/components/perception/components/objectDetectionStatic/build/test/");
 }
 
 void SpecificWorker::loadTrainedVFH()
@@ -679,13 +705,36 @@ void SpecificWorker::fitTheViewVFH()
 	static bool first3 = true;
 	static bool first0 = true;
 	
-	pcl::PointCloud<PointT>::Ptr cloud_to_fit;
+	pcl::PointCloud<PointT>::Ptr cloud_to_fit (new pcl::PointCloud<PointT>);
 	if(objectSelected_flag)
 	{
 		cloud_to_fit = cluster_clouds[object_to_show];
 	}
 	else
-		cloud_to_fit = this->cloud;
+	{
+		InnerModelNode *parent = innermodel->getNode(QString::fromStdString("rgbd"));
+		innermodel->newTransform(QString::fromStdString("marca"), QString::fromStdString("static") ,parent, 356.152, -289.623, 756.853, 0.32, 0, 0);
+		QMat PP = innermodel->getTransformationMatrix("marca", "robot");
+
+		for (unsigned int i=0; i<this->cloud->points.size(); i++)
+		{
+			QVec p1 = QVec::vec4(this->cloud->points[i].x,this->cloud->points[i].y, this->cloud->points[i].z, 1);
+			QVec p2 = PP * p1;
+			QVec p22 = p2.fromHomogeneousCoordinates();
+			
+			PointT p;
+
+			p.x=p22(0);
+			p.y=p22(1);
+			p.z=p22(2);
+			p.r=this->cloud->points[i].r;
+			p.g=this->cloud->points[i].g;
+			p.b=this->cloud->points[i].b;
+			cloud_to_fit->push_back(p);
+		}
+		writer.write<PointT> ("tofit.pcd", *cloud_to_fit, false); 
+		//cloud_to_fit = this->cloud;
+	}
 	
 	if(!vfh_guesses.empty())
 	{
@@ -758,12 +807,20 @@ void SpecificWorker::fitTheViewVFH()
 			filename_no_extension = filename_no_extension.substr(0,filename_no_extension.find_last_of("."));
 			//dataset of views are rotated 24 deg., 0.41887902 rad
 			int rotation_numb = atoi( filename_no_extension.c_str() ) - 1;
-			float rotation = 0.41887902*rotation_numb;
+// 			float rotation = 0.41887902*rotation_numb;
+			float rotation =0;
 
 			
 			InnerModel innermodel_location;
+// 			InnerModelNode *parent = innermodel_location.getNode(QString::fromStdString("root"));
+// 			innermodel_location.newTransform(QString::fromStdString("marca_original"), QString::fromStdString("static") ,parent, 356.152, -289.623, 756.853, 0.32, 0.0, 0);
+
 			InnerModelNode *parent = innermodel_location.getNode(QString::fromStdString("root"));
-			innermodel_location.newTransform(QString::fromStdString("stored_view"), QString::fromStdString("static") ,parent, 380, 290, 0, 0, rotation, 0);
+			innermodel_location.newTransform(QString::fromStdString("vista_original"), QString::fromStdString("static") ,parent, -380, 290, 0, 0, rotation, 0);
+			
+			RTMat trans_ =  innermodel_location.getTransformationMatrix("root","vista_original");
+			std::cout<<"trans de root a vista_original:"<<std::endl;
+			std::cout<<"Tx: "<<trans_(0,3)<<" Ty: "<<trans_(1,3)<<" Tz: "<<trans_(2,3)<<std::endl;
 			
 			RTMat transform_view_to_object;
 			
@@ -783,22 +840,32 @@ void SpecificWorker::fitTheViewVFH()
 			transform_view_to_object(1,3) = transformation (1,3);
 			transform_view_to_object(2,3) = transformation (2,3);
 			
+// 			transform_view_to_object.invert();
+			
 			
 			QVec tr = QVec::vec3(transform_view_to_object(0,3),transform_view_to_object(1,3), transform_view_to_object(2,3));
 			QVec r = transform_view_to_object.extractAnglesR_min();
 			
+			std::cout<<"Trans de vista_original a real"<<std::endl;
 			std::cout<<"Tx: "<<tr(0)<<" Ty: "<<tr(1)<<" Tz: "<<tr(2)<<std::endl;
 			std::cout<<"Rx: "<<r(0)<<" Ry: "<<r(1)<<" Rz: "<<r(2)<<std::endl;
 			
-			parent = innermodel_location.getNode(QString::fromStdString("stored_view"));
-			innermodel_location.newTransform(QString::fromStdString("real"), QString::fromStdString("static") ,parent, tr(0), tr(1), tr(2), r(0), r(1), r(2));
+			parent = innermodel_location.getNode(QString::fromStdString("vista_original"));
+			innermodel_location.newTransform(QString::fromStdString("vista_real"), QString::fromStdString("static") ,parent, tr(0), tr(1), tr(2), r(0), r(1), r(2));
+			
+// 			parent = innermodel_location.getNode(QString::fromStdString("root"));
+// 			innermodel_location.newTransform(QString::fromStdString("marca_real"), QString::fromStdString("static") ,parent, 356.152, -289.623, 756.853, 0.32, 0.0657813, -0.0324503);
+			
+// 			trans_ =  innermodel_location.getTransformationMatrix("root","vista_real");
+// 			std::cout<<"trans de root a vista_Real:"<<std::endl;
+// 			std::cout<<"Tx: "<<trans_(0,3)<<" Ty: "<<trans_(1,3)<<" Tz: "<<trans_(2,3)<<std::endl;
 			
 			RTMat t_wrt_table;
-			t_wrt_table = innermodel_location.getTransformationMatrix("real","root");
+			t_wrt_table = innermodel_location.getTransformationMatrix("root","vista_real");
 			
-			tr = t_wrt_table.getTr();
+			tr = QVec::vec3(t_wrt_table(0,3), t_wrt_table(1,3), t_wrt_table(2,3));
 			r = t_wrt_table.extractAnglesR_min();
-			
+			std::cout<<"trans de vista_Real a la marca (root):"<<std::endl;
 			std::cout<<"Tx: "<<tr(0)<<" Ty: "<<tr(1)<<" Tz: "<<tr(2)<<std::endl;
 			std::cout<<"Rx: "<<r(0)<<" Ry: "<<r(1)<<" Rz: "<<r(2)<<std::endl;
 			
@@ -1200,11 +1267,31 @@ void SpecificWorker::performEuclideanClustering()
 			cv::imwrite( ss.str() + ".png", crop );
 
 			/////save rgbd end
-		
 			
-		writer.write<PointT> (ss.str () + ".pcd", *cloud_cluster, false); //*
+		
+		
 	#endif
-    j++;
+
+		InnerModelNode *parent = innermodel->getNode(QString::fromStdString("rgbd"));
+		innermodel->newTransform(QString::fromStdString("marca"), QString::fromStdString("static") ,parent, 356.152, -289.623, 756.853, 0.32, 0, 0);
+
+		QMat PP = innermodel->getTransformationMatrix("marca", "robot");
+		
+		for (unsigned int i=0; i<cloud_cluster->points.size(); i++)
+		{
+			QVec p1 = QVec::vec4(cloud_cluster->points[i].x,cloud_cluster->points[i].y, cloud_cluster->points[i].z, 1);
+			QVec p2 = PP * p1;
+			QVec p22 = p2.fromHomogeneousCoordinates();
+
+			cloud_cluster->points[i].x=p22(0);
+			cloud_cluster->points[i].y=p22(1);
+			cloud_cluster->points[i].z=p22(2);
+			cloud_cluster->points[i].r=cloud_cluster->points[i].r;
+			cloud_cluster->points[i].g=cloud_cluster->points[i].g;
+			cloud_cluster->points[i].b=cloud_cluster->points[i].b;
+		}
+		writer.write<PointT> (ss.str () + ".pcd", *cloud_cluster, false); 
+		j++;
   }
   saved_counter++;
   euclidean_mutex->unlock();

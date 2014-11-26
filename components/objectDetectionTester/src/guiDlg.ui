@@ -156,8 +156,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>471</x>
-     <y>62</y>
+     <x>490</x>
+     <y>60</y>
      <width>46</width>
      <height>281</height>
     </rect>
@@ -189,8 +189,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>520</x>
-     <y>50</y>
+     <x>539</x>
+     <y>48</y>
      <width>141</width>
      <height>291</height>
     </rect>
@@ -406,11 +406,34 @@
     <string>statisticalOutR</string>
    </property>
   </widget>
+  <widget class="QListWidget" name="centroid_based_listview">
+   <property name="geometry">
+    <rect>
+     <x>800</x>
+     <y>180</y>
+     <width>139</width>
+     <height>92</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="centroid_based_pose_button">
+   <property name="geometry">
+    <rect>
+     <x>690</x>
+     <y>180</y>
+     <width>111</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>centroidBasedPose</string>
+   </property>
+  </widget>
   <widget class="QPushButton" name="segment_button">
    <property name="geometry">
     <rect>
-     <x>670</x>
-     <y>150</y>
+     <x>710</x>
+     <y>300</y>
      <width>96</width>
      <height>31</height>
     </rect>

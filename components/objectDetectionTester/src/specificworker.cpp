@@ -38,6 +38,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(pass_through_button, SIGNAL(clicked()), this, SLOT(passThrough()));
 	connect(statistical_outliers_removal_button, SIGNAL(clicked()), this, SLOT(passThrough()));
 	connect(segment_button, SIGNAL(clicked()), this, SLOT(segment_image()));
+	connect(centroid_based_pose_button, SIGNAL(clicked()), this, SLOT(centroidBasedPose()));
 	
 	//aspect recognition
 	connect(reload_vfh_button, SIGNAL(clicked()), this, SLOT(reloadVFH()));
@@ -151,6 +152,11 @@ void SpecificWorker::aprilFitBox()
 void SpecificWorker::fitTheViewVFH()
 {
 	objectdetection_proxy->fitTheViewVFH();
+}
+
+void SpecificWorker::centroidBasedPose()
+{
+	objectdetection_proxy->centroidBasedPose();
 }
 
 void SpecificWorker::vfh()

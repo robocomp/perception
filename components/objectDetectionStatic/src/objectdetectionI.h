@@ -38,6 +38,7 @@ public:
 	objectDetectionI( GenericWorker *_worker, QObject *parent = 0 );
 	~objectDetectionI();
 	void  segmentImage(const Ice::Current& = Ice::Current());
+void  centroidBasedPose(const Ice::Current& = Ice::Current());
 void  statisticalOutliersRemoval(const Ice::Current& = Ice::Current());
 void  passThrough(const Ice::Current& = Ice::Current());
 void  grabThePointCloud(const Ice::Current& = Ice::Current());
