@@ -225,7 +225,7 @@ void SpecificWorker::reloadVFH()
 	objectdetection_proxy->reloadVFH();
 }
 
-void SpecificWorker::segmentImage()
+void SpecificWorker::segment_image()
 {
   objectdetection_proxy->segmentImage();
 }

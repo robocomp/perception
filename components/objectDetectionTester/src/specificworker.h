@@ -42,7 +42,7 @@ public slots:
 	void grab_pc();
 	void passThrough();
 	void statisticalOutliersRemoval();
-	void segmentImage();
+	void segment_image();
 	void centroidBasedPose();
 	
 	void fitPrismNaive();
