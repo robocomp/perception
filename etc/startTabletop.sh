@@ -31,9 +31,9 @@ sleep 1
 # ObjectDetection
 qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.addSession
 sess=`qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.activeSessionId`
-qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand 'cd /home/robocomp/robocomp/components/perception/components/objectDetection/build/'
-qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand 'cmake . && make && bin/objectdetectioncomp --Ice.Config=/home/robocomp/robocomp/components/perception/etc/objectDetection.conf'
-qdbus org.kde.yakuake /yakuake/tabs org.kde.yakuake.setTabTitle $sess 'ObjectDetection'
+qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand 'cd /home/robocomp/robocomp/components/perception/components/objectDetectionStatic/build/'
+qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand 'cmake . && make && bin/objectdetectionstaticcomp --Ice.Config=/home/robocomp/robocomp/components/perception/etc/objectDetection.conf'
+qdbus org.kde.yakuake /yakuake/tabs org.kde.yakuake.setTabTitle $sess 'ObjectDetectionStatic'
 sleep 1
 
 # ObjectDetectionTester

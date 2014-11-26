@@ -303,7 +303,7 @@
     <rect>
      <x>376</x>
      <y>55</y>
-     <width>105</width>
+     <width>111</width>
      <height>291</height>
     </rect>
    </property>
@@ -404,6 +404,19 @@
    </property>
    <property name="text">
     <string>statisticalOutR</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="segment_button">
+   <property name="geometry">
+    <rect>
+     <x>670</x>
+     <y>150</y>
+     <width>96</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>segment</string>
    </property>
   </widget>
  </widget>

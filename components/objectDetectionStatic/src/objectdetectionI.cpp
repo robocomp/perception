@@ -32,6 +32,10 @@ objectDetectionI::~objectDetectionI()
 }
 
 // Component functions, implementation
+void objectDetectionI::segmentImage(const Ice::Current&){
+	worker->segmentImage();
+}
+
 void objectDetectionI::statisticalOutliersRemoval(const Ice::Current&){
 	worker->statisticalOutliersRemoval();
 }

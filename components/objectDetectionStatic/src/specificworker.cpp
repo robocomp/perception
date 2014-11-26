@@ -38,9 +38,9 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	box->set_size(QVec::vec3(57.5, 20.0, 57.5));
 
 	//let's set the ofsets
-	table_offset.x = -150;
+	table_offset.x = 300;
 	table_offset.y = 0;
-	table_offset.z = 300;
+	table_offset.z = 200;
 	
 	box_offset.x = 0;
 	box_offset.y = 65.5;
@@ -61,7 +61,7 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 */
 SpecificWorker::~SpecificWorker()
 {
-
+  
 }
 
 void SpecificWorker::aprilFitModel(const string& model)
@@ -112,6 +112,11 @@ void SpecificWorker::ransac(const string& model)
 	table->fit_board_with_RANSAC( cloud, 0.01);
 	drawTheTable();
 	drawThePointCloud(this->cloud);
+}
+
+void SpecificWorker::segmentImage()
+{
+ 
 }
 
 void SpecificWorker::projectInliers(const string& model)

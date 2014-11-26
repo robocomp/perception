@@ -6,7 +6,7 @@
 			<translation id="pechote" ty="1077">
 				<translation id="pescuezo" ty="300">
 <!-- 					<rotation id="cuellopabajo" rx="0.37"> -->
-					<rotation id="cuellopabajo" rx="0.72">
+					<rotation id="cuellopabajo" rx="0.87">
 						<translation id="rgbd_t">
 							<rgbd id="rgbd" focal="525" width="640" height="480" port="3096" />
 							<camera id="kakaka" focal="525" width="640" height="480" />

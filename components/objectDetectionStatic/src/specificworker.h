@@ -60,6 +60,8 @@
 #include "tabletop_symmetry/mirror.h"
 #include "vfh/vfh.h"
 
+#include "color_segmentation/Segmentator.h"
+
 /**
        \brief
        @author authorname
@@ -105,6 +107,9 @@ class SpecificWorker : public GenericWorker
 	RoboCompJointMotor::MotorStateMap h;
 	RoboCompDifferentialRobot::TBaseState b;
 	
+	//color Segmentation
+// 	Segmentator seg;
+	
 	TagModelMap tagMap;
 	QMutex *mutex;
 	QMutex *point_cloud_mutex;
@@ -118,6 +123,8 @@ class SpecificWorker : public GenericWorker
 	pcl::PointCloud<PointT>::Ptr original_cloud;
 	pcl::PointCloud<PointT>::Ptr segmented_cloud;
 	pcl::PointCloud<PointT>::Ptr downsampled_cloud;
+	
+	cv::Mat rgb_image;
 	
 	//table data
 	pcl::PointIndices::Ptr model_inliers_indices;
@@ -173,6 +180,7 @@ public:
 	void grabThePointCloud();
 	void passThrough();
 	void statisticalOutliersRemoval();
+	void segmentImage();
 	
 	//PC mirroring
 	void mirrorPC();

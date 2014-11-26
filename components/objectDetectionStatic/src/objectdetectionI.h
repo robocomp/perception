@@ -37,7 +37,8 @@ Q_OBJECT
 public:
 	objectDetectionI( GenericWorker *_worker, QObject *parent = 0 );
 	~objectDetectionI();
-	void  statisticalOutliersRemoval(const Ice::Current& = Ice::Current());
+	void  segmentImage(const Ice::Current& = Ice::Current());
+void  statisticalOutliersRemoval(const Ice::Current& = Ice::Current());
 void  passThrough(const Ice::Current& = Ice::Current());
 void  grabThePointCloud(const Ice::Current& = Ice::Current());
 void  aprilFitModel(const string& model, const Ice::Current& = Ice::Current());
