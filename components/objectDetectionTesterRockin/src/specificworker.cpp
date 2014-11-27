@@ -46,7 +46,12 @@ SpecificWorker::~SpecificWorker()
 
 void SpecificWorker::compute( )
 {
-	static boost::posix_time::ptime loop_time = boost::posix_time::microsec_clock::universal_time();
+// 	doTheGuess();
+}
+
+void SpecificWorker::doTheGuess()
+{
+// 	static boost::posix_time::ptime loop_time = boost::posix_time::microsec_clock::universal_time();
 	shared_ptr<PrivateChannel<CerrErrorHandler>> private_channel;
 	{
 		QMutexLocker lock(&private_channel_mutex_);
@@ -55,27 +60,23 @@ void SpecificWorker::compute( )
 	if (private_channel)
 	{
 		roah_rsbb_msgs::RobotState msg;
-		roah_rsbb::now (msg.mutable_time());
-		msg.set_messages_saved (0);
+		roah_rsbb::now(msg.mutable_time());
+		msg.set_messages_saved(0);
 		cout << "Sending RobotState" << endl << flush;
-		private_channel->send (msg);
+		private_channel->send(msg);
 	}
 	else
 	{
 		roah_rsbb_msgs::RobotBeacon msg;
-		msg.set_team_name (TEAM_NAME);
-		msg.set_robot_name (ROBOT_NAME);
-		roah_rsbb::now (msg.mutable_time());
+		msg.set_team_name(TEAM_NAME);
+		msg.set_robot_name(ROBOT_NAME);
+		roah_rsbb::now(msg.mutable_time());
 		cout << "Sending RobotBeacon" << endl << flush;
 		public_channel_->send (msg);
 	}
 
-	loop_time += boost::posix_time::milliseconds(1000);
-	boost::this_thread::sleep(loop_time);
-}
-
-void SpecificWorker::doTheGuess()
-{
+// 	loop_time += boost::posix_time::milliseconds(1000);
+// 	boost::this_thread::sleep(loop_time);
 	
 }
 
@@ -91,6 +92,28 @@ void SpecificWorker::receive_benchmark_state(boost::asio::ip::udp::endpoint& end
 	cout << ", MSG_TYPE " << msg_type << endl;
 	cout << "  benchmark_type: " << msg->benchmark_type() << endl;
 	cout << "  benchmark_state: " << msg->benchmark_state() << endl;
+	if (msg->benchmark_type() == "HOPF")
+	{
+		cout << "     object perception" << endl;
+		switch(msg->benchmark_state())
+		{
+			case 0:
+				cout << "        stop" << endl;
+				break;
+			case 1:
+				cout << "        prepare" << endl;
+				break;
+			case 2:
+				cout << "        goal_tx" << endl;
+				doTheGuess();
+				break;
+			case 3:
+				cout << "        waiting result" << endl;
+				break;
+			default:
+				break;
+		}
+	}
 	cout << flush;
 }
 
