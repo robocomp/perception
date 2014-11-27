@@ -1,0 +1,20 @@
+import "/robocomp/Interfaces/IDSLs/Camera.idsl";
+import "/robocomp/Interfaces/IDSLs/Art.idsl";
+
+Component artComp{
+	
+	Communications{
+		requires Camera;
+		implements Art;
+	};
+	
+	RoboCompClasses{
+		
+	};
+	
+	RoboCompModules{
+		artoolkit;
+	};
+	
+	language Cpp;
+};
