@@ -1,4 +1,6 @@
+#include <iostream>
 
+using namespace std;
 
 /* GaussianDiscrete2D: Calcula el valor discreto en x,y de la
 distribución gaussiana en 2D.

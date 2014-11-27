@@ -2,6 +2,10 @@
 #ifndef CANNY_H
 #define CANNY_H
 
+#include <iostream>
+
+using namespace std;
+
 typedef struct PUNTO2{
 int x;
 int y;
