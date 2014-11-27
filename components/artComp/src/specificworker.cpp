@@ -136,7 +136,7 @@ void SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 bool SpecificWorker::getPosition(Ice::Double& tx, Ice::Double& ty, Ice::Double& tz, Ice::Double& rx, Ice::Double& ry, Ice::Double& rz)
 {
   ///ARToolKit variables
-  ARUint8 *dataPtr;
+  ARUint8 *dataPtr 
   ARMarkerInfo *marker_info;
   int marker_num=0,i,j=-1;
   //uchar* miImg;

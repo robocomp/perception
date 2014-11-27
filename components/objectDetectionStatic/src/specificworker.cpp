@@ -54,6 +54,33 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	
 	saved_counter = 0;
 	
+	//YAML file
+	yamlfile.open ("data.yaml");
+	
+	//artoolkit shit:
+	
+	string pathtomarker_x = "/home/robocomp/robocomp/components/perception/data/artoolkit/x.patt";
+	string pathtomarker_y = "/home/robocomp/robocomp/components/perception/data/artoolkit/y.patt";
+	string pathtomarker_z = "/home/robocomp/robocomp/components/perception/data/artoolkit/z.patt";
+	string pathmultimark = "/home/robocomp/robocomp/components/perception/data/artoolkit/multi.patt";
+	string pathtocameraparams = "/home/robocomp/robocomp/components/perception/data/artoolkit/camera.dat";
+	probability = 0.8;
+	size = 50;
+	
+	//config the artoolkit
+	//Cargando los parametros intrínsecos de la camara
+	ARParam  wparam,cparam;
+	if(arParamLoad(pathtocameraparams.c_str(), 1, &wparam)< 0){
+	  std::cout<<"Error al cargar los parametros intrínsecos de la camara"<<std::endl;
+	  exit(-1);
+	}
+	arParamChangeSize(&wparam, 640, 480, &cparam);
+	arInitCparam(&cparam);   // Inicializamos la camara con "cparam"
+	
+	
+	//load the mark
+	 mMarker = arMultiReadConfigFile(pathmultimark.c_str());
+	
 	//only released when the euclidean cluster is performed
 	euclidean_mutex->lock();
 }
@@ -64,6 +91,78 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 SpecificWorker::~SpecificWorker()
 {
 
+}
+
+void SpecificWorker::grabTheAR()
+{
+  ///ARToolKit variables
+  ARUint8 *dataPtr = rgb_image.data;
+  ARMarkerInfo *marker_info;
+  int marker_num=0,i,j=-1;
+  //uchar* miImg;
+  double matrix[3][4]; //matriz de transformacion de la marca
+  double p_center[2] = {0.0,0.0}; //Centro de la marca
+  
+  std::cout<<"Iteracion"<<std::endl;
+//   camera->getRGBPackedImage(0,imgRGB,hState,bState);
+  
+//   dataPtr = new ARUint8[640*480*3];
+//   memcpy(dataPtr,&imgRGB[0],640*480*3);
+  
+  
+    
+  if(arDetectMarker(dataPtr, 100, &marker_info, &marker_num) >= 0) {
+    if(marker_num!=0)
+    {
+      
+      cout<<"Encontrada"<<endl;
+      for(i=0;i<marker_num;i++)
+      {
+// 	if(id_marker==marker_info[i].id)
+// 	{
+	  if(j==-1)
+	      j=i;
+	  else
+	  {
+	    if(marker_info[j].cf<marker_info[i].cf)
+	      j=i;
+	  }
+// 	}
+      }
+      
+      if(j!=-1 && marker_info[j].cf>=probability)
+      {
+	cout<<"********  OK, Supera la probabilidad "<<probability<<endl;
+	arGetTransMat(&marker_info[j], p_center, (double)size, matrix);
+	
+	ar_tx = matrix[0][3];
+	ar_ty = matrix[1][3];
+	ar_tz = matrix[2][3];
+	
+	ar_rx = matrix[0][0];
+	ar_ry = matrix[1][1];
+	ar_rz = matrix[2][2];
+	
+      }
+      else{
+	cout<<"Probabilidad no superada"<<endl;
+	return;
+      }
+      
+    }
+    else{
+      cout<<"No encontrada"<<endl;
+      return;
+    }
+  }
+  else{
+    std::cout<<"Error en la deteccion de la marca"<<std::endl;  
+    return;
+  }
+  
+  //Copiar los valores de la matriz de transformacion
+  
+  delete [] dataPtr;
 }
 
 void SpecificWorker::aprilFitModel(const string& model)
@@ -98,6 +197,11 @@ void SpecificWorker::grabThePointCloud()
 {
 	updatePointCloud();
 	drawThePointCloud(this->cloud);
+	
+	timeval tv;
+	gettimeofday(&tv,NULL);
+	cout<<tv.tv_sec*(uint64_t)1000000+tv.tv_usec<<endl;
+// 	yamlfile
 }
 
 void SpecificWorker::getInliers(const string& model)
@@ -118,18 +222,25 @@ void SpecificWorker::ransac(const string& model)
 
 void SpecificWorker::segmentImage()
 {
-	cv::imwrite("nosegmentada.png",rgb_image);
+  cv::imwrite("nosegmentada.png",rgb_image);
   std::cout<<"setting image"<<std::endl;
   seg.set_image(&rgb_image);
   cv::Mat segmented(480,640, CV_8UC3, cv::Scalar::all(0));
   std::cout<<"Segmenting image"<<std::endl;
-	seg.set_tresholds(100, 150);
+  seg.set_tresholds(100, 150);
   segmented = seg.segment();
-	cv::imwrite("Segmentada.png",segmented);
-	cv::Mat output;
-	cv::inRange(segmented, cv::Scalar(0, 100, 100), cv::Scalar(150, 200, 200), output);
-  cv::imwrite("inranges.png",output);
+  cv::imwrite("Segmentada.png",segmented);
+  cv::Mat yellow;
+  cv::inRange(segmented, cv::Scalar(0, 100, 100), cv::Scalar(150, 200, 200), yellow);
+  cv::imwrite("yellow.png",yellow);
+  cv::Mat pink;
+  cv::inRange(segmented, cv::Scalar(65, 15, 125), cv::Scalar(150, 100, 255), pink);
+  cv::imwrite("pink.png",pink);
+  cv::Mat green;
+  cv::inRange(segmented, cv::Scalar(25, 75, 50), cv::Scalar(106, 255, 150), green);
+  cv::imwrite("green.png",green);
   
+
 }
 
 void SpecificWorker::projectInliers(const string& model)
@@ -1085,12 +1196,12 @@ void SpecificWorker::aprilFitTheTable()
 {
 	//put the box processing here:
 	mutex->lock();
-	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
-	{
+// 	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
+// 	{
 		//move the tags to the robot reference frame
 		
-		if (itMap->second.id == 0)
-		{
+// 		if (itMap->second.id == 0)
+// 		{
 // 			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
 // 			
 // 			QMat PP = QMat(m.rows, m.cols);
@@ -1103,7 +1214,7 @@ void SpecificWorker::aprilFitTheTable()
 // 			}
 			QMat PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
 			
-			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz );
+			RTMat object_tr( ar_rx, ar_ry, ar_rz, ar_tx, ar_ty, ar_tz );
 
 							 
 			const RTMat translated_obj = PP * object_tr;
@@ -1148,9 +1259,9 @@ void SpecificWorker::aprilFitTheTable()
 			else
 				updateTheTable(pose);
 	
-			break;
- 		}
-	}
+// 			break;
+//  		}
+// 	}
 	drawTheTable();
 	mutex->unlock();
 	

@@ -76,6 +76,17 @@ void SpecificWorker::compute( )
 
 void SpecificWorker::doTheGuess()
 {
+  objectdetection_proxy->grabThePointCloud();
+  objectdetection_proxy->grabTheAR();
+  //perform ransac
+//   objectdetection_proxy->
+  //inliners
+  //project
+  //convex hull
+  //upside
+  
+  //check point cloud sizeo if > 100 then vfh
+  //otherwise color
 	
 }
 
