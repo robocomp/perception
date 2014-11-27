@@ -56,19 +56,21 @@ int smallwidth,smallheight;
 int i,j;
 int top,left;
 double **small;
+cout<<"Me puedo cagar en todo"<<endl;
 
+cout<<"width: "<<width<<" kernelWidth"<<kernelWidth<<" height: "<<height<<" kernelHeight: "<<kernelHeight<<endl;
 smallwidth=width-kernelWidth +1;
 smallheight=height-kernelHeight+1;
-
+cout<<"Me puedo cagar en todo"<<endl;
 top=kernelHeight/2;
 left=kernelWidth/2;
-
+cout<<"small: "<<small<<"smallwidth: "<<smallwidth<<" smallheight: "<<smallheight<<endl;
  small=new double* [smallwidth];
  for(i=0;i<smallwidth;i++)
    small[i]=new double[smallheight];
-
+cout<<"Me puedo cagar en todo"<<flush<<endl;
 Convolution2D(im,small,width,height,kernel,kernelWidth,kernelHeight);
-
+cout<<"Me puedo cagar en todo"<<endl;
 
 
 for(j=0;j<height;j++){

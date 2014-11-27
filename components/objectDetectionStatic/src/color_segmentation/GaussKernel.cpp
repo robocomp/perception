@@ -67,14 +67,15 @@ void Smooth(double **im, double **ims,int width,int height, int size, double the
 
 double **kernel;
 int i;
-
+cout<<"g 01"<<flush<<endl;
  kernel=new double*[size];
       for (i=0;i<size;i++)
 	kernel[i]=new double[size];
-
+cout<<"g 01"<<flush<<endl;
 Gaussian2D(kernel,theta,size);
+cout<<"g 01"<<flush<<endl;
 Convolution2DPadded(im,ims,width,height,kernel,size,size);
-
+cout<<"g 01"<<flush<<endl;
  for(i=0;i<size;i++)
    delete(kernel[i]);
  delete(kernel);
@@ -85,22 +86,22 @@ void SmoothImage(int **im,int **dest,int w,int h,int size,double theta){
 int grey,i,j;
 double **dest1;
 double **im1;
-
+	cout<<"sm 01"<<flush<<endl;
  dest1=new double* [w];
  im1=new double* [w];
  for(i=0;i<w;i++){
    dest1[i]=new double[h];
    im1[i]=new double[h];
  }
-
+	cout<<"sm 01"<<flush<<endl;
 for (i=0;i<w;i++){
   for(j=0;j<h;j++){
     im1[i][j]=im[i][j];
    }
 }
-
+	cout<<"sm 01"<<flush<<endl;
 Smooth(im1,dest1,w,h,size,theta);
-
+cout<<"sm 01"<<flush<<endl;
 for(i=0;i<w;i++){
   for(j=0;j<h;j++){
     grey=(int)dest1[i][j];
@@ -109,10 +110,11 @@ for(i=0;i<w;i++){
     dest[i][j]=grey;
   }
 }
+	cout<<"sm 01"<<flush<<endl;
  for(i=0;i<w;i++){
    delete(im1[i]);
    delete(dest1[i]);
- }
+ }cout<<"sm 01"<<flush<<endl;
  delete(im1);
  delete(dest1);
 }

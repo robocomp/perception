@@ -1,4 +1,6 @@
+#include <iostream>
 
+using namespace std;
 
 /* SinglePixelConvolution: Coge una imagen (niveles de gris), un kernel
 y una posición, calcula la convolución en esa posición y devuelve el
