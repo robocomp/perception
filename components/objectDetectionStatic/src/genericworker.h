@@ -60,6 +60,8 @@ public:
 
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;
+	virtual void  segmentImage() = 0;
+	virtual void  centroidBasedPose() = 0;
 	virtual void  statisticalOutliersRemoval() = 0;
 	virtual void  passThrough() = 0;
 	virtual void  grabThePointCloud() = 0;
@@ -81,7 +83,6 @@ public:
 	virtual void  fitTheViewVFH() = 0;
 	virtual void  vfh(listType& guesses) = 0;
 	virtual void  surfHomography(listType& guesses) = 0;
-	virtual void  centroidBasedPose() = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:

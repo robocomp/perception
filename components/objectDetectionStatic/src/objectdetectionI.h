@@ -37,7 +37,9 @@ Q_OBJECT
 public:
 	objectDetectionI( GenericWorker *_worker, QObject *parent = 0 );
 	~objectDetectionI();
-	void  statisticalOutliersRemoval(const Ice::Current& = Ice::Current());
+	void  segmentImage(const Ice::Current& = Ice::Current());
+void  centroidBasedPose(const Ice::Current& = Ice::Current());
+void  statisticalOutliersRemoval(const Ice::Current& = Ice::Current());
 void  passThrough(const Ice::Current& = Ice::Current());
 void  grabThePointCloud(const Ice::Current& = Ice::Current());
 void  aprilFitModel(const string& model, const Ice::Current& = Ice::Current());
@@ -58,7 +60,6 @@ void  loadTrainedVFH(const Ice::Current& = Ice::Current());
 void  fitTheViewVFH(const Ice::Current& = Ice::Current());
 void  vfh(listType& guesses, const Ice::Current& = Ice::Current());
 void  surfHomography(listType& guesses, const Ice::Current& = Ice::Current());
-void  centroidBasedPose(const Ice::Current& = Ice::Current());
 
 
 	QMutex *mutex;

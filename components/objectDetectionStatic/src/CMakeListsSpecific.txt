@@ -12,6 +12,12 @@ SET ( SOURCES
   tabletop_symmetry/dt/dt.cpp
   vfh/vfh.cpp
   geometry/plane.cpp
+  color_segmentation/BIP.cpp
+  color_segmentation/Canny.cpp
+  color_segmentation/Convolucion.cpp
+  color_segmentation/GaussKernel.cpp
+  color_segmentation/Imagen.cpp
+  color_segmentation/Segmentator.cpp
 )
 
 # Headers set

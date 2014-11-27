@@ -19,7 +19,23 @@
 #ifndef SPECIFICWORKER_H
 #define SPECIFICWORKER_H
 
+#include <QMutexLocker>
+
 #include <genericworker.h>
+
+#include <boost/thread/thread.hpp>
+
+#include <roah_rsbb.h>
+
+using namespace std;
+using namespace roah_rsbb;
+
+const uint16_t port = 6666;
+const string host = "localhost";
+const string TEAM_NAME = "UrsusTeam";
+const string ROBOT_NAME = "Ursus";
+const string CRYPTO_KEY = "randomkey";
+const string CRYPTO_CIPHER = "aes-128-cbc";
 
 /**
        \brief
@@ -30,13 +46,24 @@ class SpecificWorker : public GenericWorker
 {
 Q_OBJECT
 public:
-	SpecificWorker(MapPrx& mprx);	
+	SpecificWorker(MapPrx& mprx);
 	~SpecificWorker();
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
-
 public slots:
  	void compute(); 
 	void doTheGuess();
+	
+private:
+	shared_ptr<PublicChannel<>> public_channel_;
+	QMutex private_channel_mutex_;
+	shared_ptr<PrivateChannel<>> private_channel_;
+
+	static void receive_benchmark_state (boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::BenchmarkState> msg);
+	static void receive_robot_state (boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::RobotState> msg);
+	void receive_rsbb_beacon (boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::RoahRsbbBeacon> rsbb_beacon);
+	static void receive_robot_beacon (boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::RobotBeacon> msg);
+	static void receive_tablet_beacon (boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::TabletBeacon> msg);
+
 };
 
 #endif

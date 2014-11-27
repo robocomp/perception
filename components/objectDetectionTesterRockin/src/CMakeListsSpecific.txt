@@ -10,3 +10,8 @@ SET ( HEADERS
   specificworker.h
   specificmonitor.h
 )
+
+ADD_DEFINITIONS( -std=c++11 )
+
+SET (LIBS ${LIBS} -lprotobuf_comm -lroah_rsbb_msgs -lprotobuf -lpthread -lssl -lcrypto -lboost_thread -lboost_system -lpthread )
+

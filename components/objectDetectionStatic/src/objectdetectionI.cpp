@@ -32,6 +32,14 @@ objectDetectionI::~objectDetectionI()
 }
 
 // Component functions, implementation
+void objectDetectionI::segmentImage(const Ice::Current&){
+	worker->segmentImage();
+}
+
+void objectDetectionI::centroidBasedPose(const Ice::Current&){
+	worker->centroidBasedPose();
+}
+
 void objectDetectionI::statisticalOutliersRemoval(const Ice::Current&){
 	worker->statisticalOutliersRemoval();
 }
@@ -114,10 +122,6 @@ void objectDetectionI::vfh(listType& guesses, const Ice::Current&){
 
 void objectDetectionI::surfHomography(listType& guesses, const Ice::Current&){
 	worker->surfHomography(guesses);
-}
-
-void objectDetectionI::centroidBasedPose(const Ice::Current&){
-	worker->centroidBasedPose();
 }
 
 

@@ -37,6 +37,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(grab_pc_button, SIGNAL(clicked()), this, SLOT(grab_pc()));
 	connect(pass_through_button, SIGNAL(clicked()), this, SLOT(passThrough()));
 	connect(statistical_outliers_removal_button, SIGNAL(clicked()), this, SLOT(passThrough()));
+	connect(segment_button, SIGNAL(clicked()), this, SLOT(segment_image()));
 	connect(centroid_based_pose_button, SIGNAL(clicked()), this, SLOT(centroidBasedPose()));
 	
 	//aspect recognition
@@ -222,6 +223,11 @@ void SpecificWorker::showObject(QListWidgetItem *item)
 void SpecificWorker::reloadVFH()
 {
 	objectdetection_proxy->reloadVFH();
+}
+
+void SpecificWorker::segment_image()
+{
+  objectdetection_proxy->segmentImage();
 }
 
 void SpecificWorker::loadTrainedVFH()

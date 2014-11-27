@@ -5,7 +5,6 @@
 			<pointcloud id="cloud" /> 
 			<translation id="pechote" ty="975">
 				<translation id="pescuezo" ty="300">
-<!-- 					<rotation id="cuellopabajo" rx="0.37"> -->
 					<rotation id="cuellopabajo" rx="0.5">
 						<translation id="rgbd_t">
 							<rgbd id="rgbd" focal="525" width="640" height="480" port="3096" />
