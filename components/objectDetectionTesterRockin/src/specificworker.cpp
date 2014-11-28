@@ -49,9 +49,6 @@ SpecificWorker::~SpecificWorker()
 
 void SpecificWorker::compute( )
 {
-<<<<<<< HEAD
-// 	doTheGuess();
-=======
 // 	static boost::posix_time::ptime loop_time = boost::posix_time::microsec_clock::universal_time();
 // 	shared_ptr<PrivateChannel<CerrErrorHandler>> private_channel;
 // 	{
@@ -78,39 +75,10 @@ void SpecificWorker::compute( )
 // 
 // 	loop_time += boost::posix_time::milliseconds(1000);
 // 	boost::this_thread::sleep(loop_time);
->>>>>>> 2dcb74fd41197681067e3f3b16c25365fe2958eb
 }
 
 void SpecificWorker::doTheGuess()
 {
-<<<<<<< HEAD
-// 	static boost::posix_time::ptime loop_time = boost::posix_time::microsec_clock::universal_time();
-	shared_ptr<PrivateChannel<CerrErrorHandler>> private_channel;
-	{
-		QMutexLocker lock(&private_channel_mutex_);
-		private_channel = private_channel_;
-	}
-	if (private_channel)
-	{
-		roah_rsbb_msgs::RobotState msg;
-		roah_rsbb::now(msg.mutable_time());
-		msg.set_messages_saved(0);
-		cout << "Sending RobotState" << endl << flush;
-		private_channel->send(msg);
-	}
-	else
-	{
-		roah_rsbb_msgs::RobotBeacon msg;
-		msg.set_team_name(TEAM_NAME);
-		msg.set_robot_name(ROBOT_NAME);
-		roah_rsbb::now(msg.mutable_time());
-		cout << "Sending RobotBeacon" << endl << flush;
-		public_channel_->send (msg);
-	}
-
-// 	loop_time += boost::posix_time::milliseconds(1000);
-// 	boost::this_thread::sleep(loop_time);
-=======
 	objectdetection_proxy->grabThePointCloud();
   objectdetection_proxy->grabTheAR();
 	objectdetection_proxy->aprilFitModel("table");
@@ -171,7 +139,6 @@ void SpecificWorker::doTheGuess()
 	myfile<<"    y: "<<y<<"\n";
 	myfile<<"    theta: "<<theta<<"\n";
   myfile.close();
->>>>>>> 2dcb74fd41197681067e3f3b16c25365fe2958eb
 	
 }
 
@@ -183,41 +150,11 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 
 void SpecificWorker::receive_benchmark_state(boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::BenchmarkState> msg)
 {
-<<<<<<< HEAD
-	cout << "Received BenchmarkState from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
-	cout << ", MSG_TYPE " << msg_type << endl;
-	cout << "  benchmark_type: " << msg->benchmark_type() << endl;
-	cout << "  benchmark_state: " << msg->benchmark_state() << endl;
-	if (msg->benchmark_type() == "HOPF")
-	{
-		cout << "     object perception" << endl;
-		switch(msg->benchmark_state())
-		{
-			case 0:
-				cout << "        stop" << endl;
-				break;
-			case 1:
-				cout << "        prepare" << endl;
-				break;
-			case 2:
-				cout << "        goal_tx" << endl;
-				doTheGuess();
-				break;
-			case 3:
-				cout << "        waiting result" << endl;
-				break;
-			default:
-				break;
-		}
-	}
-	cout << flush;
-=======
 // 	cout << "Received BenchmarkState from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
 // 	cout << ", MSG_TYPE " << msg_type << endl;
 // 	cout << "  benchmark_type: " << msg->benchmark_type() << endl;
 // 	cout << "  benchmark_state: " << msg->benchmark_state() << endl;
 // 	cout << flush;
->>>>>>> 2dcb74fd41197681067e3f3b16c25365fe2958eb
 }
 
 void SpecificWorker::receive_robot_state(boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::RobotState> msg) 
