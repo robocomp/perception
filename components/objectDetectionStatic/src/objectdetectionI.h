@@ -37,9 +37,7 @@ Q_OBJECT
 public:
 	objectDetectionI( GenericWorker *_worker, QObject *parent = 0 );
 	~objectDetectionI();
-	void  segmentImage(const Ice::Current& = Ice::Current());
-void  centroidBasedPose(const Ice::Current& = Ice::Current());
-void  statisticalOutliersRemoval(const Ice::Current& = Ice::Current());
+	void  statisticalOutliersRemoval(const Ice::Current& = Ice::Current());
 void  passThrough(const Ice::Current& = Ice::Current());
 void  grabThePointCloud(const Ice::Current& = Ice::Current());
 void  aprilFitModel(const string& model, const Ice::Current& = Ice::Current());
@@ -50,7 +48,7 @@ void  convexHull(const string& model, const Ice::Current& = Ice::Current());
 void  extractPolygon(const string& model, const Ice::Current& = Ice::Current());
 void  ransac(const string& model, const Ice::Current& = Ice::Current());
 void  normalSegmentation(const string& model, const Ice::Current& = Ice::Current());
-void  euclideanClustering(Ice::Int& numClusters, const Ice::Current& = Ice::Current());
+void  euclideanClustering(Ice::Int& numCluseters, const Ice::Current& = Ice::Current());
 void  showObject(Ice::Int numObject, const Ice::Current& = Ice::Current());
 void  reset(const Ice::Current& = Ice::Current());
 void  mirrorPC(const Ice::Current& = Ice::Current());
@@ -60,6 +58,9 @@ void  loadTrainedVFH(const Ice::Current& = Ice::Current());
 void  fitTheViewVFH(const Ice::Current& = Ice::Current());
 void  vfh(listType& guesses, const Ice::Current& = Ice::Current());
 void  surfHomography(listType& guesses, const Ice::Current& = Ice::Current());
+void  centroidBasedPose(Ice::Float& x, Ice::Float& y, Ice::Float& theta, const Ice::Current& = Ice::Current());
+void  segmentImage(const Ice::Current& = Ice::Current());
+void  grabTheAR(const Ice::Current& = Ice::Current());
 
 
 	QMutex *mutex;

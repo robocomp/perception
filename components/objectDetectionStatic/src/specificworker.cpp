@@ -36,17 +36,20 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	viewpoint_transform = innermodel->getTransformationMatrix("robot", "rgbd_t");
 	
 	//let's set the sizes
-	table->set_board_size(1000,30,300);
+	table->set_board_size(500,30,500);
 	box->set_size(QVec::vec3(57.5, 20.0, 57.5));
 
 	//let's set the ofsets
-	table_offset.x = 300;
+	table_offset.x = 500;
 	table_offset.y = 0;
-	table_offset.z = 200;
+	table_offset.z = 1100;
 	
 	box_offset.x = 0;
 	box_offset.y = 65.5;
 	box_offset.z = 26;
+	
+	//Place to save
+	placetosave = "/media/spyke/0C1E-1130/Ursus/FBM1/Round1/";
 	
 	//action flags
 	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = objectSelected_flag = false;
@@ -59,13 +62,15 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	
 	//artoolkit shit:
 	
-	string pathtomarker_x = "/home/robocomp/robocomp/components/perception/data/artoolkit/x.patt";
-	string pathtomarker_y = "/home/robocomp/robocomp/components/perception/data/artoolkit/y.patt";
-	string pathtomarker_z = "/home/robocomp/robocomp/components/perception/data/artoolkit/z.patt";
-	string pathmultimark = "/home/robocomp/robocomp/components/perception/data/artoolkit/multi.patt";
+	string pathtomarker_x = "/home/robocomp/robocomp/components/perception/data/artoolkit/x.pat";
+	string pathtomarker_y = "/home/robocomp/robocomp/components/perception/data/artoolkit/y.pat";
+	string pathtomarker_z = "/home/robocomp/robocomp/components/perception/data/artoolkit/z.pat";
+	string pathmultimark = "/home/robocomp/robocomp/components/perception/data/artoolkit/multi.pat";
 	string pathtocameraparams = "/home/robocomp/robocomp/components/perception/data/artoolkit/camera.dat";
-	probability = 0.8;
+	probability = 0.4;
 	size = 50;
+	
+	isSingle = false;
 	
 	//config the artoolkit
 	//Cargando los parametros intrínsecos de la camara
@@ -74,12 +79,27 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	  std::cout<<"Error al cargar los parametros intrínsecos de la camara"<<std::endl;
 	  exit(-1);
 	}
+	
 	arParamChangeSize(&wparam, 640, 480, &cparam);
 	arInitCparam(&cparam);   // Inicializamos la camara con "cparam"
 	
-	
-	//load the mark
-	 mMarker = arMultiReadConfigFile(pathmultimark.c_str());
+	//Cargando la marca de ART
+	if(isSingle){
+	  id_marker = arLoadPatt(pathtomarker_x.c_str()); 
+	  if(id_marker < 0){
+	    std::cout<<"Error al cargar la marca"<<std::endl;
+	    exit(-1);
+	  }
+	  std::cout<<"Marca cargada correctamente"<<std::endl;
+	}
+	else{
+	  mMarker = arMultiReadConfigFile(pathmultimark.c_str());
+	  if(mMarker == NULL){
+	    std::cout<<"Error al cargar la marca"<<std::endl;
+	    exit(-1);
+	  }
+	  std::cout<<"Multimarca cargado correctamente"<<std::endl;
+	}
 	
 	//only released when the euclidean cluster is performed
 	euclidean_mutex->lock();
@@ -96,6 +116,7 @@ SpecificWorker::~SpecificWorker()
 void SpecificWorker::grabTheAR()
 {
   ///ARToolKit variables
+	cv::imwrite("beforear.png",rgb_image);
   ARUint8 *dataPtr = rgb_image.data;
   ARMarkerInfo *marker_info;
   int marker_num=0,i,j=-1;
@@ -109,44 +130,71 @@ void SpecificWorker::grabTheAR()
 //   dataPtr = new ARUint8[640*480*3];
 //   memcpy(dataPtr,&imgRGB[0],640*480*3);
   
-  
+  //for(uint8_t i = 0; i<640*480;i++)
+	//	std::cout<<(uint8_t)dataPtr[i]<<std::endl;
     
   if(arDetectMarker(dataPtr, 100, &marker_info, &marker_num) >= 0) {
-    if(marker_num!=0)
-    {
+    if(marker_num!=0){
+      
+      if(!isSingle && arMultiGetTransMat(marker_info, marker_num, mMarker) <= 0){
+				cout<<"Error con multimarca"<<endl;
+	return;
+      }
       
       cout<<"Encontrada"<<endl;
-      for(i=0;i<marker_num;i++)
-      {
-// 	if(id_marker==marker_info[i].id)
-// 	{
+      for(i=0;i<marker_num;i++){
+	if(id_marker==marker_info[i].id){
 	  if(j==-1)
 	      j=i;
-	  else
-	  {
+	  else{
 	    if(marker_info[j].cf<marker_info[i].cf)
 	      j=i;
 	  }
-// 	}
+	}
       }
       
-      if(j!=-1 && marker_info[j].cf>=probability)
-      {
-	cout<<"********  OK, Supera la probabilidad "<<probability<<endl;
-	arGetTransMat(&marker_info[j], p_center, (double)size, matrix);
+			if(j!=-1 && marker_info[j].cf>=probability)
+			{
+				cout<<"********  OK, Supera la probabilidad "<<probability<<endl;
+				arGetTransMat(&marker_info[j], p_center, (double)size, matrix);
 	
-	ar_tx = matrix[0][3];
-	ar_ty = matrix[1][3];
-	ar_tz = matrix[2][3];
-	
-	ar_rx = matrix[0][0];
-	ar_ry = matrix[1][1];
-	ar_rz = matrix[2][2];
-	
-      }
+				ar_tx = matrix[0][3];
+				ar_ty = matrix[1][3];
+				ar_tz = matrix[2][3];
+				
+				ar_rx = matrix[0][0];
+				ar_ry = matrix[1][1];
+				ar_rz = matrix[2][2];
+				
+				cout<<ar_tx<<" "<<ar_ty<<" "<<ar_tz<<endl;
+			
+				bool exists = false;
+				
+				RoboCompInnerModelManager::NodeInformationSequence node_sequence;
+				innermodelmanager_proxy->getAllNodeInformation(node_sequence);
+				for (unsigned int i=0; i<node_sequence.size(); i++)
+				{
+					if(node_sequence[i].id == "marca")
+					{
+						exists = true;
+						break;
+					}
+				}
+				
+					RoboCompInnerModelManager::Pose3D pose;
+					pose.x = ar_tx;
+					pose.y = ar_ty;
+					pose.z = ar_tz;
+					pose.rx = ar_rx;
+					pose.ry = ar_ry;
+					pose.rz = ar_rz;
+					innermodelmanager_proxy->setPoseFromParent("marca", pose);
+			}
       else{
-	cout<<"Probabilidad no superada"<<endl;
-	return;
+				std::cout.precision(3);
+				cout<<"No, Supera la probabilidad "<<marker_info[j].cf<<endl;
+				cout<<ar_tx<<" "<<ar_ty<<" "<<ar_tz<<endl;
+				return;
       }
       
     }
@@ -162,7 +210,9 @@ void SpecificWorker::grabTheAR()
   
   //Copiar los valores de la matriz de transformacion
   
-  delete [] dataPtr;
+//   delete [] dataPtr;
+  
+  return;
 }
 
 void SpecificWorker::aprilFitModel(const string& model)
@@ -198,9 +248,6 @@ void SpecificWorker::grabThePointCloud()
 	updatePointCloud();
 	drawThePointCloud(this->cloud);
 	
-	timeval tv;
-	gettimeofday(&tv,NULL);
-	cout<<tv.tv_sec*(uint64_t)1000000+tv.tv_usec<<endl;
 // 	yamlfile
 }
 
@@ -231,7 +278,7 @@ void SpecificWorker::segmentImage()
   segmented = seg.segment();
   cv::imwrite("Segmentada.png",segmented);
   cv::Mat yellow;
-  cv::inRange(segmented, cv::Scalar(0, 100, 100), cv::Scalar(150, 200, 200), yellow);
+  cv::inRange(segmented, cv::Scalar(0, 150, 150), cv::Scalar(80, 255, 255), yellow);
   cv::imwrite("yellow.png",yellow);
   cv::Mat pink;
   cv::inRange(segmented, cv::Scalar(65, 15, 125), cv::Scalar(150, 100, 255), pink);
@@ -263,6 +310,7 @@ void SpecificWorker::convexHull(const string& model)
 void SpecificWorker::extractPolygon(const string& model)
 {
 	table->extract_table_polygon(this->original_cloud, cloud_hull, QVec::vec3(viewpoint_transform(0,3), viewpoint_transform(1,3), viewpoint_transform(2,3)) , 20, 1500, prism_indices, this->cloud);
+	cout<<"Point Cloud size: "<<this->cloud->points.size()<<endl;
 	drawThePointCloud(this->cloud);
 	
 }
@@ -371,13 +419,10 @@ void SpecificWorker::mindTheGapPC()
 		std::cout<<"Please select an object first"<<std::endl;
 }
 
-void SpecificWorker::centroidBasedPose()
+void SpecificWorker::centroidBasedPose(float &x, float &y, float &theta)
 {
 	Eigen::Vector4f centroid;
 	pcl::compute3DCentroid (*(this->cloud), centroid);
-	
- 	InnerModelNode *parent = innermodel->getNode(QString::fromStdString("rgbd"));
- 	innermodel->newTransform(QString::fromStdString("marca"), QString::fromStdString("static") ,parent, 420.556, -108.324, 870.775, 0.56, 0, 0);
 	
  	QMat PP = innermodel->getTransformationMatrix("marca", "robot");
 	
@@ -392,6 +437,9 @@ void SpecificWorker::centroidBasedPose()
 // 	std::cout<<"Centroid : "<<p2(0)<<" "<<p2(1)<<" "<<p2(2)<<std::endl;
 	
 	c1.print("centroid: ");
+	x=p2(0);
+	y=p2(1);
+	theta= rand() % 180;
 	
 	
 }
@@ -539,9 +587,14 @@ void SpecificWorker::passThrough()
   pcl::PassThrough<PointT> pass;
   pass.setInputCloud (this->cloud);
   pass.setFilterFieldName ("z");
-  pass.setFilterLimits (0.0, 1100);
+  pass.setFilterLimits (0.0, 1500);
   //pass.setFilterLimitsNegative (true);
   pass.filter (*this->cloud);
+	pass.setInputCloud (this->cloud);
+  pass.setFilterFieldName ("x");
+  pass.setFilterLimits (-400, 400);
+	pass.setInputCloud (this->cloud);
+	pass.filter (*this->cloud);
   drawThePointCloud(this->cloud);
 }
 
@@ -800,7 +853,7 @@ void SpecificWorker::naive_fit_cb (const boost::shared_ptr<RectPrism>  &shape)
 void SpecificWorker::reloadVFH()
 {
 // 	vfh_matcher->reloadVFH("/home/robocomp/robocomp/files/objectData/Rockin_set_labeled/");
-	vfh_matcher->reloadVFH("/home/spyke/robocomp/components/perception/components/objectDetectionStatic/build/test/");
+	vfh_matcher->reloadVFH("/home/spyke/robocomp/files/objectData/Rockin_set");
 }
 
 void SpecificWorker::loadTrainedVFH()
@@ -816,6 +869,16 @@ void SpecificWorker::vfh(std::vector<string> &guesses)
 		std::cout<<"[DEBUG] Cluster SIZE: "<<cluster_clouds[object_to_show]->points.size()<<std::endl;
 		vfh_matcher->doTheGuess(cluster_clouds[object_to_show], vfh_guesses);
 		guesses = vfh_guesses;
+		
+		QStringList pieces;
+		QString path_to_pcd, name_of_object;
+		path_to_pcd = QString::fromStdString(guesses[0]);
+		string instance_code;
+		pieces = path_to_pcd.split( "/" );
+		name_of_object = pieces.at( pieces.length() - 2 );
+		guesses[0] = name_of_object.toStdString();
+		class_obj = "a"; 
+		instance = name_of_object.toStdString();
 	}
 	else
 	{
@@ -1230,12 +1293,20 @@ void SpecificWorker::aprilFitTheTable()
 			r.print("april");
 			
 			RoboCompInnerModelManager::Pose3D pose;
-			pose.x = translated_obj(0,3);
-			pose.y = translated_obj(1,3);
-			pose.z = translated_obj(2,3);
-			pose.rx = r(0);
-			pose.ry = r(1); // + 0.1; da noise!
-			pose.rz = r(2);
+// 			pose.x = translated_obj(0,3);
+// 			pose.y = translated_obj(1,3);
+// 			pose.z = translated_obj(2,3);
+// 			pose.rx = r(0);
+// 			pose.ry = r(1); // + 0.1; da noise!
+// 			pose.rz = r(2);
+// 			
+			pose.x = -500;
+			pose.y = 200;
+			pose.z = 750;
+			pose.rx = 0;
+			pose.ry = 0; // + 0.1; da noise!
+			pose.rz = 0;
+			
 			
 		// 			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;
 		// 			cout<<"Rotation of table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
@@ -1527,8 +1598,19 @@ void SpecificWorker::updatePointCloud()
 	
 	//lets make a copy to maintain the origianl cloud
 	*original_cloud = *cloud;
-
-	writer.write<PointT> ("out.pcd", *cloud, false);
+	
+	
+	
+	timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	string pcdname =  QString::number(ts.tv_sec).toStdString() + ".pcd" ;
+	printf("<%s>\n", pcdname.c_str());
+	writer.write<PointT> ( pcdname, *cloud, false);
+	system ((string("mv ") + pcdname + string(" ") + placetosave).c_str() );
+	
+	clock_gettime(CLOCK_REALTIME, &ts);
+	cv::imwrite( placetosave + QString::number(ts.tv_sec).toStdString() + ".png", rgb_image);
+	
 
 	//Downsample the point cloud:
 	
@@ -1542,7 +1624,8 @@ void SpecificWorker::updatePointCloud()
 // 	std::vector<int> inliers;
 // 		 
 // 	pcl::RandomSampleConsensus<PointT> ransac (model_p);
-//   ransac.setDistanceThreshold (.01);
+//   ransac.setDistanceThreshold (.01);3
+
 //   ransac.computeModel();
 //   ransac.getInliers(inliers);
 // 	std::cout<<"Inliers size: "<<inliers->size()<<std::endl;

@@ -32,14 +32,6 @@ objectDetectionI::~objectDetectionI()
 }
 
 // Component functions, implementation
-void objectDetectionI::segmentImage(const Ice::Current&){
-	worker->segmentImage();
-}
-
-void objectDetectionI::centroidBasedPose(const Ice::Current&){
-	worker->centroidBasedPose();
-}
-
 void objectDetectionI::statisticalOutliersRemoval(const Ice::Current&){
 	worker->statisticalOutliersRemoval();
 }
@@ -84,8 +76,8 @@ void objectDetectionI::normalSegmentation(const string& model, const Ice::Curren
 	worker->normalSegmentation(model);
 }
 
-void objectDetectionI::euclideanClustering(Ice::Int& numClusters, const Ice::Current&){
-	worker->euclideanClustering(numClusters);
+void objectDetectionI::euclideanClustering(Ice::Int& numCluseters, const Ice::Current&){
+	worker->euclideanClustering(numCluseters);
 }
 
 void objectDetectionI::showObject(Ice::Int numObject, const Ice::Current&){
@@ -122,6 +114,20 @@ void objectDetectionI::vfh(listType& guesses, const Ice::Current&){
 
 void objectDetectionI::surfHomography(listType& guesses, const Ice::Current&){
 	worker->surfHomography(guesses);
+}
+
+void objectDetectionI::centroidBasedPose(Ice::Float& x, Ice::Float& y, Ice::Float& theta, const Ice::Current&){
+	cout<<"llegar: "<<x<<endl;
+	worker->centroidBasedPose(x,y,theta);
+	cout<<"volver "<<x<<endl;
+}
+
+void objectDetectionI::segmentImage(const Ice::Current&){
+	worker->segmentImage();
+}
+
+void objectDetectionI::grabTheAR(const Ice::Current&){
+	worker->grabTheAR();
 }
 
 

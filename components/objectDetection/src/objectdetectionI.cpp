@@ -76,8 +76,8 @@ void objectDetectionI::normalSegmentation(const string& model, const Ice::Curren
 	worker->normalSegmentation(model);
 }
 
-void objectDetectionI::euclideanClustering(Ice::Int& numClusters, const Ice::Current&){
-	worker->euclideanClustering(numClusters);
+void objectDetectionI::euclideanClustering(Ice::Int& numCluseters, const Ice::Current&){
+	worker->euclideanClustering(numCluseters);
 }
 
 void objectDetectionI::showObject(Ice::Int numObject, const Ice::Current&){
@@ -118,6 +118,10 @@ void objectDetectionI::surfHomography(listType& guesses, const Ice::Current&){
 
 void objectDetectionI::centroidBasedPose(const Ice::Current&){
 	worker->centroidBasedPose();
+}
+
+void objectDetectionI::grabTheAR(const Ice::Current&){
+	worker->grabTheAR();
 }
 
 

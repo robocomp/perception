@@ -69,6 +69,7 @@
 // #define SAVE_DATA
 
 #include <sys/time.h>
+#include <stdlib.h>
  
 /**
        \brief
@@ -106,12 +107,21 @@ class SpecificWorker : public GenericWorker
 	//yaml file
 	ofstream yamlfile;
 	
+	string placetosave;
+	
+	//result
+	string class_obj;
+	string instance;
+	float posx, posy;
+	float theta;
+	
 	//artoolkit shit:
 	string pathtomarker_x;
 	string pathtomarker_y;
 	string pathtomarker_z;
 	string pathtocameraparams;
-	
+	int id_marker;
+	bool isSingle;
 	///Multimarcas
 	ARMultiMarkerInfoT  *mMarker;
 	float probability;
@@ -204,7 +214,7 @@ public:
 	void passThrough();
 	void statisticalOutliersRemoval();
 	void segmentImage();
-	void centroidBasedPose();
+	void centroidBasedPose(float &x, float &y, float &theta);
 	void grabTheAR();
 	
 	//PC mirroring
