@@ -13,7 +13,7 @@ SET ( SOURCES
   ${SOURCES}
   objectdetectioncomp.cpp
   objectdetectionI.cpp
-  apriltagsI.cpp
+apriltagsI.cpp
 
   genericmonitor.cpp
   commonbehaviorI.cpp

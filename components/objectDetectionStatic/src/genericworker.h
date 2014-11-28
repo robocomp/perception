@@ -60,8 +60,6 @@ public:
 
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;
-	virtual void  segmentImage() = 0;
-	virtual void  centroidBasedPose() = 0;
 	virtual void  statisticalOutliersRemoval() = 0;
 	virtual void  passThrough() = 0;
 	virtual void  grabThePointCloud() = 0;
@@ -73,7 +71,7 @@ public:
 	virtual void  extractPolygon(const string& model) = 0;
 	virtual void  ransac(const string& model) = 0;
 	virtual void  normalSegmentation(const string& model) = 0;
-	virtual void  euclideanClustering(Ice::Int& numClusters) = 0;
+	virtual void  euclideanClustering(Ice::Int& numCluseters) = 0;
 	virtual void  showObject(int numObject) = 0;
 	virtual void  reset() = 0;
 	virtual void  mirrorPC() = 0;
@@ -83,6 +81,9 @@ public:
 	virtual void  fitTheViewVFH() = 0;
 	virtual void  vfh(listType& guesses) = 0;
 	virtual void  surfHomography(listType& guesses) = 0;
+	virtual void  centroidBasedPose(Ice::Float& x, Ice::Float& y, Ice::Float& theta) = 0;
+	virtual void  segmentImage() = 0;
+	virtual void  grabTheAR() = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:

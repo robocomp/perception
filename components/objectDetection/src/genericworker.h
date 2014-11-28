@@ -71,7 +71,7 @@ public:
 	virtual void  extractPolygon(const string& model) = 0;
 	virtual void  ransac(const string& model) = 0;
 	virtual void  normalSegmentation(const string& model) = 0;
-	virtual void  euclideanClustering(Ice::Int& numClusters) = 0;
+	virtual void  euclideanClustering(Ice::Int& numCluseters) = 0;
 	virtual void  showObject(int numObject) = 0;
 	virtual void  reset() = 0;
 	virtual void  mirrorPC() = 0;
@@ -82,6 +82,7 @@ public:
 	virtual void  vfh(listType& guesses) = 0;
 	virtual void  surfHomography(listType& guesses) = 0;
 	virtual void  centroidBasedPose() = 0;
+	virtual void  grabTheAR() = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:

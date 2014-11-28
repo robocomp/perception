@@ -63,8 +63,14 @@
 
 #include "color_segmentation/Segmentator.h"
 
+#include <AR/param.h>
+#include <AR/ar.h>
+#include <AR/arMulti.h>
 // #define SAVE_DATA
 
+#include <sys/time.h>
+#include <stdlib.h>
+ 
 /**
        \brief
        @author authorname
@@ -97,6 +103,30 @@ class SpecificWorker : public GenericWorker
 	pcl::PCDWriter writer;
 	
 	int saved_counter;
+	
+	//yaml file
+	ofstream yamlfile;
+	
+	string placetosave;
+	
+	//result
+	string class_obj;
+	string instance;
+	float posx, posy;
+	float theta;
+	
+	//artoolkit shit:
+	string pathtomarker_x;
+	string pathtomarker_y;
+	string pathtomarker_z;
+	string pathtocameraparams;
+	int id_marker;
+	bool isSingle;
+	///Multimarcas
+	ARMultiMarkerInfoT  *mMarker;
+	float probability;
+	float ar_tx, ar_ty, ar_tz, ar_rx, ar_ry, ar_rz;
+	float size;
 	
 	//table related stuff
 	boost::shared_ptr<Table> table;
@@ -184,7 +214,8 @@ public:
 	void passThrough();
 	void statisticalOutliersRemoval();
 	void segmentImage();
-	void centroidBasedPose();
+	void centroidBasedPose(float &x, float &y, float &theta);
+	void grabTheAR();
 	
 	//PC mirroring
 	void mirrorPC();

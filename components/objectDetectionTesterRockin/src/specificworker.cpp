@@ -25,15 +25,18 @@
 
 SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx)
 {
-	public_channel_ = shared_ptr<PublicChannel<>>(new PublicChannel<>(host, port));
-	private_channel_ = shared_ptr<PrivateChannel<>>();
-	
-	cout << "Connected public channel to " << host << ":" << port << endl << flush;
-	public_channel_->signal_rsbb_beacon_received().connect (boost::bind (&SpecificWorker::receive_rsbb_beacon, this, _1, _2, _3, _4));
-	public_channel_->signal_robot_beacon_received().connect (&SpecificWorker::receive_robot_beacon);
-	public_channel_->signal_tablet_beacon_received().connect (&SpecificWorker::receive_tablet_beacon);
+// 	public_channel_ = shared_ptr<PublicChannel<>>(new PublicChannel<>(host, port));
+// 	private_channel_ = shared_ptr<PrivateChannel<>>();
+// 	
+// // 	cout << "Connected public channel to " << host << ":" << port << endl << flush;
+// 	public_channel_->signal_rsbb_beacon_received().connect (boost::bind (&SpecificWorker::receive_rsbb_beacon, this, _1, _2, _3, _4));
+// 	public_channel_->signal_robot_beacon_received().connect (&SpecificWorker::receive_robot_beacon);
+// 	public_channel_->signal_tablet_beacon_received().connect (&SpecificWorker::receive_tablet_beacon);
 
 	connect(doTheGuessButton, SIGNAL(clicked()), this, SLOT(doTheGuess()));
+	objectdetection_proxy->reloadVFH();
+	objectdetection_proxy->loadTrainedVFH();
+
 }
 
 /**
@@ -46,11 +49,41 @@ SpecificWorker::~SpecificWorker()
 
 void SpecificWorker::compute( )
 {
+<<<<<<< HEAD
 // 	doTheGuess();
+=======
+// 	static boost::posix_time::ptime loop_time = boost::posix_time::microsec_clock::universal_time();
+// 	shared_ptr<PrivateChannel<CerrErrorHandler>> private_channel;
+// 	{
+// 		QMutexLocker lock(&private_channel_mutex_);
+// 		private_channel = private_channel_;
+// 	}
+// 	if (private_channel)
+// 	{
+// 		roah_rsbb_msgs::RobotState msg;
+// 		roah_rsbb::now (msg.mutable_time());
+// 		msg.set_messages_saved (0);
+// // 		cout << "Sending RobotState" << endl << flush;
+// 		private_channel->send (msg);
+// 	}
+// 	else
+// 	{
+// 		roah_rsbb_msgs::RobotBeacon msg;
+// 		msg.set_team_name (TEAM_NAME);
+// 		msg.set_robot_name (ROBOT_NAME);
+// 		roah_rsbb::now (msg.mutable_time());
+// // 		cout << "Sending RobotBeacon" << endl << flush;
+// 		public_channel_->send (msg);
+// 	}
+// 
+// 	loop_time += boost::posix_time::milliseconds(1000);
+// 	boost::this_thread::sleep(loop_time);
+>>>>>>> 2dcb74fd41197681067e3f3b16c25365fe2958eb
 }
 
 void SpecificWorker::doTheGuess()
 {
+<<<<<<< HEAD
 // 	static boost::posix_time::ptime loop_time = boost::posix_time::microsec_clock::universal_time();
 	shared_ptr<PrivateChannel<CerrErrorHandler>> private_channel;
 	{
@@ -77,6 +110,68 @@ void SpecificWorker::doTheGuess()
 
 // 	loop_time += boost::posix_time::milliseconds(1000);
 // 	boost::this_thread::sleep(loop_time);
+=======
+	objectdetection_proxy->grabThePointCloud();
+  objectdetection_proxy->grabTheAR();
+	objectdetection_proxy->aprilFitModel("table");
+	objectdetection_proxy->passThrough();
+	objectdetection_proxy->ransac("table");
+	objectdetection_proxy->getInliers("table");
+	objectdetection_proxy->projectInliers("table");
+	objectdetection_proxy->convexHull("table");
+	objectdetection_proxy->extractPolygon("table");
+	//vfh guess
+	std::vector<string> guesses;
+	objectdetection_proxy->vfh(guesses);
+	float x, y, theta;
+	objectdetection_proxy->centroidBasedPose(x, y, theta);
+// 	objectdetection_proxy->passThrough();
+// 	objectdetection_proxy->ransac("table");
+// 	objectdetection_proxy->getInliers("table");
+// 	objectdetection_proxy->projectInliers("table");
+// 	objectdetection_proxy->convexHull("table");
+// 	objectdetection_proxy->extractPolygon("table");
+// 	
+// 	//show vfh results
+// 	std::vector<string> guesses;
+// 	objectdetection_proxy->vfh(guesses);
+// 	QStringList pieces;
+// 	QString path_to_pcd, name_of_object;
+// 	path_to_pcd = QString::fromStdString(guesses[0]);
+// 	string instance_code;
+// 	pieces = path_to_pcd.split( "/" );
+// 	name_of_object = pieces.at( pieces.length() - 2 );
+// 
+// 	
+	
+	QStringList pieces;
+		QString path_to_pcd, name_of_object;
+		path_to_pcd = QString::fromStdString(guesses[0]);
+		string instance_code;
+		pieces = path_to_pcd.split( "/" );
+		name_of_object = pieces.at( pieces.length() - 2 );
+		string instance = name_of_object.toStdString();
+	std::cout<<"object_class: a"<<std::endl;
+	std::cout<<"object_name: "<<instance <<std::endl;
+	std::cout<<"  object_pose: "<<std::endl;
+	std::cout<<"    x: "<<x<<std::endl;
+	std::cout<<"    y: "<<y<<std::endl;
+	std::cout<<"    theta: "<<theta<<std::endl;
+	
+	timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	string filename = "/media/spyke/0C1E-1130/Ursus/FBM1/Round1/" + QString::number(ts.tv_sec).toStdString()+ ".txt";
+	
+	std::ofstream myfile;
+  myfile.open (filename);
+  myfile << "object_class: a \n";
+	myfile<<"object_name: "<< instance <<"\n";
+	myfile<<"  object_pose: \n";
+	myfile<<"    x: "<<x<<" \n";
+	myfile<<"    y: "<<y<<"\n";
+	myfile<<"    theta: "<<theta<<"\n";
+  myfile.close();
+>>>>>>> 2dcb74fd41197681067e3f3b16c25365fe2958eb
 	
 }
 
@@ -88,6 +183,7 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 
 void SpecificWorker::receive_benchmark_state(boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::BenchmarkState> msg)
 {
+<<<<<<< HEAD
 	cout << "Received BenchmarkState from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
 	cout << ", MSG_TYPE " << msg_type << endl;
 	cout << "  benchmark_type: " << msg->benchmark_type() << endl;
@@ -115,70 +211,77 @@ void SpecificWorker::receive_benchmark_state(boost::asio::ip::udp::endpoint& end
 		}
 	}
 	cout << flush;
+=======
+// 	cout << "Received BenchmarkState from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
+// 	cout << ", MSG_TYPE " << msg_type << endl;
+// 	cout << "  benchmark_type: " << msg->benchmark_type() << endl;
+// 	cout << "  benchmark_state: " << msg->benchmark_state() << endl;
+// 	cout << flush;
+>>>>>>> 2dcb74fd41197681067e3f3b16c25365fe2958eb
 }
 
 void SpecificWorker::receive_robot_state(boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::RobotState> msg) 
 {
-	cout << "Received RobotState from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
-	cout << ", MSG_TYPE " << msg_type << endl;
-	cout << "  time: " << msg->time().sec() << "." << msg->time().nsec() << endl;
-	cout << "  messages_saved: " << msg->messages_saved() << endl;
-	cout << flush;
+// 	cout << "Received RobotState from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
+// 	cout << ", MSG_TYPE " << msg_type << endl;
+// 	cout << "  time: " << msg->time().sec() << "." << msg->time().nsec() << endl;
+// 	cout << "  messages_saved: " << msg->messages_saved() << endl;
+// 	cout << flush;
 }
 
 void SpecificWorker::receive_rsbb_beacon(boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::RoahRsbbBeacon> rsbb_beacon)
 {
-	cout << "Received RoahRsbbBeacon from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id << ", MSG_TYPE " << msg_type << endl;
-
-	unsigned short connect_port = 0;
-	for (auto const& bt : rsbb_beacon->benchmarking_teams())
-	{
-		cout << "  team_name: " << bt.team_name() << ", robot_name: " << bt.robot_name() << ", rsbb_port: " << bt.rsbb_port() << endl;
-		if ( (bt.team_name() == TEAM_NAME) && (bt.robot_name() == ROBOT_NAME))
-		{
-			connect_port = bt.rsbb_port();
-			// break; // Commented to show all entries
-		}
-	}
-
-	QMutexLocker lock(&private_channel_mutex_);
-	if (connect_port != (private_channel_ ? private_channel_->port() : 0))
-	{
-		if (private_channel_)
-		{
-			cout << "Disconnecting private channel" << endl;
-			private_channel_.reset();
-		}
-		if (connect_port)
-		{
-			cout << "Connecting private channel to " << endpoint.address().to_string() << ":" << connect_port << endl;
-			private_channel_ = make_shared<PrivateChannel<CerrErrorHandler>> (endpoint.address().to_string(), connect_port, CRYPTO_KEY, CRYPTO_CIPHER);
-			private_channel_->signal_benchmark_state_received().connect (&SpecificWorker::receive_benchmark_state);
-			private_channel_->signal_robot_state_received().connect (&SpecificWorker::receive_robot_state);
-		}
-	}
-	cout << flush;
+// 	cout << "Received RoahRsbbBeacon from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id << ", MSG_TYPE " << msg_type << endl;
+// 
+// 	unsigned short connect_port = 0;
+// 	for (auto const& bt : rsbb_beacon->benchmarking_teams())
+// 	{
+// 		cout << "  team_name: " << bt.team_name() << ", robot_name: " << bt.robot_name() << ", rsbb_port: " << bt.rsbb_port() << endl;
+// 		if ( (bt.team_name() == TEAM_NAME) && (bt.robot_name() == ROBOT_NAME))
+// 		{
+// 			connect_port = bt.rsbb_port();
+// 			// break; // Commented to show all entries
+// 		}
+// 	}
+// 
+// 	QMutexLocker lock(&private_channel_mutex_);
+// 	if (connect_port != (private_channel_ ? private_channel_->port() : 0))
+// 	{
+// 		if (private_channel_)
+// 		{
+// 			cout << "Disconnecting private channel" << endl;
+// 			private_channel_.reset();
+// 		}
+// 		if (connect_port)
+// 		{
+// 			cout << "Connecting private channel to " << endpoint.address().to_string() << ":" << connect_port << endl;
+// 			private_channel_ = make_shared<PrivateChannel<CerrErrorHandler>> (endpoint.address().to_string(), connect_port, CRYPTO_KEY, CRYPTO_CIPHER);
+// 			private_channel_->signal_benchmark_state_received().connect (&SpecificWorker::receive_benchmark_state);
+// 			private_channel_->signal_robot_state_received().connect (&SpecificWorker::receive_robot_state);
+// 		}
+// 	}
+// 	cout << flush;
 }
 
 void SpecificWorker::receive_robot_beacon(boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::RobotBeacon> msg)
 {
-	cout << "Received RobotBeacon from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
-	cout << ", MSG_TYPE " << msg_type << endl;
-	cout << "  team_name: " << msg->team_name() << endl;
-	cout << "  robot_name: " << msg->robot_name() << endl;
-	cout << "  time: " << msg->time().sec() << "." << msg->time().nsec() << endl;
-	cout << flush;
+// 	cout << "Received RobotBeacon from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
+// 	cout << ", MSG_TYPE " << msg_type << endl;
+// 	cout << "  team_name: " << msg->team_name() << endl;
+// 	cout << "  robot_name: " << msg->robot_name() << endl;
+// 	cout << "  time: " << msg->time().sec() << "." << msg->time().nsec() << endl;
+// 	cout << flush;
 }
 
 void SpecificWorker::receive_tablet_beacon(boost::asio::ip::udp::endpoint& endpoint, uint16_t comp_id, uint16_t msg_type, shared_ptr<const roah_rsbb_msgs::TabletBeacon> msg)
 {
-	cout << "Received TabletBeacon from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
-	cout << ", MSG_TYPE " << msg_type << endl;
-	cout << "  last_call: " << msg->last_call().sec() << "." << msg->last_call().nsec() << endl;
-	cout << "  last_pos: " << msg->last_pos().sec() << "." << msg->last_pos().nsec() << endl;
-	cout << "  x: " << msg->x() << endl;
-	cout << "  y: " << msg->y() << endl;
-	cout << flush;
+// 	cout << "Received TabletBeacon from " << endpoint.address().to_string() << ":" << endpoint.port() << ", COMP_ID " << comp_id;
+// 	cout << ", MSG_TYPE " << msg_type << endl;
+// 	cout << "  last_call: " << msg->last_call().sec() << "." << msg->last_call().nsec() << endl;
+// 	cout << "  last_pos: " << msg->last_pos().sec() << "." << msg->last_pos().nsec() << endl;
+// 	cout << "  x: " << msg->x() << endl;
+// 	cout << "  y: " << msg->y() << endl;
+// 	cout << flush;
 }
 
 

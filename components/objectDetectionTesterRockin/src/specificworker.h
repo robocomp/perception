@@ -24,7 +24,7 @@
 #include <genericworker.h>
 
 #include <boost/thread/thread.hpp>
-
+#include <fstream>
 #include <roah_rsbb.h>
 
 using namespace std;
