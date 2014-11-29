@@ -278,7 +278,9 @@ void VFH::doTheGuess(const pcl::PointCloud<PointT>::Ptr object, std::vector<std:
 
 	index.buildIndex ();
 	nearestKSearch (index, histogram, 16, k_indices, k_distances);
-
+	
+	guesses.clear();
+	
 	pcl::console::print_highlight ("The closest 16 neighbors are:\n");
 	for (int i = 0; i < 16; ++i)
 	{

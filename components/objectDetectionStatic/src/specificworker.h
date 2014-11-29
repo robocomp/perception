@@ -109,8 +109,16 @@ public:
 	}
 	int32_t num;
 	int32_t x, y;
-	int32_t minx, miny;
 };
+
+inline int32_t imageIndex(const int32_t x, const int32_t y)
+{
+	return (x+y*640);
+}
+
+SegmResult getSegmentationInfo(uint8_t *image);
+SegmResult getBlob(uint8_t *image, int32_t &x, int32_t &y);
+void recursiveCall(uint8_t *image, const int32_t x, const int32_t y, SegmResult &r);
 
 class SpecificWorker : public GenericWorker
 { 

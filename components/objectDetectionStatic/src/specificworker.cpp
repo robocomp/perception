@@ -428,21 +428,16 @@ void SpecificWorker::centroidBasedPose(float &x, float &y, float &theta)
 	Eigen::Vector4f centroid;
 	pcl::compute3DCentroid (*(cluster_clouds[object_to_show]), centroid);
 	
- 	QMat PP = innermodel->getTransformationMatrix("marca", "robot");
-	
-	QVec c1 = QVec::vec4(centroid(0), centroid(1), centroid(2), 1);
-	
- 	QVec p2 = PP * c1;
-	
-	p2 = p2.fromHomogeneousCoordinates();
-	
-	p2.print("centroid moved");
+	QVec p1 = QVec::vec3(centroid(0), centroid(1), centroid(2));
+	p1.print("centroid a");
+ 	QVec p2 = innermodel->transform("marca", p1, "robot");	
+	p2.print("centroid b");
 	
 // 	std::cout<<"Centroid : "<<p2(0)<<" "<<p2(1)<<" "<<p2(2)<<std::endl;
 	
-	c1.print("centroid: ");
-	x=p2(0);
-	y=p2(1);
+// 	c1.print("centroid: ");
+	x=p2(0)/1000.;
+	y=p2(2)/1000.;
 	theta= rand() % 180;
 	
 	
@@ -870,18 +865,11 @@ void SpecificWorker::loadTrainedVFH()
 	std::cout<<"Training data loaded"<<std::endl;
 }
 
-inline int32_t imageIndex(const int32_t x, const int32_t y)
-{
-	return (x+y*640)*3;
-}
-
-SegmResult getSegmentationInfo(uint8_t *image);
-SegmResult getBlob(uint8_t *image, int32_t &x, int32_t &y);
-void recursiveCall(uint8_t *image, const int32_t x, const int32_t y, SegmResult &r);
-
-
 SegmResult getSegmentationInfo(uint8_t *image)
 {
+	static uint8_t img[640*480];
+	memcpy(img, image, 640*480);
+
 	SegmResult ret;
 
 	int32_t x=0, y=0;
@@ -890,7 +878,7 @@ SegmResult getSegmentationInfo(uint8_t *image)
 	{
 		try
 		{
-			SegmResult r = getBlob(image, x, y);
+			SegmResult r = getBlob(img, x, y);
 			if (r.num > ret.num) ret = r;
 		}
 		catch(...)
@@ -923,67 +911,57 @@ SegmResult getBlob(uint8_t *image, int32_t &x, int32_t &y)
 
 void recursiveCall(uint8_t *image, const int32_t x, const int32_t y, SegmResult &r)
 {
-	if (x>=0 and x<640)
+	if (image[imageIndex(x,y)] > 0)
 	{
-		if (y>=0 and y<480)
-		{
-			if (image[imageIndex(x,y)] > 0)
-			{
-				image[imageIndex(x,y)] = 0;
-				r.num += 1;
-				r.x += x;
-				r.y += y;
-				
-				int x2, y2;
-				for (int c1=-1; c1<2; c1++)
-				{
-					for (int c2=-1; c2<2; c2++)
-					{
-						x2 = x+c1;
-						y2 = y+c2;
-						recursiveCall(image, x2, y2, r);
-					}
-				}
-			}
-		}
+		image[imageIndex(x,y)] = 0;
+		r.num += 1;
+		r.x += x;
+		r.y += y;
+		if (x>0)     recursiveCall(image, x-1, y,   r);
+		if (x<640-1) recursiveCall(image, x+1, y,   r);
+		if (y>0)     recursiveCall(image, x,   y+1, r);
+		if (y<480-1) recursiveCall(image, x,   y-1, r);
 	}
 }
 
 std::string SpecificWorker::getResult(const std::string &image, const std::string &pcd)
 {
+	float x = 0;
+	float y = 0;
+	float theta = 0;
 	//do segmentation and discriminate boxes and knife
 	grabThePointCloud(image, pcd);
 	std::cout<<"about to segment"<<flush<<std::endl;
 	segmentImage();
 	std::cout<<"esto va a petar"<<flush<<std::endl;
-// 	SegmResult r = getSegmentationInfo(yellow.data);
+	SegmResult r = getSegmentationInfo(yellow.data);
 	cout<<"o no..."<<std::endl;
-// 		if(r.num > 2000)
-// 		{
-// 			//yellow box
-// 			class_obj = "c";
-// 			instance = "c1";
-// 		}
-// 		else
-// 		{
-// 			r = getSegmentationInfo(pink.data);
-// 			if((r.num > 2000))
-// 			{
-// 				//pink box
-// 				class_obj = "c";
-// 				instance = "c2";
-// 			}
-// 			else
-// 			{
-// 				r = getSegmentationInfo(green.data);
-// 				
-// 				if((r.num > 100))
-// 				{
-// 					class_obj = "b";
-// 					instance = "b2";
-// 				}
-// 				else
-// 				{
+		if(r.num > 2000)
+		{
+			//yellow box
+			class_obj = "c";
+			instance = "c1";
+		}
+		else
+		{
+			r = getSegmentationInfo(pink.data);
+			if((r.num > 2000))
+			{
+				//pink box
+				class_obj = "c";
+				instance = "c2";
+			}
+			else
+			{
+				r = getSegmentationInfo(green.data);
+				
+				if((r.num > 100))
+				{
+					class_obj = "b";
+					instance = "b2";
+				}
+				else
+				{
 					aprilFitTheTable();
 					passThrough();
 					ransac("table");
@@ -1009,18 +987,14 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 								object_to_show=i;
 						}
 						std::cout<<"size of cloud = " <<cluster_clouds[object_to_show]->points.size()<<std::endl;
+						vfh_guesses.clear();
 						vfh(this->vfh_guesses);
-						
+						instance_from_vfh = vfh_guesses[0];
 						//select the instane name
-						QStringList pieces;
-						QString path_to_pcd, name_of_object;
-						path_to_pcd = QString::fromStdString(vfh_guesses[0]);
-						string instance_code;
-						pieces = path_to_pcd.split( "/" );
-						name_of_object = pieces.at( pieces.length() - 2 );
-						vfh_guesses[0] = name_of_object.toStdString();
-						class_obj = "a"; 
-						instance_from_vfh = name_of_object.toStdString();
+						std::cout<<" vfh_guesses[0] "<<vfh_guesses[0]<<std::endl;
+						instance_from_vfh = instance_from_vfh.substr(instance_from_vfh.find("/",47)+1);
+						instance_from_vfh = instance_from_vfh.substr(0,instance_from_vfh.find("/"));
+					
 						if (instance_from_vfh=="a4" && cluster_clouds[object_to_show]->points.size() < 4000)
 						{
 							class_obj = "a";
@@ -1030,10 +1004,12 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 						{
 							class_obj = "a";
 							instance = instance_from_vfh;
-// 						}
-// 					}
-// 					
-// 				}
+						}
+					}
+					std::cout<<"about to compute centroid"<<std::flush<<std::endl;
+					centroidBasedPose(x, y, theta);
+					
+				}
 			}
 		}
 	
@@ -1075,11 +1051,9 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 // 	if (instance_from_vfh=="a4" && cluster_clouds[object_to_show]->points.size() < 4000)
 // 		instance = "a1";
 		
-	float x, y, theta;
-	std::cout<<"about to compute centroid"<<std::endl;
-	centroidBasedPose(x, y, theta);
-	
-	std::string final_result = class_obj +"" + instance_from_vfh + " " + instance + "  " +  QString::number(x).toStdString() + " " + QString::number(y).toStdString() + " " + QString::number(theta).toStdString();
+
+	std::string final_result = "object_class: " + class_obj +"\n object_name: " + instance + " object_pose:\n    x: " +  QString::number(x).toStdString() + 
+		"\n    y: " + QString::number(y).toStdString() + "\n    theta: " + QString::number(theta).toStdString();
 	
 	std::cout<<final_result<<std::endl;
 	
@@ -1856,12 +1830,12 @@ void SpecificWorker::updatePointCloud()
 	//saving data for loggin purpsoes
 	timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);
-	string pcdname =  "/home/spyke/robocomp/components/perception/components/objectDetectionStatic/datalogged/" + QString::number(ts.tv_sec).toStdString() + ".pcd";
+	string pcdname =  "/home/robocomp/robocomp/components/perception/components/objectDetectionStatic/datalogged/" + QString::number(ts.tv_sec).toStdString() + ".pcd";
 	printf("<%s>\n", pcdname.c_str());
 	writer.write<PointT> ( pcdname, *cloud, false);
 	
 	clock_gettime(CLOCK_REALTIME, &ts);
-	cv::imwrite( "/home/spyke/robocomp/components/perception/components/objectDetectionStatic/datalogged/" + QString::number(ts.tv_sec).toStdString() + ".png", rgb_image);
+	cv::imwrite( "/home/robocomp/robocomp/components/perception/components/objectDetectionStatic/datalogged/" + QString::number(ts.tv_sec).toStdString() + ".png", rgb_image);
 	
 
 	//Downsample the point cloud:
