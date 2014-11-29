@@ -87,70 +87,9 @@ void SpecificWorker::doTheGuess()
 	QString pcd=lineEdit_2->text();
 	cout << objectdetection_proxy->getResult(image.toStdString(), pcd.toStdString()) <<endl;
 
-//   objectdetection_proxy->grabTheAR();
-// 	objectdetection_proxy->aprilFitModel("table");
-// 	objectdetection_proxy->passThrough();
-// 	objectdetection_proxy->ransac("table");
-// 	objectdetection_proxy->getInliers("table");
-// 	objectdetection_proxy->projectInliers("table");
-// 	objectdetection_proxy->convexHull("table");
-// 	objectdetection_proxy->extractPolygon("table");
-	//vfh guess
-// 	std::vector<string> guesses;
-// 	objectdetection_proxy->vfh(guesses);
-// 	float x, y, theta;
-// 	objectdetection_proxy->centroidBasedPose(x, y, theta);
-// 	objectdetection_proxy->passThrough();
-// 	objectdetection_proxy->ransac("table");
-// 	objectdetection_proxy->getInliers("table");
-// 	objectdetection_proxy->projectInliers("table");
-// 	objectdetection_proxy->convexHull("table");
-// 	objectdetection_proxy->extractPolygon("table");
-// 	
-// 	//show vfh results
-// 	std::vector<string> guesses;
-// 	objectdetection_proxy->vfh(guesses);
-// 	QStringList pieces;
-// 	QString path_to_pcd, name_of_object;
-// 	path_to_pcd = QString::fromStdString(guesses[0]);
-// 	string instance_code;
-// 	pieces = path_to_pcd.split( "/" );
-// 	name_of_object = pieces.at( pieces.length() - 2 );
-// 
-// 	
-/*	
-	QStringList pieces;
-	QString path_to_pcd, name_of_object;
-	path_to_pcd = QString::fromStdString(guesses[0]);
-	string instance_code;
-	pieces = path_to_pcd.split( "/" );
-	name_of_object = pieces.at( pieces.length() - 2 );
-	string instance = name_of_object.toStdString();
-	
-	std::cout<<"object_class: a"<<std::endl;
-	std::cout<<"object_name: "<<instance <<std::endl;
-	std::cout<<"  object_pose: "<<std::endl;
-	std::cout<<"    x: "<<x<<std::endl;
-	std::cout<<"    y: "<<y<<std::endl;
-	std::cout<<"    theta: "<<theta<<std::endl;
-	
-	timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
-	string filename = "/home/spyke/robocomp/components/perception/components/objectDetectionStatic/datalogged/" + QString::number(ts.tv_sec).toStdString()+ ".txt";
-	
-	std::ofstream myfile;
-  myfile.open (filename);
-  myfile << "object_class: a \n";
-	myfile<<"object_name: "<< instance <<"\n";
-	myfile<<"  object_pose: \n";
-	myfile<<"    x: "<<x<<" \n";
-	myfile<<"    y: "<<y<<"\n";
-	myfile<<"    theta: "<<theta<<"\n";
-  myfile.close();
-	
 	runs++;
 	if(runs == 10)
-		system(" cp /home/spyke/robocomp/components/perception/components/objectDetectionStatic/datalogged/* /media/spyke/0C1E-1130/Ursus/FBM1/Round2/");*/
+		system(" cp /home/spyke/robocomp/components/perception/data/datalogged/* /media/usb0/Ursus/FBM1/Round2");
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)

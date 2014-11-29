@@ -2,11 +2,16 @@
 	<transform id="world" >
 		<plane id="suelo" px="0" py="0" pz="0" ny="1" size="10000,10000,10" texture="#ff0000" />
 		<differentialrobot id="robot">
+			<transform id="table_T">
+				<transform id="table_T2">
+					<mesh id="table" render="wireframe" file="/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds"/>
+				</transform>
+			</transform>
 			<pointcloud id="cloud" /> 
 			<translation id="pechote" ty="1350">
-				<translation id="pescuezo" ty="300">
+				<translation id="pescuezo" ty="170">
 					<rotation id="cuellopabajo" rx="0.67">
-						<translation id="rgbd_t">
+						<translation id="rgbd_t" ty="90">
 							<transform id="marca">
 							</transform>
 							<rgbd id="rgbd" focal="525" width="640" height="480" port="3096" />

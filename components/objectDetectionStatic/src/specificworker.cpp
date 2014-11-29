@@ -41,24 +41,18 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 
 	//let's set the ofsets
 	table_offset.x = 500;
-	table_offset.y = 0;
+	table_offset.y = -30;
 	table_offset.z = 500;
 	
 	box_offset.x = 0;
 	box_offset.y = 65.5;
 	box_offset.z = 26;
 	
-	//Place to save
-	placetosave = "/media/spyke/0C1E-1130/Ursus/FBM1/Round1/";
-	
 	//action flags
 	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = objectSelected_flag = false;
 	normal_segmentation_flag = false;
 	
 	saved_counter = 0;
-	
-	//YAML file
-	yamlfile.open ("data.yaml");
 	
 	//artoolkit shit:
 /*	
@@ -247,8 +241,8 @@ void SpecificWorker::fitModel(const string& model, const string& method)
 
 void SpecificWorker::grabThePointCloud (const std::string &image, const std::string &pcd)
 {
-	//updatePointCloud();
-	get_data_from_dataset( image, pcd);
+	updatePointCloud();
+	//get_data_from_dataset( image, pcd);
 	drawThePointCloud(this->cloud);
 	*original_cloud=*this->cloud;
 	
@@ -432,12 +426,14 @@ void SpecificWorker::centroidBasedPose(float &x, float &y, float &theta)
 	p1.print("centroid a");
  	QVec p2 = innermodel->transform("marca", p1, "robot");	
 	p2.print("centroid b");
+ 	QVec p2r = innermodel->transform("rgbd", p1, "robot");	
+	p2r.print("centroid camera");
 	
 // 	std::cout<<"Centroid : "<<p2(0)<<" "<<p2(1)<<" "<<p2(2)<<std::endl;
 	
 // 	c1.print("centroid: ");
 	x=p2(0)/1000.;
-	y=p2(2)/1000.;
+	y=p2(1)/1000.;
 	theta= float(rand() % 1570)/1000;
 	
 	
@@ -595,7 +591,7 @@ void SpecificWorker::passThrough()
 	pass.setInputCloud (this->cloud);
 	pass.filter (*this->cloud);
 	pass.setFilterFieldName ("y");
-	pass.setFilterLimits (marca_ty-50, marca_ty+1000);
+	pass.setFilterLimits (marca_ty-200, marca_ty+1000);
 	pass.setInputCloud (this->cloud);
 	pass.filter (*this->cloud);
   drawThePointCloud(this->cloud);
@@ -926,9 +922,9 @@ void recursiveCall(uint8_t *image, const int32_t x, const int32_t y, SegmResult 
 
 std::string SpecificWorker::getResult(const std::string &image, const std::string &pcd)
 {
-	float x = 0;
-	float y = 0;
-	float theta = 0;
+	float x = 23;
+	float y = 30;
+	float theta = 0.18;
 	//do segmentation and discriminate boxes and knife
 	grabThePointCloud(image, pcd);
 	std::cout<<"about to segment"<<flush<<std::endl;
@@ -968,12 +964,13 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 					projectInliers("table");
 					convexHull("table");
 					extractPolygon("table");
+					passThrough();
 					performEuclideanClustering();
 					std::cout<<"size of cluster cloud = " <<cluster_clouds.size()<<std::endl;
 					if(cluster_clouds.size()==0)
 					{
-						class_obj = "b";
-						instance = "b1";
+						class_obj = "d";
+						instance = "d2";
 					}
 					else
 					{
@@ -995,10 +992,34 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 						instance_from_vfh = instance_from_vfh.substr(instance_from_vfh.find("/",47)+1);
 						instance_from_vfh = instance_from_vfh.substr(0,instance_from_vfh.find("/"));
 					
-						if (instance_from_vfh=="a4" && cluster_clouds[object_to_show]->points.size() < 4000)
+						if (instance_from_vfh=="a4" || instance_from_vfh=="a1")
 						{
-							class_obj = "a";
-							instance = "a1";
+							float max_distance = 0;
+							float distance;
+							
+							for(int i=0; i<cluster_clouds[object_to_show]->points.size(); i++)
+							{
+								for(int j=0; j<cluster_clouds[object_to_show]->points.size(); j++)
+								{
+									distance = sqrt(pow(cluster_clouds[object_to_show]->points[i].x -cluster_clouds[object_to_show]->points[j].x,2) +
+									pow(cluster_clouds[object_to_show]->points[i].y -cluster_clouds[object_to_show]->points[j].y,2) +
+									pow(cluster_clouds[object_to_show]->points[i].z -cluster_clouds[object_to_show]->points[j].z,2));
+									if (max_distance < distance)
+										max_distance = distance;
+								}
+							}
+							std::cout<<"MAX DISTANCE: "<<max_distance<<std::endl;
+							//do a fix distance of jar (161)
+							if( max_distance > 125)
+							{
+								class_obj = "a";
+								instance = "a4";
+							}
+							else
+							{
+								class_obj = "a";
+								instance = "a1";
+							}
 						}
 						else
 						{
@@ -1008,7 +1029,17 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 					}
 					std::cout<<"about to compute centroid"<<std::flush<<std::endl;
 					if(cluster_clouds.size()!=0)
+					{
 						centroidBasedPose(x, y, theta);
+						if(instance == "a1" or instance == "a3" )
+							y = y + 0.025;
+						else
+							if(instance == "a2" )
+								y = y + 0.03;
+							if(instance == "a4")
+								y = y + 0.0575;
+					}
+					
 					
 				}
 			}
@@ -1054,9 +1085,20 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 		
 
 	std::string final_result = "object_class: " + class_obj +"\n object_name: " + instance + "\nobject_pose:\n    x: " +  QString::number(x).toStdString() + 
-		"\n    y: " + QString::number(y).toStdString() + "\n    theta: " + QString::number(theta).toStdString();
+		"\n    y: " + QString::number(y).toStdString() + "\n    theta: " + QString::number(theta).toStdString() + "\n\n";
 	
-	std::cout<<final_result<<std::endl;
+	std::cout<<final_result;
+	
+	timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	string filename = "/home/robocomp/robocomp/components/perception/data/datalogged/" + QString::number(ts.tv_sec).toStdString()+ ".txt";
+	
+	std::ofstream myfile;
+  myfile.open (filename.c_str());
+  myfile << final_result;
+  myfile.close();
+	
+	
 	
 	return final_result;
 }
@@ -1102,8 +1144,6 @@ void SpecificWorker::fitTheViewVFH()
 	}
 	else
 	{
-		InnerModelNode *parent = innermodel->getNode(QString::fromStdString("rgbd"));
-		innermodel->newTransform(QString::fromStdString("marca"), QString::fromStdString("static") ,parent, 356.152, -289.623, 756.853, 0.32, 0, 0);
 		QMat PP = innermodel->getTransformationMatrix("marca", "robot");
 
 		for (unsigned int i=0; i<this->cloud->points.size(); i++)
@@ -1485,7 +1525,8 @@ void SpecificWorker::aprilFitTheTable()
 			
 			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz  );
 
-							 
+			innermodel->updateTransformValues("marca", itMap->second.tx, itMap->second.ty, itMap->second.tz, itMap->second.rx, itMap->second.ry, itMap->second.rz);
+ 
 			const RTMat translated_obj = PP * object_tr;
 			
 			const QVec r = translated_obj.extractAnglesR_min();
@@ -1512,37 +1553,8 @@ void SpecificWorker::aprilFitTheTable()
 			pose.rx = r(0);
 			pose.ry = r(1); // + 0.1; da noise!
 			pose.rz = r(2);
-// 			
-// 			pose.x = -500;
-// 			pose.y = 200;
-// 			pose.z = 750;
-// 			pose.rx = 0;
-// 			pose.ry = 0; // + 0.1; da noise!
-// 			pose.rz = 0;
-			
-			
-		// 			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;
-		// 			cout<<"Rotation of table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
-			
-			
-			bool exists = false;
-			
-			RoboCompInnerModelManager::NodeInformationSequence node_sequence;
-			innermodelmanager_proxy->getAllNodeInformation(node_sequence);
-			for (unsigned int i=0; i<node_sequence.size(); i++)
-			{
-				std::cout<<node_sequence[i].id<<std::endl;
-				if(node_sequence[i].id == "table_T")
-				{
-					exists = true;
-					break;
-				}
-			}
-			
-			if(!exists)
-				addTheTable(pose);
-			else
-				updateTheTable(pose);
+
+			updateTheTable(pose);
 	
  			break;
   		}
@@ -1579,7 +1591,7 @@ void SpecificWorker::performEuclideanClustering()
 	pcl::EuclideanClusterExtraction<PointT> ec;
 	
 	ec.setClusterTolerance (70); // 2cm
-	ec.setMinClusterSize (1000);
+	ec.setMinClusterSize (200);
 	ec.setMaxClusterSize (25000);
 	ec.setSearchMethod (tree);
 	
@@ -1831,12 +1843,12 @@ void SpecificWorker::updatePointCloud()
 	//saving data for loggin purpsoes
 	timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);
-	string pcdname =  "/home/robocomp/robocomp/components/perception/components/objectDetectionStatic/datalogged/" + QString::number(ts.tv_sec).toStdString() + ".pcd";
+	string pcdname =  "/home/robocomp/robocomp/components/perception/data/datalogged/" + QString::number(ts.tv_sec).toStdString() + ".pcd";
 	printf("<%s>\n", pcdname.c_str());
 	writer.write<PointT> ( pcdname, *cloud, false);
 	
 	clock_gettime(CLOCK_REALTIME, &ts);
-	cv::imwrite( "/home/robocomp/robocomp/components/perception/components/objectDetectionStatic/datalogged/" + QString::number(ts.tv_sec).toStdString() + ".png", rgb_image);
+	cv::imwrite( "/home/robocomp/robocomp/components/perception/data/datalogged/" + QString::number(ts.tv_sec).toStdString() + ".png", rgb_image);
 	
 
 	//Downsample the point cloud:
@@ -1862,6 +1874,7 @@ void SpecificWorker::updatePointCloud()
 
 void SpecificWorker::drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud)
 {
+#ifdef TODRAW
 	//Now show results
 	RoboCompInnerModelManager::PointCloudVector pointcloud;
 	pointcloud.resize(cloud->size());
@@ -1882,12 +1895,13 @@ void SpecificWorker::drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud)
 //   try
 //   {
 	add_point_cloud_to_innermodels("cloud", pointcloud);
-		
+	
 //   }
 //   catch(Ice::Exception e)
 //   {
 //     qDebug()<<"Error talking to inermodelmanager_proxy: "<<e.what();
 //   } 
+#endif
 }
 
 void SpecificWorker::doTheAprilTags()
@@ -2101,6 +2115,7 @@ bool SpecificWorker::add_point_cloud_to_innermodels(const std::string &id, const
 
 bool SpecificWorker::add_transform_to_innermodels(const std::string &item, const std::string &engine, const std::string &base, const RoboCompInnerModelManager::Pose3D &pose)
 {
+	qFatal("fary");
 	//adding to local innermodel
 	InnerModelNode * parent = innermodel->getNode(QString::fromStdString(base));
 	innermodel->newTransform(QString::fromStdString(item), QString::fromStdString("static") ,parent, pose.x, pose.y, pose.z, pose.rx, pose.ry, pose.rz);

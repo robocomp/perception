@@ -49,6 +49,7 @@
 #include <flann/io/hdf5.h>
 
 #include <innermodel/innermodel.h>
+#include <fstream>
 
 #include "shapes/table.h"
 #include "fitting/pf_rect_prism_fitting.h"
@@ -68,6 +69,7 @@
 #include <AR/ar.h>
 #include <AR/arMulti.h>
 // #define SAVE_DATA
+#define TODRAW
 
 #include <sys/time.h>
 #include <stdlib.h>
