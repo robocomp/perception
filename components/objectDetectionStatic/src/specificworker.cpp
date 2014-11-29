@@ -61,7 +61,7 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	yamlfile.open ("data.yaml");
 	
 	//artoolkit shit:
-	
+/*	
 	string pathtomarker_x = "/home/robocomp/robocomp/components/perception/data/artoolkit/x.pat";
 	string pathtomarker_y = "/home/robocomp/robocomp/components/perception/data/artoolkit/y.pat";
 	string pathtomarker_z = "/home/robocomp/robocomp/components/perception/data/artoolkit/z.pat";
@@ -99,7 +99,7 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	    exit(-1);
 	  }
 	  std::cout<<"Multimarca cargado correctamente"<<std::endl;
-	}
+	}*/
 	
 	//only released when the euclidean cluster is performed
 	euclidean_mutex->lock();
@@ -438,7 +438,7 @@ void SpecificWorker::centroidBasedPose(float &x, float &y, float &theta)
 // 	c1.print("centroid: ");
 	x=p2(0)/1000.;
 	y=p2(2)/1000.;
-	theta= rand() % 180;
+	theta= float(rand() % 1570)/1000;
 	
 	
 }
@@ -1007,7 +1007,8 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 						}
 					}
 					std::cout<<"about to compute centroid"<<std::flush<<std::endl;
-					centroidBasedPose(x, y, theta);
+					if(cluster_clouds.size()!=0)
+						centroidBasedPose(x, y, theta);
 					
 				}
 			}
@@ -1052,7 +1053,7 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 // 		instance = "a1";
 		
 
-	std::string final_result = "object_class: " + class_obj +"\n object_name: " + instance + " object_pose:\n    x: " +  QString::number(x).toStdString() + 
+	std::string final_result = "object_class: " + class_obj +"\n object_name: " + instance + "\nobject_pose:\n    x: " +  QString::number(x).toStdString() + 
 		"\n    y: " + QString::number(y).toStdString() + "\n    theta: " + QString::number(theta).toStdString();
 	
 	std::cout<<final_result<<std::endl;
