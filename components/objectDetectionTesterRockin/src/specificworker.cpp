@@ -37,6 +37,9 @@ SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx)
 	objectdetection_proxy->reloadVFH();
 	objectdetection_proxy->loadTrainedVFH();
 	runs = 0;
+	
+	lineEdit->setText("1417199521.png");
+	lineEdit_2->setText("1417199518.pcd");
 
 }
 

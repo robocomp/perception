@@ -280,6 +280,7 @@ void SpecificWorker::segmentImage()
   std::cout<<"Segmenting image"<<std::endl;
   seg.set_tresholds(100, 150);
   segmented = seg.segment();
+	std::cout<<"Segmented"<<std::endl;
   cv::imwrite("Segmentada.png",segmented);
   cv::inRange(segmented, cv::Scalar(0, 150, 150), cv::Scalar(80, 255, 255), yellow);
   cv::imwrite("yellow.png",yellow);
@@ -952,30 +953,37 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 {
 	//do segmentation and discriminate boxes and knife
 	grabThePointCloud(image, pcd);
-		
+	std::cout<<"about to segment"<<flush<<std::endl;
 	segmentImage();
-	cout<<"esto va a petar"<<std::endl;
-	SegmResult r = getSegmentationInfo(yellow.data);
+	std::cout<<"esto va a petar"<<flush<<std::endl;
+// 	SegmResult r = getSegmentationInfo(yellow.data);
 	cout<<"o no..."<<std::endl;
-		if(r.num > 2000)
-		{
-			//yellow box
-			class_obj = "c";
-			instance = "c1";
-		}
-		else
-		{
-			r = getSegmentationInfo(pink.data);
-			if((r.num > 2000))
-				instance = "pink";
-			else
-			{
-				r = getSegmentationInfo(green.data);
-				
-				if((r.num > 100))
-					instance = "green";
-				else
-				{
+// 		if(r.num > 2000)
+// 		{
+// 			//yellow box
+// 			class_obj = "c";
+// 			instance = "c1";
+// 		}
+// 		else
+// 		{
+// 			r = getSegmentationInfo(pink.data);
+// 			if((r.num > 2000))
+// 			{
+// 				//pink box
+// 				class_obj = "c";
+// 				instance = "c2";
+// 			}
+// 			else
+// 			{
+// 				r = getSegmentationInfo(green.data);
+// 				
+// 				if((r.num > 100))
+// 				{
+// 					class_obj = "b";
+// 					instance = "b2";
+// 				}
+// 				else
+// 				{
 					aprilFitTheTable();
 					passThrough();
 					ransac("table");
@@ -985,7 +993,10 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 					performEuclideanClustering();
 					std::cout<<"size of cluster cloud = " <<cluster_clouds.size()<<std::endl;
 					if(cluster_clouds.size()==0)
-						instance = "tenedor";
+					{
+						class_obj = "b";
+						instance = "b1";
+					}
 					else
 					{
 						//select the biggest
@@ -1011,12 +1022,18 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 						class_obj = "a"; 
 						instance_from_vfh = name_of_object.toStdString();
 						if (instance_from_vfh=="a4" && cluster_clouds[object_to_show]->points.size() < 4000)
+						{
+							class_obj = "a";
 							instance = "a1";
+						}
 						else
+						{
+							class_obj = "a";
 							instance = instance_from_vfh;
-					}
-					
-				}
+// 						}
+// 					}
+// 					
+// 				}
 			}
 		}
 	
@@ -1059,9 +1076,10 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 // 		instance = "a1";
 		
 	float x, y, theta;
+	std::cout<<"about to compute centroid"<<std::endl;
 	centroidBasedPose(x, y, theta);
 	
-	std::string final_result = "" + instance_from_vfh + " " + instance + "  " +  QString::number(x).toStdString() + " " + QString::number(y).toStdString() + " " + QString::number(theta).toStdString();
+	std::string final_result = class_obj +"" + instance_from_vfh + " " + instance + "  " +  QString::number(x).toStdString() + " " + QString::number(y).toStdString() + " " + QString::number(theta).toStdString();
 	
 	std::cout<<final_result<<std::endl;
 	
