@@ -143,6 +143,8 @@ class SpecificWorker : public GenericWorker
 	float marca_tx, marca_ty, marca_tz, marca_rx, marca_ry, marca_rz;
 	float size;
 	
+	cv::Mat yellow, pink, green;
+	
 	//table related stuff
 	boost::shared_ptr<Table> table;
 	boost::shared_ptr<RectPrism> box;

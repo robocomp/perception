@@ -281,21 +281,10 @@ void SpecificWorker::segmentImage()
   seg.set_tresholds(100, 150);
   segmented = seg.segment();
   cv::imwrite("Segmentada.png",segmented);
-  cv::Mat yellow;
   cv::inRange(segmented, cv::Scalar(0, 150, 150), cv::Scalar(80, 255, 255), yellow);
-	
-// 	uchar* camData = new uchar[yellow.total()*3];
-// 	cv::Mat continuousRGB(yellow.size(), CV_8UC3, camData);
-// 	cv::cvtColor(yellow, continuousRGB, CV_BGR2RGB, 3);
-	
-// 	SegmResult r = getSegmentationInfo(yellow);
-// 	printf("%d (%d, %d)\n", r.num, r.x, r.y);
-	
   cv::imwrite("yellow.png",yellow);
-  cv::Mat pink;
   cv::inRange(segmented, cv::Scalar(65, 15, 125), cv::Scalar(150, 100, 255), pink);
   cv::imwrite("pink.png",pink);
-  cv::Mat green;
   cv::inRange(segmented, cv::Scalar(25, 75, 50), cv::Scalar(106, 255, 150), green);
   cv::imwrite("green.png",green);
   
@@ -880,13 +869,160 @@ void SpecificWorker::loadTrainedVFH()
 	std::cout<<"Training data loaded"<<std::endl;
 }
 
+inline int32_t imageIndex(const int32_t x, const int32_t y)
+{
+	return (x+y*640)*3;
+}
+
+SegmResult getSegmentationInfo(uint8_t *image);
+SegmResult getBlob(uint8_t *image, int32_t &x, int32_t &y);
+void recursiveCall(uint8_t *image, const int32_t x, const int32_t y, SegmResult &r);
+
+
+SegmResult getSegmentationInfo(uint8_t *image)
+{
+	SegmResult ret;
+
+	int32_t x=0, y=0;
+
+	while (true)
+	{
+		try
+		{
+			SegmResult r = getBlob(image, x, y);
+			if (r.num > ret.num) ret = r;
+		}
+		catch(...)
+		{
+			break;
+		}
+	}
+	return ret;
+}
+
+SegmResult getBlob(uint8_t *image, int32_t &x, int32_t &y)
+{
+	for (; x<640; x++)
+	{
+		for (; y<480; y++)
+		{
+			if (image[imageIndex(x,y)])
+			{
+				SegmResult r;
+				recursiveCall(image, x, y, r);
+				r.x = float(r.x) / float(r.num);
+				r.y = float(r.y) / float(r.num);
+				return r;
+			}
+		}
+		y=0;
+	}
+	throw 1;
+}
+
+void recursiveCall(uint8_t *image, const int32_t x, const int32_t y, SegmResult &r)
+{
+	if (x>=0 and x<640)
+	{
+		if (y>=0 and y<480)
+		{
+			if (image[imageIndex(x,y)] > 0)
+			{
+				image[imageIndex(x,y)] = 0;
+				r.num += 1;
+				r.x += x;
+				r.y += y;
+				
+				int x2, y2;
+				for (int c1=-1; c1<2; c1++)
+				{
+					for (int c2=-1; c2<2; c2++)
+					{
+						x2 = x+c1;
+						y2 = y+c2;
+						recursiveCall(image, x2, y2, r);
+					}
+				}
+			}
+		}
+	}
+}
+
 std::string SpecificWorker::getResult(const std::string &image, const std::string &pcd)
 {
 	//do segmentation and discriminate boxes and knife
+	grabThePointCloud(image, pcd);
+		
+	segmentImage();
+	cout<<"esto va a petar"<<std::endl;
+	SegmResult r = getSegmentationInfo(yellow.data);
+	cout<<"o no..."<<std::endl;
+		if(r.num > 2000)
+		{
+			//yellow box
+			class_obj = "c";
+			instance = "c1";
+		}
+		else
+		{
+			r = getSegmentationInfo(pink.data);
+			if((r.num > 2000))
+				instance = "pink";
+			else
+			{
+				r = getSegmentationInfo(green.data);
+				
+				if((r.num > 100))
+					instance = "green";
+				else
+				{
+					aprilFitTheTable();
+					passThrough();
+					ransac("table");
+					projectInliers("table");
+					convexHull("table");
+					extractPolygon("table");
+					performEuclideanClustering();
+					std::cout<<"size of cluster cloud = " <<cluster_clouds.size()<<std::endl;
+					if(cluster_clouds.size()==0)
+						instance = "tenedor";
+					else
+					{
+						//select the biggest
+						int size = cluster_clouds[0]->points.size();
+						object_to_show = 0;
+						objectSelected_flag = true;
+						for(int i=1; i<cluster_clouds.size(); i++)
+						{
+							if (cluster_clouds[i]->points.size() > cluster_clouds[object_to_show]->points.size())
+								object_to_show=i;
+						}
+						std::cout<<"size of cloud = " <<cluster_clouds[object_to_show]->points.size()<<std::endl;
+						vfh(this->vfh_guesses);
+						
+						//select the instane name
+						QStringList pieces;
+						QString path_to_pcd, name_of_object;
+						path_to_pcd = QString::fromStdString(vfh_guesses[0]);
+						string instance_code;
+						pieces = path_to_pcd.split( "/" );
+						name_of_object = pieces.at( pieces.length() - 2 );
+						vfh_guesses[0] = name_of_object.toStdString();
+						class_obj = "a"; 
+						instance_from_vfh = name_of_object.toStdString();
+						if (instance_from_vfh=="a4" && cluster_clouds[object_to_show]->points.size() < 4000)
+							instance = "a1";
+						else
+							instance = instance_from_vfh;
+					}
+					
+				}
+			}
+		}
 	
 	//vfh for the rest
-	grabThePointCloud(image, pcd);
-	aprilFitTheTable();
+
+/*
 	passThrough();
 	ransac("table");
 	projectInliers("table");
@@ -896,31 +1032,31 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 	
 	//if cluster is empty is fork check here
 	
-	std::cout<<"size of cluster cloud = " <<cluster_clouds.size()<<std::endl;
+	std::cout<<"size of cluster cloud = " <<cluster_clouds.size()<<std::endl;*/
 	
 // 	//Selecting the big one from the cluster
-	int size = cluster_clouds[0]->points.size();
-	object_to_show = 0;
-	objectSelected_flag = true;
-	for(int i=1; i<cluster_clouds.size(); i++)
-	{
-		if (cluster_clouds[i]->points.size() > cluster_clouds[object_to_show]->points.size())
-			object_to_show=i;
-	}
-	std::cout<<"size of cloud = " <<cluster_clouds[object_to_show]->points.size()<<std::endl;
-	vfh(this->vfh_guesses);
-	
-	QStringList pieces;
-	QString path_to_pcd, name_of_object;
-	path_to_pcd = QString::fromStdString(vfh_guesses[0]);
-	string instance_code;
-	pieces = path_to_pcd.split( "/" );
-	name_of_object = pieces.at( pieces.length() - 2 );
-	vfh_guesses[0] = name_of_object.toStdString();
-	class_obj = "a"; 
-	instance_from_vfh = name_of_object.toStdString();
-	if (instance_from_vfh=="a4" && cluster_clouds[object_to_show]->points.size() < 4000)
-		instance = "a1";
+// 	int size = cluster_clouds[0]->points.size();
+// 	object_to_show = 0;
+// 	objectSelected_flag = true;
+// 	for(int i=1; i<cluster_clouds.size(); i++)
+// 	{
+// 		if (cluster_clouds[i]->points.size() > cluster_clouds[object_to_show]->points.size())
+// 			object_to_show=i;
+// 	}
+// 	std::cout<<"size of cloud = " <<cluster_clouds[object_to_show]->points.size()<<std::endl;
+// 	vfh(this->vfh_guesses);
+// 	
+// 	QStringList pieces;
+// 	QString path_to_pcd, name_of_object;
+// 	path_to_pcd = QString::fromStdString(vfh_guesses[0]);
+// 	string instance_code;
+// 	pieces = path_to_pcd.split( "/" );
+// 	name_of_object = pieces.at( pieces.length() - 2 );
+// 	vfh_guesses[0] = name_of_object.toStdString();
+// 	class_obj = "a"; 
+// 	instance_from_vfh = name_of_object.toStdString();
+// 	if (instance_from_vfh=="a4" && cluster_clouds[object_to_show]->points.size() < 4000)
+// 		instance = "a1";
 		
 	float x, y, theta;
 	centroidBasedPose(x, y, theta);
@@ -929,7 +1065,7 @@ std::string SpecificWorker::getResult(const std::string &image, const std::strin
 	
 	std::cout<<final_result<<std::endl;
 	
-	return "test";
+	return final_result;
 }
 
 void SpecificWorker::vfh(std::vector<string> &guesses)
