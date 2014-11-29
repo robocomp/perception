@@ -34,13 +34,13 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	viewpoint_transform = innermodel->getTransformationMatrix("robot", "rgbd_t");
 	
 	//let's set the sizes
-	table->set_board_size(1000,30,300);
+	table->set_board_size(1000,30,00);
 	box->set_size(QVec::vec3(57.5, 20.0, 57.5));
 
 	//let's set the ofsets
-	table_offset.x = -150;
+	table_offset.x = -250;
 	table_offset.y = 0;
-	table_offset.z = 300;
+	table_offset.z = 250;
 	
 	box_offset.x = 0;
 	box_offset.y = 65.5;
@@ -1012,7 +1012,7 @@ void SpecificWorker::aprilFitTheTable()
 	{
 		//move the tags to the robot reference frame
 		
-		if (itMap->second.id == 0)
+		if (itMap->second.id == 2)
 		{
 // 			RoboCompInnerModelManager::Matrix m = innermodelmanager_proxy->getTransformationMatrix("rgbd_t", "robot");
 // 			
@@ -1045,8 +1045,8 @@ void SpecificWorker::aprilFitTheTable()
 			pose.x = translated_obj(0,3);
 			pose.y = translated_obj(1,3);
 			pose.z = translated_obj(2,3);
-			pose.rx = r(0);
-			pose.ry = r(1) + 0.1;
+			pose.rx = r(0)-0.78;
+			pose.ry = r(1);
 			pose.rz = r(2);
 			
 		// 			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;

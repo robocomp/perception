@@ -37,6 +37,7 @@ const string ROBOT_NAME = "Ursus";
 const string CRYPTO_KEY = "randomkey";
 const string CRYPTO_CIPHER = "aes-128-cbc";
 
+
 /**
        \brief
        @author authorname
@@ -45,6 +46,8 @@ const string CRYPTO_CIPHER = "aes-128-cbc";
 class SpecificWorker : public GenericWorker
 {
 Q_OBJECT
+
+int runs;
 public:
 	SpecificWorker(MapPrx& mprx);
 	~SpecificWorker();

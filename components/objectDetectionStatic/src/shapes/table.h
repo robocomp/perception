@@ -21,6 +21,7 @@ using namespace std;
 class Table
 {
   QVec plane_coeff;
+	pcl::ModelCoefficients::Ptr coefficients;
 	
 public:
 	
@@ -54,7 +55,7 @@ public:
 														 const pcl::PointCloud<PointT>::Ptr polygon_cloud);	
 	
 	//RANSAC to point cloud board
-	void fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const float threshold);
+	void fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, pcl::PointIndices::Ptr inliers, const float threshold);
 	
 	//normal segmentation
 	void normal_segmentation(const pcl::PointCloud<PointT>:: Ptr cloud_to_estimate, const int radius, const QVec viewpoint, const pcl::PointIndices::Ptr prism_indices, const pcl::PointCloud<PointT>::Ptr cloud_output);

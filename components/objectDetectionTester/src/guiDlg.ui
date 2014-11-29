@@ -419,8 +419,8 @@
   <widget class="QPushButton" name="centroid_based_pose_button">
    <property name="geometry">
     <rect>
-     <x>690</x>
-     <y>180</y>
+     <x>680</x>
+     <y>210</y>
      <width>111</width>
      <height>23</height>
     </rect>
@@ -440,6 +440,39 @@
    </property>
    <property name="text">
     <string>segment</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="dotheARTolkit_button">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>320</y>
+     <width>111</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>dotheARTolkit</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>340</y>
+     <width>113</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_2">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>370</y>
+     <width>113</width>
+     <height>20</height>
+    </rect>
    </property>
   </widget>
  </widget>

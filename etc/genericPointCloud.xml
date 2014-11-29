@@ -3,9 +3,9 @@
 		<plane id="suelo" px="0" py="0" pz="0" ny="1" size="10000,10000,10" texture="#ff0000" />
 		<differentialrobot id="robot">
 			<pointcloud id="cloud" /> 
-			<translation id="pechote" ty="1300">
+			<translation id="pechote" ty="1350">
 				<translation id="pescuezo" ty="300">
-					<rotation id="cuellopabajo" rx="0.65">
+					<rotation id="cuellopabajo" rx="0.67">
 						<translation id="rgbd_t">
 							<transform id="marca">
 							<rgbd id="rgbd" focal="525" width="640" height="480" port="3096" />

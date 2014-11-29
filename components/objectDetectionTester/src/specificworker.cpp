@@ -61,6 +61,8 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	//mirror
 	connect(mirror_pc_button, SIGNAL(clicked()), this, SLOT(mirror()));
 	connect(mind_the_gap_button, SIGNAL(clicked()), this, SLOT(mindTheGap()));
+	
+	connect(dotheARTolkit_button, SIGNAL(clicked()), this, SLOT(grabTheAR()));
 }
 
 /**
@@ -73,7 +75,9 @@ SpecificWorker::~SpecificWorker()
 
 void SpecificWorker::grab_pc()
 {
-	objectdetection_proxy->grabThePointCloud();
+	QString image=lineEdit->text();
+	QString pcd=lineEdit_2->text();
+	objectdetection_proxy->grabThePointCloud(image.toStdString(), pcd.toStdString());
 }
 
 void SpecificWorker::ransac_table()
@@ -154,9 +158,16 @@ void SpecificWorker::fitTheViewVFH()
 	objectdetection_proxy->fitTheViewVFH();
 }
 
+void SpecificWorker::grabTheAR()
+{
+	objectdetection_proxy->grabTheAR();
+}
+
 void SpecificWorker::centroidBasedPose()
 {
-	objectdetection_proxy->centroidBasedPose();
+	float x, y, theta;
+	objectdetection_proxy->centroidBasedPose(x, y, theta);
+	std::cout<<"x: "<<x<<" y: "<<y<<" theta: "<<theta<<std::endl;
 }
 
 void SpecificWorker::vfh()

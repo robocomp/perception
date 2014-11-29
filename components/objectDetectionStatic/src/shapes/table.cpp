@@ -1,6 +1,7 @@
 #include "table.h"
 
-Table::Table(): board(new RectPrism(QVec::vec3(0, 0, 0), QVec::vec3(0, 0, 0), 0, 0, 0))
+Table::Table(): board(new RectPrism(QVec::vec3(0, 0, 0), QVec::vec3(0, 0, 0), 0, 0, 0)),
+coefficients (new pcl::ModelCoefficients)
 {
 	
 }
@@ -127,10 +128,14 @@ void Table::project_board_inliers(const pcl::PointCloud<PointT>::Ptr cloud, cons
 	p_3.y = p3(1);
 	p_3.z = p3(2);
 
-	pcl::ModelCoefficients::Ptr plane (new pcl::ModelCoefficients);
+// 	pcl::ModelCoefficients::Ptr plane (new pcl::ModelCoefficients);
 	
-	threePointsToPlane(p_1, p_2, p_3, plane);
+// 	threePointsToPlane(p_1, p_2, p_3, plane);
 	
+// 	plane->values[0] = plane_coeff(0);
+// 	plane->values[1] = plane_coeff(1);
+// 	plane->values[2] = plane_coeff(2);
+// 	plane->values[3] = plane_coeff(3);
 // 	cout<<"PCL0: "<<plane->values[0]<<endl;
 // 	cout<<"PCL1: "<<plane->values[1]<<endl;
 // 	cout<<"PCL2: "<<plane->values[2]<<endl;
@@ -145,7 +150,7 @@ void Table::project_board_inliers(const pcl::PointCloud<PointT>::Ptr cloud, cons
 	proj.setModelType (pcl::SACMODEL_PLANE);
 	proj.setIndices (inliers_indices);
 	proj.setInputCloud (cloud);
-	proj.setModelCoefficients (plane);
+	proj.setModelCoefficients (coefficients);
 	proj.filter (*plane_projected);
 
 }
@@ -178,10 +183,9 @@ void Table::extract_table_polygon(const pcl::PointCloud<PointT>::Ptr cloud, cons
 }
 
 //optimize board using ransac
-void Table::fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, const float threshold)
+void Table::fit_board_with_RANSAC(pcl::PointCloud<PointT>::Ptr cloud, pcl::PointIndices::Ptr inliers, const float threshold)
 {  
-	pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-	pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+// 	pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 
 	// Create the segmentation object
 	pcl::SACSegmentation<PointT> seg;

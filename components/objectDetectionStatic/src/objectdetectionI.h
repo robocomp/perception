@@ -39,7 +39,7 @@ public:
 	~objectDetectionI();
 	void  statisticalOutliersRemoval(const Ice::Current& = Ice::Current());
 void  passThrough(const Ice::Current& = Ice::Current());
-void  grabThePointCloud(const Ice::Current& = Ice::Current());
+void  grabThePointCloud(const string& image, const string& pcd, const Ice::Current& = Ice::Current());
 void  aprilFitModel(const string& model, const Ice::Current& = Ice::Current());
 void  fitModel(const string& model, const string& method, const Ice::Current& = Ice::Current());
 void  getInliers(const string& model, const Ice::Current& = Ice::Current());
@@ -61,6 +61,7 @@ void  surfHomography(listType& guesses, const Ice::Current& = Ice::Current());
 void  centroidBasedPose(Ice::Float& x, Ice::Float& y, Ice::Float& theta, const Ice::Current& = Ice::Current());
 void  segmentImage(const Ice::Current& = Ice::Current());
 void  grabTheAR(const Ice::Current& = Ice::Current());
+string getResult(const string& image, const string& pcd, const Ice::Current& = Ice::Current());
 
 
 	QMutex *mutex;

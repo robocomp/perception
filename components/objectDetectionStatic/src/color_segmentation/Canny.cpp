@@ -372,18 +372,16 @@ int d_w,d_h;
       tracked[i]=new int[d_h]; 
     } 
 
-  	cout<<"canny 01"<<flush<<endl;
     //Smooth the initial image
 		cout<<tmp_2d<<" "<<height<<" "<<width<<" "<<kernel_size<<" "<<theta<<endl;
     SmoothImage(im_entrada,tmp_2d,height, width, kernel_size, theta);
- cout<<"canny 02"<<flush<<endl;
+
     //Mask off so that we work with values between 0 and 255
     for(i=0;i<height;i++){
     for(j=0;j<width;j++){
       tmp_2d[i][j]=tmp_2d[i][j]&0x000000ff;
     }
  }
-cout<<"canny 01"<<flush<<endl;
     
     //Apply the gradient detection
     for(i = 0; i < (d_w-1); i++){
@@ -405,7 +403,6 @@ cout<<"canny 01"<<flush<<endl;
     //Resize image
     d_w--;
     d_h--;
-cout<<"canny 01"<<flush<<endl;
     //Apply the nonmaxima suppression
 
     //First calculate which sector each line appears in
@@ -416,7 +413,6 @@ cout<<"canny 01"<<flush<<endl;
       }
     }
 
-cout<<"canny 01"<<flush<<endl;
     //Then apply non maximal suppression
     for( i = 0; i < (d_w-1); i++){ nms[i][0] = 0; nms[i][d_h-1] = 0; }
     for( j = 0; j < (d_h-1); j++){ nms[0][j] = 0; nms[d_w-1][j] = 0; }
@@ -425,7 +421,6 @@ cout<<"canny 01"<<flush<<endl;
 	nms[i][j] = suppress(m_2d, delta[i][j], i, j,lowthresh);
       }
     }
-cout<<"canny 01"<<flush<<endl;
 
     //Resize again!
     d_w = d_w - 2;
@@ -449,7 +444,6 @@ cout<<"canny 01"<<flush<<endl;
       }
     }
 
-cout<<"canny 01"<<flush<<endl;
     //Change the sizes back
     d_w = d_w + 3;
     d_h = d_h + 3;
@@ -476,7 +470,6 @@ cout<<"canny 01"<<flush<<endl;
       delete(tracked); 
       delete(dest_1d);
       delete(tmp2_1d);
-			cout<<"canny 01"<<flush<<endl;
 }
 
 void CANNY::Dilatacion(){

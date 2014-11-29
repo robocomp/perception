@@ -43,6 +43,7 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/common/centroid.h>
+#include <pcl/io/pcd_io.h>
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -98,6 +99,19 @@ typedef pcl::FPFHEstimationOMP<PointT,PointNT,FeatureT> FeatureEstimationT;
 typedef pcl::PointCloud<FeatureT> FeatureCloudT;
 typedef pcl::visualization::PointCloudColorHandlerCustom<PointT> ColorHandlerT;
 
+
+class SegmResult
+{
+public:
+	SegmResult()
+	{
+		num = x = y = 0;
+	}
+	int32_t num;
+	int32_t x, y;
+	int32_t minx, miny;
+};
+
 class SpecificWorker : public GenericWorker
 { 
 	pcl::PCDWriter writer;
@@ -111,7 +125,7 @@ class SpecificWorker : public GenericWorker
 	
 	//result
 	string class_obj;
-	string instance;
+	string instance, instance_from_vfh;
 	float posx, posy;
 	float theta;
 	
@@ -126,6 +140,7 @@ class SpecificWorker : public GenericWorker
 	ARMultiMarkerInfoT  *mMarker;
 	float probability;
 	float ar_tx, ar_ty, ar_tz, ar_rx, ar_ry, ar_rz;
+	float marca_tx, marca_ty, marca_tz, marca_rx, marca_ry, marca_rz;
 	float size;
 	
 	//table related stuff
@@ -156,7 +171,8 @@ class SpecificWorker : public GenericWorker
 	pcl::PointCloud<PointT>::Ptr original_cloud;
 	pcl::PointCloud<PointT>::Ptr segmented_cloud;
 	pcl::PointCloud<PointT>::Ptr downsampled_cloud;
-	
+	pcl::PointIndices::Ptr ransac_inliers;
+		
 	cv::Mat rgb_image;
 	
 	//table data
@@ -210,12 +226,13 @@ public:
 	void convexHull(const string& model);
 	void extractPolygon(const string& model);
 	void normalSegmentation(const string& model);
-	void grabThePointCloud();
+	void grabThePointCloud(const  std::string &image, const  std::string &pcd);
 	void passThrough();
 	void statisticalOutliersRemoval();
 	void segmentImage();
 	void centroidBasedPose(float &x, float &y, float &theta);
 	void grabTheAR();
+	std::string getResult(const std::string &image, const std::string &pcd);
 	
 	//PC mirroring
 	void mirrorPC();
@@ -249,6 +266,7 @@ public:
 	void newAprilTag(const tagsList& tags);
 
 	void updatePointCloud();
+	void get_data_from_dataset(std::string image, std::string pcd);
 	void doTheAprilTags();
 	
 	void aprilFitTheBox();

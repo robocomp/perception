@@ -40,8 +40,8 @@ void objectDetectionI::passThrough(const Ice::Current&){
 	worker->passThrough();
 }
 
-void objectDetectionI::grabThePointCloud(const Ice::Current&){
-	worker->grabThePointCloud();
+void objectDetectionI::grabThePointCloud(const string& image, const string& pcd, const Ice::Current&){
+	worker->grabThePointCloud(image,pcd);
 }
 
 void objectDetectionI::aprilFitModel(const string& model, const Ice::Current&){
@@ -117,9 +117,7 @@ void objectDetectionI::surfHomography(listType& guesses, const Ice::Current&){
 }
 
 void objectDetectionI::centroidBasedPose(Ice::Float& x, Ice::Float& y, Ice::Float& theta, const Ice::Current&){
-	cout<<"llegar: "<<x<<endl;
 	worker->centroidBasedPose(x,y,theta);
-	cout<<"volver "<<x<<endl;
 }
 
 void objectDetectionI::segmentImage(const Ice::Current&){
@@ -128,6 +126,10 @@ void objectDetectionI::segmentImage(const Ice::Current&){
 
 void objectDetectionI::grabTheAR(const Ice::Current&){
 	worker->grabTheAR();
+}
+
+string objectDetectionI::getResult(const string& image, const string& pcd, const Ice::Current&){
+	return worker->getResult(image,pcd);
 }
 
 

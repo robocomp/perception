@@ -58,6 +58,7 @@ public slots:
 	void vfh();
 	void surfHomography();
 	void fitTheViewVFH();
+	void grabTheAR();
 	
 	void getInliers();
 	void projectInliers();
