@@ -75,15 +75,28 @@ void SpecificWorker::aprilFitModel(const string& model)
 	{
 		if(continousMode_flag)
 		{
-			if(fitTheTable_flag)
-				fitTheTable_flag = false;
-			else
-				fitTheTable_flag =true;
+			fitTheTable_flag = !fitTheTable_flag;
 		}
 		else
 			aprilFitTheTable();
 	}
 }
+
+
+void SpecificWorker::ransac(const string& model)
+{
+	
+	if(continousMode_flag)
+	{
+		getTableRANSAC_flag = !getTableRANSAC_flag;
+	}
+	else
+	{
+		table->fit_board_with_RANSAC( cloud, 0.01);
+		drawTheTable();
+	}
+}
+
 
 void SpecificWorker::grabTheAR()
 {
@@ -179,38 +192,33 @@ void SpecificWorker::grabThePointCloud (const std::string &image, const std::str
 {
 	updatePointCloud();
 	//get_data_from_dataset( image, pcd);
-	drawThePointCloud(this->cloud);
 	*original_cloud=*this->cloud;
+
+	if(!continousMode_flag)
+		drawThePointCloud(this->cloud);
 	
 }
 
 void SpecificWorker::fitModel(const string& model, const string& method)
 {
 	if(model=="prism")
-    {
+  {
 		if(method=="naive")
         {
 			fitPrismtoObjectNaive();
         }
 		else
-        {
+    {
 			if(method=="pf")
 				fitPrismtoObjectPf();
-        }
     }
+  }
 }
 
 void SpecificWorker::getInliers(const string& model)
 {
 	if(model=="table")
 		getTableInliers_flag = !getTableInliers_flag;
-}
-
-void SpecificWorker::ransac(const string& model)
-{
-	if(model=="table")
-		getTableRANSAC_flag = !getTableRANSAC_flag;
-
 }
 
 
@@ -291,6 +299,13 @@ void SpecificWorker::compute( )
 			if(fitTheTable_flag)
 				aprilFitTheTable();
 			
+			if(getTableRANSAC_flag)
+			{
+				table->fit_board_with_RANSAC( cloud, 0.01);
+				drawTheTable();
+			}
+			
+			drawThePointCloud(this->cloud);
 		}
 		
 		if(getTableInliers_flag)
@@ -305,13 +320,7 @@ void SpecificWorker::compute( )
 			*this->cloud = *projected_plane;
 		}
 		
-		if(getTableRANSAC_flag)
-		{
-			QVec rotation = table->get_board_rotation();
-// 			rotation.print("PREROTATION: ");
-			table->fit_board_with_RANSAC( cloud, 0.01);
-			drawTheTable();
-		}
+		
 		
 		if(tableConvexHull_flag)
 		{

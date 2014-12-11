@@ -3,8 +3,8 @@
 		<plane id="suelo" px="0" py="0" pz="0" ny="1" size="10000,10000,10" texture="#ff0000" />
 		<differentialrobot id="robot">
 			<transform id="table_T">
-				<transform id="table_T2">
-					<mesh id="table" render="wireframe" file="/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds"  tx="0" ty="0" tz="0" scale="100"/>
+				<transform id="table_T2" tx="-250" ty="250" tz="-10">
+					<mesh id="table" render="wireframe" file="/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds"  tx="0" ty="0" tz="0" scale="1000,300,20"/>
 				</transform>
 			</transform>
 			<pointcloud id="cloud" /> 
