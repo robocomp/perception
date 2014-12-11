@@ -26,12 +26,14 @@ SET ( HEADERS
   specificmonitor.h
 )
 
+# artoolkit
+INCLUDE( $ENV{ROBOCOMP}/cmake/modules/artoolkit.cmake )
 # pcl
 INCLUDE ($ENV{ROBOCOMP}/cmake/modules/pcl.cmake )
 # opencv2
 INCLUDE ($ENV{ROBOCOMP}/cmake/modules/opencv2.cmake )
 
-SET ( LIBS ${LIBS} -lhdf5 )
+SET ( LIBS ${LIBS} -lhdf5 ${SPECIFIC_LIBS} ${ARTOOLKIT_LIBS} -lAR -lARMulti -lARgsubUtil -lARgsub -lARgsub_lite -lARvideo)
 
 add_executable (createVFH createVFH.cpp)
 target_link_libraries (createVFH ${PCL_LIBRARIES} ${FLANN_LIBRARIES} ${Boost_LIBRARIES})

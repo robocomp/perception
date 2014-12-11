@@ -62,6 +62,7 @@ void  centroidBasedPose(Ice::Float& x, Ice::Float& y, Ice::Float& theta, const I
 void  segmentImage(const Ice::Current& = Ice::Current());
 void  grabTheAR(const Ice::Current& = Ice::Current());
 string getResult(const string& image, const string& pcd, const Ice::Current& = Ice::Current());
+void  setContinousMode(bool mode, const Ice::Current& = Ice::Current());
 
 
 	QMutex *mutex;

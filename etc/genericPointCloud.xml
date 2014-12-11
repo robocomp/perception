@@ -4,14 +4,14 @@
 		<differentialrobot id="robot">
 			<transform id="table_T">
 				<transform id="table_T2">
-					<mesh id="table" render="wireframe" file="/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds"/>
+					<mesh id="table" render="wireframe" file="/home/robocomp/robocomp/files/osgModels/basics/cubexxx.3ds"  tx="0" ty="0" tz="0" scale="100"/>
 				</transform>
 			</transform>
 			<pointcloud id="cloud" /> 
-			<translation id="pechote" ty="1350">
-				<translation id="pescuezo" ty="170">
-					<rotation id="cuellopabajo" rx="0.67">
-						<translation id="rgbd_t" ty="90">
+			<translation id="pechote" ty="1000">
+				<translation id="pescuezo" ty="320">
+					<rotation id="cuellopabajo" rx="0.56">
+						<translation id="rgbd_t">
 							<transform id="marca">
 							</transform>
 							<rgbd id="rgbd" focal="525" width="640" height="480" port="3096" />

@@ -1523,8 +1523,13 @@ void SpecificWorker::aprilFitTheTable()
 			
 			QMat PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
 			
+			
 			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz  );
 
+#ifdef DEBUG
+			std::cout<<"SpecificWorker::aprilFitTheTable : setting marca at: tx:"<<itMap->second.tx<<" ty: "<<itMap->second.ty<<" tz: "<<itMap->second.tz<<" rx "<<itMap->second.rx<<" ry "<<itMap->second.ry<<" rz "<<itMap->second.rz<< " with respect to the sensor"<<std::endl;
+#endif
+			
 			innermodel->updateTransformValues("marca", itMap->second.tx, itMap->second.ty, itMap->second.tz, itMap->second.rx, itMap->second.ry, itMap->second.rz);
  
 			const RTMat translated_obj = PP * object_tr;

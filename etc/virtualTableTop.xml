@@ -1,10 +1,10 @@
 <innerModel>
 	<transform id="world" >
 		<plane id="suelo" px="0" py="0" pz="0" ny="1" size="10000,10000,10" texture="#ff0000" />
-		<transform id="rotate_robot" ry="0.2">
+		<transform id="rotate_robot">
 			<differentialrobot id="robot" >
 				<pointcloud id="cloud" /> 
-				<translation id="pechote" ty="1077">
+				<translation id="pechote" ty="1000">
 					<translation id="pescuezo" ty="300">
 						<rotation id="cuellopabajo" rx="0.43">
 							<translation id="rgbd_t">

@@ -23,10 +23,10 @@
 * \brief Default constructor
 */
 
-SpecificWorker::SpecificWorker(MapPrx& mprx) : table(new Table()), box(new RectPrism()),
-GenericWorker(mprx), mutex(new QMutex()), point_cloud_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
+SpecificWorker::SpecificWorker(MapPrx& mprx):GenericWorker(mprx), table(new Table()), box(new RectPrism()),
+ mutex(new QMutex()), point_cloud_mutex(new QMutex()), euclidean_mutex(new QMutex()), cloud(new pcl::PointCloud<PointT>), original_cloud(new pcl::PointCloud<PointT>),
 segmented_cloud(new pcl::PointCloud<PointT>), model_inliers_indices(new pcl::PointIndices), projected_plane(new pcl::PointCloud<PointT>), cloud_hull(new pcl::PointCloud<PointT>), 
-euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<PointT>), prism_indices (new pcl::PointIndices), vfh_matcher(new VFH())
+ cloud_to_normal_segment (new pcl::PointCloud<PointT>), prism_indices (new pcl::PointIndices), vfh_matcher(new VFH())
 
 {
 	innermodel = new InnerModel("/home/robocomp/robocomp/components/perception/etc/genericPointCloud.xml");
@@ -48,7 +48,7 @@ euclidean_mutex(new QMutex()), cloud_to_normal_segment (new pcl::PointCloud<Poin
 	
 	//action flags
 	getTableInliers_flag = projectTableInliers_flag = tableConvexHull_flag = extractTablePolygon_flag = getTableRANSAC_flag = euclideanClustering_flag = objectSelected_flag = false;
-	normal_segmentation_flag = false;
+	normal_segmentation_flag = continousMode_flag = fitTheTable_flag = false;
 	
 	saved_counter = 0;
 	
@@ -64,6 +64,7 @@ SpecificWorker::~SpecificWorker()
 
 }
 
+
 void SpecificWorker::aprilFitModel(const string& model)
 {
 	if(model=="box")
@@ -72,8 +73,115 @@ void SpecificWorker::aprilFitModel(const string& model)
 	}
 	if(model=="table")
 	{
-		aprilFitTheTable();
+		if(continousMode_flag)
+		{
+			if(fitTheTable_flag)
+				fitTheTable_flag = false;
+			else
+				fitTheTable_flag =true;
+		}
+		else
+			aprilFitTheTable();
 	}
+}
+
+void SpecificWorker::grabTheAR()
+{
+  ///ARToolKit variables
+	cv::imwrite("beforear.png",rgb_image);
+  ARUint8 *dataPtr = rgb_image.data;
+  ARMarkerInfo *marker_info;
+  int marker_num=0,i,j=-1;
+  //uchar* miImg;
+  double matrix[3][4]; //matriz de transformacion de la marca
+  
+  std::cout<<"Iteracion"<<std::endl;
+//   camera->getRGBPackedImage(0,imgRGB,hState,bState);
+  
+//   dataPtr = new ARUint8[640*480*3];
+//   memcpy(dataPtr,&imgRGB[0],640*480*3);
+  
+  //for(uint8_t i = 0; i<640*480;i++)
+	//	std::cout<<(uint8_t)dataPtr[i]<<std::endl;
+    
+  if(arDetectMarker(dataPtr, 100, &marker_info, &marker_num) >= 0) {
+    if(marker_num!=0){
+      
+      if(!isSingle && arMultiGetTransMat(marker_info, marker_num, mMarker) <= 0){
+				cout<<"Error con multimarca"<<endl;
+	return;
+      }
+      
+      cout<<"Encontrada"<<endl;
+      for(i=0;i<marker_num;i++){
+	if(id_marker==marker_info[i].id){
+	  if(j==-1)
+	      j=i;
+	  else{
+	    if(marker_info[j].cf<marker_info[i].cf)
+	      j=i;
+	  }
+	}
+      }
+      
+			if(j!=-1 && marker_info[j].cf>=probability)
+			{
+				cout<<" ********  OK, Supera la probabilidad "<<probability<<endl;
+// 				arGetTransMat(&marker_info[j], p_center, (double)size, matrix);
+	
+				ar_tx = matrix[0][3];
+				ar_ty = matrix[1][3];
+				ar_tz = matrix[2][3];
+				
+				ar_rx = matrix[0][0];
+				ar_ry = matrix[1][1];
+				ar_rz = matrix[2][2];
+				
+				cout<<"tx: "<<ar_tx<<" ty: "<<ar_ty<<" tz: "<<ar_tz<<" rx: "<< ar_rx<<" ry "<<ar_ry<<" rz "<<ar_rz<<endl;
+				
+					RoboCompInnerModelManager::Pose3D pose;
+					pose.x = ar_tx;
+					pose.y = ar_ty;
+					pose.z = ar_tz;
+					pose.rx = ar_rx;
+					pose.ry = ar_ry;
+					pose.rz = ar_rz;
+					innermodelmanager_proxy->setPoseFromParent("marca", pose);
+					
+					
+			}
+      else{
+				std::cout.precision(3);
+				cout<<"No, Supera la probabilidad "<<marker_info[j].cf<<endl;
+				cout<<"tx: "<<ar_tx<<" ty: "<<ar_ty<<" tz: "<<ar_tz<<" rx: "<< ar_rx<<" ry "<<ar_ry<<" rz "<<ar_rz<<endl;
+				return;
+      }
+      
+    }
+    else{
+      cout<<"No encontrada"<<endl;
+      return;
+    }
+  }
+  else{
+    std::cout<<"Error en la deteccion de la marca"<<std::endl;  
+    return;
+  }
+  
+  //Copiar los valores de la matriz de transformacion
+  
+//   delete [] dataPtr;
+  
+  return;
+}
+
+void SpecificWorker::grabThePointCloud (const std::string &image, const std::string &pcd)
+{
+	updatePointCloud();
+	//get_data_from_dataset( image, pcd);
+	drawThePointCloud(this->cloud);
+	*original_cloud=*this->cloud;
+	
 }
 
 void SpecificWorker::fitModel(const string& model, const string& method)
@@ -102,6 +210,28 @@ void SpecificWorker::ransac(const string& model)
 {
 	if(model=="table")
 		getTableRANSAC_flag = !getTableRANSAC_flag;
+
+}
+
+
+void SpecificWorker::segmentImage()
+{
+  cv::imwrite("nosegmentada.png",rgb_image);
+  std::cout<<"setting image"<<std::endl;
+  seg.set_image(&rgb_image);
+  cv::Mat segmented(480,640, CV_8UC3, cv::Scalar::all(0));
+  std::cout<<"Segmenting image"<<std::endl;
+  seg.set_tresholds(100, 150);
+  segmented = seg.segment();
+	std::cout<<"Segmented"<<std::endl;
+  cv::imwrite("Segmentada.png",segmented);
+  cv::inRange(segmented, cv::Scalar(0, 150, 150), cv::Scalar(80, 255, 255), yellow);
+  cv::imwrite("yellow.png",yellow);
+  cv::inRange(segmented, cv::Scalar(65, 15, 125), cv::Scalar(150, 100, 255), pink);
+  cv::imwrite("pink.png",pink);
+  cv::inRange(segmented, cv::Scalar(25, 75, 50), cv::Scalar(106, 255, 150), green);
+  cv::imwrite("green.png",green);
+  
 
 }
 
@@ -144,10 +274,24 @@ void SpecificWorker::euclideanClustering(int &num_clusters)
 	num_clusters = cluster_indices.size();
 }
 
+void SpecificWorker::setContinousMode(bool mode)
+{
+	
+	continousMode_flag = mode;
+	
+}
+
 void SpecificWorker::compute( )
 {
-		
-		updatePointCloud();
+		if (continousMode_flag)
+		{
+			grabThePointCloud();
+			
+			//if fit the table button is pusshed perform the action
+			if(fitTheTable_flag)
+				aprilFitTheTable();
+			
+		}
 		
 		if(getTableInliers_flag)
 		{
@@ -191,12 +335,12 @@ void SpecificWorker::compute( )
 			euclideanClustering_flag = ! euclideanClustering_flag;
 		}
 		
-		if(objectSelected_flag)
-		{
-			drawThePointCloud(cluster_clouds[object_to_show]);
-		}
-		else
-			drawThePointCloud(this->cloud);
+// 		if(objectSelected_flag)
+// 		{
+// 			drawThePointCloud(cluster_clouds[object_to_show]);
+// 		}
+// 		else
+// 			drawThePointCloud(this->cloud);
 	
 }
 void SpecificWorker::showObject(int object_to_show)
@@ -273,6 +417,28 @@ void SpecificWorker::mindTheGapPC()
 		std::cout<<"Please select an object first"<<std::endl;
 }
 
+void SpecificWorker::centroidBasedPose(float &x, float &y, float &theta)
+{
+	Eigen::Vector4f centroid;
+	pcl::compute3DCentroid (*(cluster_clouds[object_to_show]), centroid);
+	
+	QVec p1 = QVec::vec3(centroid(0), centroid(1), centroid(2));
+	p1.print("centroid a");
+ 	QVec p2 = innermodel->transform("marca", p1, "robot");	
+	p2.print("centroid b");
+ 	QVec p2r = innermodel->transform("rgbd", p1, "robot");	
+	p2r.print("centroid camera");
+	
+// 	std::cout<<"Centroid : "<<p2(0)<<" "<<p2(1)<<" "<<p2(2)<<std::endl;
+	
+// 	c1.print("centroid: ");
+	x=p2(0)/1000.;
+	y=p2(1)/1000.;
+	theta= float(rand() % 1570)/1000;
+	
+	
+}
+
 void SpecificWorker::mirrorPC()
 {
 	
@@ -339,7 +505,7 @@ void SpecificWorker::mirrorPC()
 	
 	//3.- Reason for the what I should see point cloud
 	cv::Mat M(480,640,CV_8UC1, cv::Scalar::all(0));
-	for (int i = 0; i<cluster_clouds[object_to_show]->points.size(); i++)
+	for (unsigned int i = 0; i<cluster_clouds[object_to_show]->points.size(); i++)
 	{
 		QVec xy = innermodel->project("robot", QVec::vec3(cluster_clouds[object_to_show]->points[i].x, cluster_clouds[object_to_show]->points[i].y, cluster_clouds[object_to_show]->points[i].z), "rgbd"); 
 
@@ -382,7 +548,7 @@ void SpecificWorker::mirrorPC()
 // 	}
 	
 	//check if points lie in the mask
-	for (int i = 0; i<cl->points.size(); i++)
+	for (unsigned int i = 0; i<cl->points.size(); i++)
 	{
 		QVec xy = innermodel->project("robot", QVec::vec3(cl->points[i].x, cl->points[i].y, cl->points[i].z), "rgbd"); 
 		if (xy(0)>=0 and xy(0) < 640 and xy(1)>=0 and xy(1) < 480 )
@@ -838,7 +1004,7 @@ void SpecificWorker::fitTheViewVFH()
 		
 		for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
 		{
-			if (itMap->second.id == 3)
+			if (itMap->second.id == 2)
 			{
 				if(first3)
 				{
@@ -966,49 +1132,13 @@ void SpecificWorker::drawTheTable()
 	innermodelmanager_proxy->setPose("robot", "table_T2", pose);
 	innermodel->updateTransformValues("table_T2", pose.x, pose.y, pose.z, pose.rx, pose.ry, pose.rz, "robot");
 	
-// 		bool exists = false;
-// 	
-// 	RoboCompInnerModelManager::NodeInformationSequence node_sequence;
-// 	innermodelmanager_proxy->getAllNodeInformation(node_sequence);
-// 	for (unsigned int i=0; i<node_sequence.size(); i++)
-// 	{
-// 		if(node_sequence[i].id == "table")
-// 		{
-// 			exists = true;
-// 			break;
-// 		}
-// 	}
-// 	
-// 	if(!exists)
-// 		addTheTable(pose);
-// 	else
-// 		updateTheTable(pose);
-	
-	
-// 	bool exists = false;
-// 	
-// 	RoboCompInnerModelManager::NodeInformationSequence node_sequence;
-// 	innermodelmanager_proxy->getAllNodeInformation(node_sequence);
-// 	for (unsigned int i=0; i<node_sequence.size(); i++)
-// 	{
-// 		if(node_sequence[i].id == "table")
-// 		{
-// 			exists = true;
-// 			break;
-// 		}
-// 	}
-// 	
-// 	if(!exists)
-// 		addTheTable(pose);
-// 	else
-// 		updateTheTable(pose);
 }
 
 void SpecificWorker::aprilFitTheTable()
 {
 	//put the box processing here:
 	mutex->lock();
-	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
+ 	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
 	{
 		//move the tags to the robot reference frame
 		
@@ -1024,59 +1154,97 @@ void SpecificWorker::aprilFitTheTable()
 // 					PP(r,c) = m.data[r*m.cols+c];
 // 				}
 // 			}
+			//updating cuellopabajo
+			float rx = 1.57-itMap->second.rx;
+#ifdef DEBUG
+			cout.precision(15);
+			std::cout<<rx<<std::endl;
+#endif
+			
+			innermodel->updateRotationValues("cuellopabajo", rx, 0, 0 );
+			
 			QMat PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
 			
-			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz );
+			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz  );
 
-							 
+// 			innermodel->updateTransformValues("marca", itMap->second.tx, itMap->second.ty, itMap->second.tz, itMap->second.rx, itMap->second.ry, itMap->second.rz);
+ 
 			const RTMat translated_obj = PP * object_tr;
 			
 			const QVec r = translated_obj.extractAnglesR_min();
+			
 			
 // 			table->set_board_center(translated_obj(0,3), translated_obj(1,3), translated_obj(2,3));
 // 			table->set_board_rotation(r(0), r(1), r(2));
 // 			
 // 			QVec table_translation = table->get_board_center();
 // 			QVec table_rotation = table->get_board_rotation();
+
+#ifdef DEBUG
 			
-			r.print("april");
+			
+			
+			r.print("Table Rotation");
+			std::cout<<"Table translation"<<std::endl;
+			std::cout<<translated_obj(0,3)<<std::endl;
+			std::cout<<translated_obj(1,3)<<std::endl;
+			std::cout<<translated_obj(2,3)<<std::endl;
+#endif
+			
+			marca_tx = translated_obj(0,3);
+			marca_ty = translated_obj(1,3);
+			marca_tz = translated_obj(2,3);
+			marca_rx = r(0);
+			marca_ry = r(1);
+			marca_rz = r(2);
 			
 			RoboCompInnerModelManager::Pose3D pose;
 			pose.x = translated_obj(0,3);
 			pose.y = translated_obj(1,3);
 			pose.z = translated_obj(2,3);
-			pose.rx = r(0)-0.78;
-			pose.ry = r(1);
+			pose.rx = r(0);
+			pose.ry = r(1); // + 0.1; da noise!
 			pose.rz = r(2);
-			
-		// 			cout<<"Translation of the table: Tx: " <<pose.x<<" Ty: "<<pose.y<<" Tz: "<<pose.z<<endl;
-		// 			cout<<"Rotation of table: Rx: "<<pose.rx<<" Ry: "<<pose.ry<<" Rz: "<<pose.rz<<endl;
-			
-			
-			bool exists = false;
-			
-			RoboCompInnerModelManager::NodeInformationSequence node_sequence;
-			innermodelmanager_proxy->getAllNodeInformation(node_sequence);
-			for (unsigned int i=0; i<node_sequence.size(); i++)
-			{
-				if(node_sequence[i].id == "table")
-				{
-					exists = true;
-					break;
-				}
-			}
-			
-			if(!exists)
-				addTheTable(pose);
-			else
-				updateTheTable(pose);
+
+			updateTheTable(pose);
 	
-			break;
- 		}
-	}
+ 			break;
+  		}
+ 	}
 	drawTheTable();
 	mutex->unlock();
 	
+}
+
+void SpecificWorker::statisticalOutliersRemoval()
+{
+	// Create the filtering object
+  pcl::StatisticalOutlierRemoval<PointT> sor;
+  sor.setInputCloud (this->cloud);
+  sor.setMeanK (50);
+  sor.setStddevMulThresh (1.0);
+  sor.filter (*(this->cloud));
+}
+
+void SpecificWorker::passThrough()
+{
+	// Create the filtering object
+  pcl::PassThrough<PointT> pass;
+  pass.setInputCloud (this->cloud);
+  pass.setFilterFieldName ("z");
+  pass.setFilterLimits (marca_tz, marca_tz + 1000);
+  //pass.setFilterLimitsNegative (true);
+  pass.filter (*this->cloud);
+	pass.setInputCloud (this->cloud);
+  pass.setFilterFieldName ("x");
+  pass.setFilterLimits (marca_tx, marca_tx + 1000);
+	pass.setInputCloud (this->cloud);
+	pass.filter (*this->cloud);
+	pass.setFilterFieldName ("y");
+	pass.setFilterLimits (marca_ty-200, marca_ty+1000);
+	pass.setInputCloud (this->cloud);
+	pass.filter (*this->cloud);
+  drawThePointCloud(this->cloud);
 }
 
 void SpecificWorker::performEuclideanClustering()
@@ -1099,7 +1267,7 @@ void SpecificWorker::performEuclideanClustering()
 	
 	//lets transform the image to opencv
 	cout<<rgbMatrix.size()<<endl;
-	for(int i=0; i<rgbMatrix.size(); i++)
+	for(unsigned int i=0; i<rgbMatrix.size(); i++)
 	{
 // 		std::cout<<"the first one: " <<i<<std::endl;
 		int row = i/640;
@@ -1131,7 +1299,7 @@ void SpecificWorker::performEuclideanClustering()
 		/////save rgbd 
 		
 		cv::Mat M(480,640,CV_8UC1, cv::Scalar::all(0));
-		for (int i = 0; i<cloud_cluster->points.size(); i++)
+		for (unsigned int i = 0; i<cloud_cluster->points.size(); i++)
 		{
 			QVec xy = innermodel->project("robot", QVec::vec3(cloud_cluster->points[i].x, cloud_cluster->points[i].y, cloud_cluster->points[i].z), "rgbd"); 
 
@@ -1355,61 +1523,6 @@ void SpecificWorker::drawThePointCloud(pcl::PointCloud<PointT>::Ptr cloud)
 //   } 
 }
 
-void SpecificWorker::doTheAprilTags()
-{
-	mutex->lock();
-	for (TagModelMap::iterator itMap=tagMap.begin();  itMap!=tagMap.end(); itMap++)
-	{
-		//move the tags to the robot reference frame
-		
-		if (itMap->second.id == 3)
-		{
-
-			QMat PP = innermodel->getTransformationMatrix("robot", "rgbd_t");
-			
-			RTMat object_tr( itMap->second.rx, itMap->second.ry, itMap->second.rz, itMap->second.tx, itMap->second.ty, itMap->second.tz );
-
-							 
-			const RTMat translated_obj = PP * object_tr;
-			
-			const QVec tr = translated_obj.getTr();
-			const QVec r = translated_obj.extractAnglesR_min();
-
-			
-			RoboCompInnerModelManager::Pose3D pose;
-			pose.x = translated_obj(0,3);
-			pose.y = translated_obj(1,3);
-			pose.z = translated_obj(2,3);
-			pose.rx = r(0);
-			pose.ry = r(1);
-			pose.rz = r(2);
-			
-			bool exists = false;
-			
-			RoboCompInnerModelManager::NodeInformationSequence node_sequence;
-			innermodelmanager_proxy->getAllNodeInformation(node_sequence);
-			for (unsigned int i=0; i<node_sequence.size(); i++)
-			{
-				if(node_sequence[i].id == "box")
-				{
-					exists = true;
-					break;
-				}
-			}
-			
-			if(!exists)
-			{
-				std::cout<<"pintando"<<std::endl;
-				addTheBox(pose);
-			}
-			else
-				updateTheBox(pose);
-			break;
- 		}
-	}
-	mutex->unlock();
-}
-
 void SpecificWorker::addTheBox(RoboCompInnerModelManager::Pose3D pose)
 {
 	RoboCompInnerModelManager::Pose3D pose2;
@@ -1562,6 +1675,7 @@ bool SpecificWorker::add_point_cloud_to_innermodels(const std::string &id, const
 	
 	//add to RCIS
 	innermodelmanager_proxy->setPointCloudData(id, cloud);
+	return true;
 }
 
 bool SpecificWorker::add_transform_to_innermodels(const std::string &item, const std::string &engine, const std::string &base, const RoboCompInnerModelManager::Pose3D &pose)
@@ -1573,6 +1687,7 @@ bool SpecificWorker::add_transform_to_innermodels(const std::string &item, const
 	
 	//adding to rcis:
 	innermodelmanager_proxy->addTransform(item, engine, base, pose);
+	return true;
 }
 
 bool SpecificWorker::add_mesh_to_innermodels(const std::string &item, const std::string &base, const RoboCompInnerModelManager::meshType &m)
@@ -1590,7 +1705,7 @@ bool SpecificWorker::add_mesh_to_innermodels(const std::string &item, const std:
 	
 	//adding to rcis	
 	innermodelmanager_proxy->addMesh(item, base, m);
-	
+	return true;
 }
 
 void SpecificWorker::update_transforms_on_innermodels (const std::string &item, const RoboCompInnerModelManager::Pose3D pose)

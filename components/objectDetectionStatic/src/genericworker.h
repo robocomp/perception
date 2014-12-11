@@ -85,6 +85,7 @@ public:
 	virtual void  segmentImage() = 0;
 	virtual void  grabTheAR() = 0;
 	virtual string getResult(const string& image, const string& pcd) = 0;
+	virtual void  setContinousMode(bool mode) = 0;
 	virtual void  newAprilTag(const tagsList& tags) = 0;
 
 protected:

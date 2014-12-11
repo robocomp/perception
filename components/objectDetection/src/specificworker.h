@@ -40,6 +40,8 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/features/fpfh_omp.h>
 #include <pcl/registration/sample_consensus_prerejective.h>
+#include <pcl/filters/passthrough.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -57,6 +59,14 @@
 
 #include "tabletop_symmetry/mirror.h"
 #include "vfh/vfh.h"
+
+#include "color_segmentation/Segmentator.h"
+
+#include <AR/param.h>
+#include <AR/ar.h>
+#include <AR/arMulti.h>
+
+#define DEBUG
 
 /**
        \brief
@@ -85,17 +95,71 @@ typedef pcl::FPFHEstimationOMP<PointT,PointNT,FeatureT> FeatureEstimationT;
 typedef pcl::PointCloud<FeatureT> FeatureCloudT;
 typedef pcl::visualization::PointCloudColorHandlerCustom<PointT> ColorHandlerT;
 
+class SegmResult
+{
+public:
+	SegmResult()
+	{
+		num = x = y = 0;
+	}
+	int32_t num;
+	int32_t x, y;
+};
+
+inline int32_t imageIndex(const int32_t x, const int32_t y)
+{
+	return (x+y*640);
+}
+
+SegmResult getSegmentationInfo(uint8_t *image);
+SegmResult getBlob(uint8_t *image, int32_t &x, int32_t &y);
+void recursiveCall(uint8_t *image, const int32_t x, const int32_t y, SegmResult &r);
+
 class SpecificWorker : public GenericWorker
 { 
-	pcl::PCDWriter writer;
-	
-	int saved_counter;
-	
 	//table related stuff
 	boost::shared_ptr<Table> table;
 	boost::shared_ptr<RectPrism> box;
 	PointT table_offset;
-	PointT box_offset;
+	PointT box_offset;	
+	
+	TagModelMap tagMap;
+	QMutex *mutex;
+	QMutex *point_cloud_mutex;
+	QMutex *euclidean_mutex;
+	
+	//PCL data structures
+	pcl::PointCloud<PointT>::Ptr cloud;
+	pcl::PointCloud<PointT>::Ptr original_cloud;
+	pcl::PointCloud<PointT>::Ptr segmented_cloud;
+	pcl::PointCloud<PointT>::Ptr downsampled_cloud;
+	pcl::PointIndices::Ptr ransac_inliers;
+	
+	pcl::PCDWriter writer;
+	
+	int saved_counter;
+	
+	//result
+	string class_obj;
+	string instance, instance_from_vfh;
+	float posx, posy;
+	float theta;
+	
+	//artoolkit shit:
+	string pathtomarker_x;
+	string pathtomarker_y;
+	string pathtomarker_z;
+	string pathtocameraparams;
+	int id_marker;
+	bool isSingle;
+	///Multimarcas
+	ARMultiMarkerInfoT  *mMarker;
+	float probability;
+	float ar_tx, ar_ty, ar_tz, ar_rx, ar_ry, ar_rz;
+	float marca_tx, marca_ty, marca_tz, marca_rx, marca_ry, marca_rz;
+	float size;
+	
+	cv::Mat yellow, pink, green;
 	
 	RoboCompRGBD::ColorSeq rgbMatrix;	
 	RoboCompRGBD::depthType distanceMatrix;
@@ -103,19 +167,15 @@ class SpecificWorker : public GenericWorker
 	RoboCompJointMotor::MotorStateMap h;
 	RoboCompDifferentialRobot::TBaseState b;
 	
-	TagModelMap tagMap;
-	QMutex *mutex;
-	QMutex *point_cloud_mutex;
-	QMutex *euclidean_mutex;
+	//color Segmentation
+ 	Segmentator seg;
+	
+
 	
 	// Create the filtering object
 	pcl::PassThrough<PointT> pass;
 	
-	//PCL data structures
-	pcl::PointCloud<PointT>::Ptr cloud;
-	pcl::PointCloud<PointT>::Ptr original_cloud;
-	pcl::PointCloud<PointT>::Ptr segmented_cloud;
-	pcl::PointCloud<PointT>::Ptr downsampled_cloud;
+	cv::Mat rgb_image;
 	
 	//table data
 	pcl::PointIndices::Ptr model_inliers_indices;
@@ -123,6 +183,8 @@ class SpecificWorker : public GenericWorker
 	pcl::PointCloud<PointT>::Ptr cloud_hull;
 	pcl::PointCloud<PointT>::Ptr cloud_to_normal_segment;
 	pcl::PointIndices::Ptr prism_indices;
+	
+
 	
 	//VFH
 	boost::shared_ptr<VFH> vfh_matcher;
@@ -142,7 +204,7 @@ class SpecificWorker : public GenericWorker
 	RTMat viewpoint_transform;
 	
 	//action flags
-	bool getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag, getTableRANSAC_flag, euclideanClustering_flag, objectSelected_flag, normal_segmentation_flag;
+	bool grabThePointCloudContinous_flag, getTableInliers_flag, projectTableInliers_flag, tableConvexHull_flag, extractTablePolygon_flag, getTableRANSAC_flag, euclideanClustering_flag, objectSelected_flag, continousMode_flag, normal_segmentation_flag, fitTheTable_flag;
 	
 	InnerModel *innermodel;
 	
@@ -168,7 +230,14 @@ public:
 	void convexHull(const string& model);
 	void extractPolygon(const string& model);
 	void normalSegmentation(const string& model);
-	
+	void passThrough();
+	void statisticalOutliersRemoval();
+	void segmentImage();
+	void centroidBasedPose(float &x, float &y, float &theta);
+	void grabTheAR();
+	inline std::string getResult(const std::string &image = "", const std::string &pcd = "") { return "not implemented";};
+	void grabThePointCloud(const  std::string &image = "", const  std::string &pcd = "");
+	void setContinousMode(bool mode);
 	//PC mirroring
 	void mirrorPC();
 	void mindTheGapPC();
@@ -201,7 +270,6 @@ public:
 	void newAprilTag(const tagsList& tags);
 
 	void updatePointCloud();
-	void doTheAprilTags();
 	
 	void aprilFitTheBox();
 	void addTheBox(RoboCompInnerModelManager::Pose3D pose);

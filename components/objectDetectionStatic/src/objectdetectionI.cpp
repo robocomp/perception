@@ -132,4 +132,8 @@ string objectDetectionI::getResult(const string& image, const string& pcd, const
 	return worker->getResult(image,pcd);
 }
 
+void objectDetectionI::setContinousMode(bool mode, const Ice::Current&){
+	worker->setContinousMode(mode);
+}
+
 

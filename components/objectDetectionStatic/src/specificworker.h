@@ -43,7 +43,6 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/common/centroid.h>
-#include <pcl/io/pcd_io.h>
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -70,6 +69,7 @@
 #include <AR/arMulti.h>
 // #define SAVE_DATA
 #define TODRAW
+#define DEBUG
 
 #include <sys/time.h>
 #include <stdlib.h>
@@ -276,6 +276,8 @@ public:
 	
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	void newAprilTag(const tagsList& tags);
+	
+	inline void setContinousMode(bool mode) {};
 
 	void updatePointCloud();
 	void get_data_from_dataset(std::string image, std::string pcd);

@@ -52,7 +52,7 @@ public slots:
 	
 	void aprilFitTable();
 	void aprilFitBox();
-	
+	void grabContinously();
 	void reloadVFH();
 	void loadTrainedVFH();
 	void vfh();

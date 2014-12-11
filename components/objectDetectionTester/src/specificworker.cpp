@@ -63,6 +63,8 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(mind_the_gap_button, SIGNAL(clicked()), this, SLOT(mindTheGap()));
 	
 	connect(dotheARTolkit_button, SIGNAL(clicked()), this, SLOT(grabTheAR()));
+	
+	connect(grab_continously_checkBox, SIGNAL(clicked()), this, SLOT(grabContinously()));
 }
 
 /**
@@ -75,16 +77,36 @@ SpecificWorker::~SpecificWorker()
 
 void SpecificWorker::grab_pc()
 {
+	
 	QString image=lineEdit->text();
 	QString pcd=lineEdit_2->text();
 	objectdetection_proxy->grabThePointCloud(image.toStdString(), pcd.toStdString());
+	
+}
+
+void SpecificWorker::grabContinously()
+{
+	if(grab_continously_checkBox->isChecked())
+	{
+		grab_pc_button->setEnabled ( false );
+		objectdetection_proxy->setContinousMode(true);
+	}
+	else
+	{
+		grab_pc_button->setEnabled ( true );
+		objectdetection_proxy->setContinousMode(false);
+	}
 }
 
 void SpecificWorker::ransac_table()
 {
-	std::cout<<"About to send RANSAC"<<std::endl;
+	
+	if(grab_continously_checkBox->isChecked() && !ransac_button->isDown())
+		ransac_button->setDown( true );
+	else
+		ransac_button->setDown( false );
+	
 	objectdetection_proxy->ransac("table");
-	std::cout<<"sent RANSAC"<<std::endl;
 }
 
 void SpecificWorker::getInliers()
@@ -178,7 +200,7 @@ void SpecificWorker::vfh()
 	QString path_to_pcd, name_of_object;
 	vfh_listView->clear();
 	
-	for(int i = 0; i < guesses.size(); i++)
+	for(unsigned int i = 0; i < guesses.size(); i++)
 	{
 		path_to_pcd = QString::fromStdString(guesses[i]);
 		pieces = path_to_pcd.split( "/" );
