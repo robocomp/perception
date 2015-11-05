@@ -1,0 +1,35 @@
+
+# Sources set
+SET ( SOURCES
+  specificworker.cpp
+  specificmonitor.cpp
+#  $ENV{ROBOCOMP}/classes/agmInner/agmInner.cpp
+  color_segmentation/BIP.cpp
+  color_segmentation/Canny.cpp
+  color_segmentation/Convolucion.cpp
+  color_segmentation/GaussKernel.cpp
+  color_segmentation/Imagen.cpp
+  color_segmentation/Segmentator.cpp
+  shapes/basic/rectprism.cpp
+  geometry/plane.cpp
+  shapes/table.cpp
+)
+
+# Headers set
+SET ( HEADERS
+  specificworker.h
+  specificmonitor.h
+#  $ENV{ROBOCOMP}/classes/agmInner/agmInner.h
+)
+
+INCLUDE($ENV{ROBOCOMP}/cmake/modules/ipp.cmake)
+
+# artoolkit
+INCLUDE( $ENV{ROBOCOMP}/cmake/modules/artoolkit.cmake )
+# pcl
+INCLUDE ($ENV{ROBOCOMP}/cmake/modules/pcl.cmake )
+# opencv2
+INCLUDE ($ENV{ROBOCOMP}/cmake/modules/opencv2.cmake )
+
+ADD_DEFINITIONS( -std=c++11 )
+
