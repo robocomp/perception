@@ -3,7 +3,7 @@ import "/robocomp/interfaces/IDSLs/AprilTags.idsl";
 import "/robocomp/interfaces/IDSLs/InnerModelManager.idsl";
 import "/robocomp/interfaces/IDSLs/RGBD.idsl";
 
-Component objectDetectionRockin22Comp
+Component objectDetectionRockin2Comp
 {
 	Communications
 	{
@@ -11,5 +11,6 @@ Component objectDetectionRockin22Comp
 		requires InnerModelManager, RGBD;
 		subscribesTo AprilTags;
 	};
+	gui Qt(QWidget);
 	language Cpp;
 };

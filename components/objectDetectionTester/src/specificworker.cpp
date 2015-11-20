@@ -35,6 +35,7 @@ SpecificWorker::SpecificWorker(MapPrx& mprx, QObject *parent) : GenericWorker(mp
 	connect(reset_button, SIGNAL(clicked()), this, SLOT(reset()));
 	connect(normal_segmentation_button, SIGNAL(clicked()), this, SLOT(normal_segmentation()));
 	connect(grab_pc_button, SIGNAL(clicked()), this, SLOT(grab_pc()));
+        connect(grab_pc_button_2, SIGNAL(clicked()), this, SLOT(read_pc()));
 	connect(pass_through_button, SIGNAL(clicked()), this, SLOT(passThrough()));
 	connect(statistical_outliers_removal_button, SIGNAL(clicked()), this, SLOT(passThrough()));
 	connect(segment_button, SIGNAL(clicked()), this, SLOT(segment_image()));
@@ -84,17 +85,22 @@ void SpecificWorker::grab_pc()
 	
 }
 
+void SpecificWorker::read_pc()
+{
+    objectdetection_proxy->readThePointCloud("rgb.png","pcd.pcd");
+}
+
 void SpecificWorker::grabContinously()
 {
 	if(grab_continously_checkBox->isChecked())
 	{
 		grab_pc_button->setEnabled ( false );
-		objectdetection_proxy->setContinousMode(true);
+		//objectdetection_proxy->setContinousMode(true);
 	}
 	else
 	{
 		grab_pc_button->setEnabled ( true );
-		objectdetection_proxy->setContinousMode(false);
+		//objectdetection_proxy->setContinousMode(false);
 	}
 }
 

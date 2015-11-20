@@ -35,16 +35,29 @@
 #include <pcl/pcl_base.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/filters/passthrough.h>
+#include <pcl/segmentation/extract_clusters.h>
+#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/ros/conversions.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <cv_bridge/cv_bridge.h>
+
+#include <ros/ros.h>
+#include <sensor_msgs/PointCloud2.h>
+
 #include <genericworker.h>
 #include <innermodel/innermodel.h>
-
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
 #include "color_segmentation/Segmentator.h"
 #include "shapes/table.h"
+#include "vfh/vfh.h"
 
 #define DEBUG 1
 typedef pcl::PointXYZRGB PointT;
@@ -52,18 +65,29 @@ typedef pcl::PointXYZRGB PointT;
 
 class SpecificWorker : public GenericWorker
 {
+    
+        ros::NodeHandle nh;
+        ros::Publisher image_pub;
+	ros::Publisher pcd_pub;
 	
 	InnerModel *innermodel;
 	
 	pcl::PCDWriter writer;
 	
+        float marca_tx, marca_ty, marca_tz, marca_rx, marca_ry, marca_rz;
+        
 	//Cloud of the current points for pcl
 	pcl::PointCloud<PointT>::Ptr cloud;
 	pcl::PointIndices::Ptr ransac_inliers;
+	pcl::PointCloud<PointT>::Ptr projected_plane;
+	pcl::PointCloud<PointT>::Ptr cloud_hull;
+        pcl::PointIndices::Ptr prism_indices;
 	
 	//Image of the current view for opencv
 	cv::Mat rgb_image;
 	cv::Mat color_segmented;
+        
+        RTMat viewpoint_transform;
 	
 	//Point cloud grabing
 	RoboCompRGBD::ColorSeq rgbMatrix;	
@@ -75,6 +99,15 @@ class SpecificWorker : public GenericWorker
 	//color Segmentator
  	Segmentator segmentator;
 	
+        //euclidean clustering
+        std::vector<pcl::PointIndices> cluster_indices;
+	std::vector<pcl::PointCloud<PointT>::Ptr> cluster_clouds;
+        
+        
+	//VFH
+	boost::shared_ptr<VFH> vfh_matcher;
+	std::vector<string> vfh_guesses;
+        
 	boost::shared_ptr<Table> table;
   
 Q_OBJECT
@@ -83,13 +116,14 @@ public:
 	~SpecificWorker();
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 	void grabThePointCloud(const string &image, const string &pcd);
+        void readThePointCloud(const string &image, const string &pcd);
 	void segmentImage();
 	
 	
 	void grabTheAR();
 	void aprilFitModel(const string &model);
 	void mindTheGapPC();
-	string getResult(const string &image, const string &pcd);
+	void getResult(const string &image, const string &pcd, detectionResult &detection);
 	void centroidBasedPose(float &x, float &y, float &theta);
 	void reloadVFH();
 	void ransac(const string &model);

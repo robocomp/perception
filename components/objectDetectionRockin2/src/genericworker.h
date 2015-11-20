@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <qlog/qlog.h>
 
+#include <ui_mainUI.h>
 
 #include <CommonBehavior.h>
 #include <DifferentialRobot.h>
@@ -53,7 +54,11 @@ using namespace RoboCompAprilTags;
 
 
 class GenericWorker : 
+#ifdef USE_QTGUI
+public QWidget, public Ui_guiDlg
+#else
 public QObject
+#endif
 {
 Q_OBJECT
 public:
@@ -73,7 +78,7 @@ public:
 	virtual void aprilFitModel(const string &model) = 0;
 	virtual void segmentImage() = 0;
 	virtual void mindTheGapPC() = 0;
-	virtual string getResult(const string &image, const string &pcd) = 0;
+	virtual void getResult(const string &image, const string &pcd, detectionResult &detection) = 0;
 	virtual void centroidBasedPose(float &x, float &y, float &theta) = 0;
 	virtual void reloadVFH() = 0;
 	virtual void ransac(const string &model) = 0;
@@ -81,6 +86,7 @@ public:
 	virtual void passThrough() = 0;
 	virtual void surfHomography(listType &guesses) = 0;
 	virtual void fitTheViewVFH() = 0;
+	virtual void readThePointCloud(const string &image, const string &pcd) = 0;
 	virtual void showObject(const int numObject) = 0;
 	virtual void convexHull(const string &model) = 0;
 	virtual void mirrorPC() = 0;
@@ -92,7 +98,6 @@ public:
 	virtual void vfh(listType &guesses) = 0;
 	virtual void grabThePointCloud(const string &image, const string &pcd) = 0;
 	virtual void fitModel(const string &model, const string &method) = 0;
-	virtual void setContinousMode(const bool &mode) = 0;
 	virtual void projectInliers(const string &model) = 0;
 	virtual void extractPolygon(const string &model) = 0;
 	virtual void newAprilTag(const tagsList &tags) = 0;

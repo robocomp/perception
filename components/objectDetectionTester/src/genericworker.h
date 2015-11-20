@@ -1,5 +1,5 @@
 /*
- *    Copyright (C) 2006-2010 by RoboLab - University of Extremadura
+ *    Copyright (C) 2015 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -19,15 +19,17 @@
 #ifndef GENERICWORKER_H
 #define GENERICWORKER_H
 
-// #include <ipp.h>
 #include "config.h"
 #include <QtGui>
 #include <stdint.h>
 #include <qlog/qlog.h>
+
+#include <ui_mainUI.h>
+
 #include <CommonBehavior.h>
-#include <ui_guiDlg.h>
-#include "config.h"
 #include <objectDetection.h>
+
+
 
 #define CHECK_PERIOD 5000
 #define BASIC_PERIOD 100
@@ -36,12 +38,12 @@ typedef map <string,::IceProxy::Ice::Object*> MapPrx;
 
 using namespace std;
 
-/**
-       \brief
-       @author authorname
-*/
 using namespace RoboCompobjectDetection;
-class GenericWorker :
+
+
+
+
+class GenericWorker : 
 #ifdef USE_QTGUI
 public QWidget, public Ui_guiDlg
 #else
@@ -56,12 +58,17 @@ public:
 	virtual void setPeriod(int p);
 	
 	virtual bool setParams(RoboCompCommonBehavior::ParameterList params) = 0;
-	QMutex *mutex;                //Shared mutex with servant
+	QMutex *mutex;
+	
 
 	objectDetectionPrx objectdetection_proxy;
+
+
+
 protected:
 	QTimer timer;
 	int Period;
+
 public slots:
 	virtual void compute() = 0;
 signals:

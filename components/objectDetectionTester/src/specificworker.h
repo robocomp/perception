@@ -40,6 +40,7 @@ public slots:
 	void mirror();
 	void mindTheGap();
 	void grab_pc();
+        void read_pc();
 	void passThrough();
 	void statisticalOutliersRemoval();
 	void segment_image();

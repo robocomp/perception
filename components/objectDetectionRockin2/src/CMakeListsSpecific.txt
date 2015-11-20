@@ -13,6 +13,7 @@ SET ( SOURCES
   shapes/basic/rectprism.cpp
   geometry/plane.cpp
   shapes/table.cpp
+  vfh/vfh.cpp
 )
 
 # Headers set
@@ -22,7 +23,6 @@ SET ( HEADERS
 #  $ENV{ROBOCOMP}/classes/agmInner/agmInner.h
 )
 
-INCLUDE($ENV{ROBOCOMP}/cmake/modules/ipp.cmake)
 
 # artoolkit
 INCLUDE( $ENV{ROBOCOMP}/cmake/modules/artoolkit.cmake )
@@ -31,5 +31,14 @@ INCLUDE ($ENV{ROBOCOMP}/cmake/modules/pcl.cmake )
 # opencv2
 INCLUDE ($ENV{ROBOCOMP}/cmake/modules/opencv2.cmake )
 
-ADD_DEFINITIONS( -std=c++11 )
+SET ( LIBS ${LIBS} -lhdf5 )
+
+include_directories( /usr/include/hdf5/serial/ )
+
+find_package(catkin REQUIRED)
+
+include_directories(  ${catkin_INCLUDE_DIRS} )
+SET ( LIBS ${LIBS} ${catkin_LIBRARIES} -L/opt/ros/jade/lib -lroscpp -lrosconsole -lroscpp_serialization -lcv_bridge -lrostime ) # -lrosbag
+
+#ADD_DEFINITIONS( -std=c++11 )
 

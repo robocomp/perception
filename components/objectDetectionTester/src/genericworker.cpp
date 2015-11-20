@@ -1,5 +1,5 @@
 /*
- *    Copyright (C) 2006-2010 by RoboLab - University of Extremadura
+ *    Copyright (C) 2015 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -30,13 +30,16 @@ QObject()
 {
 	objectdetection_proxy = (*(objectDetectionPrx*)mprx["objectDetectionProxy"]);
 
-	mutex = new QMutex();
+
+	mutex = new QMutex(QMutex::Recursive);
+
 	#ifdef USE_QTGUI
 		setupUi(this);
 		show();
 	#endif
 	Period = BASIC_PERIOD;
 	connect(&timer, SIGNAL(timeout()), this, SLOT(compute()));
+// 	timer.start(Period);
 }
 
 /**
@@ -61,3 +64,4 @@ void GenericWorker::setPeriod(int p)
 	Period = p;
 	timer.start(Period);
 }
+

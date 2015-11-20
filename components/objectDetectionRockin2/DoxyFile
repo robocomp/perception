@@ -18,7 +18,7 @@
 DOXYFILE_ENCODING      = UTF-8
 
 # ROBOCOMP
-PROJECT_NAME           = objectDetectionRockin22Comp 
+PROJECT_NAME           = objectDetectionRockin2Comp 
 PROJECT_NUMBER         =
 
 

@@ -151,7 +151,7 @@ bool GenericMonitor::configGetString(Ice::CommunicatorPtr communicator, const st
 		throw error;
 	}
 
-	auto parts = QString::fromStdString(value).split("@");
+	QStringList parts = QString::fromStdString(value).split("@");
 	QString variableName=QString::fromStdString(compound);
 
 

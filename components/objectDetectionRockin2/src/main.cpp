@@ -18,11 +18,11 @@
  */
 
 
-/** \mainpage RoboComp::objectDetectionRockin22Comp
+/** \mainpage RoboComp::objectDetectionRockin2Comp
  *
  * \section intro_sec Introduction
  *
- * The objectDetectionRockin22Comp component...
+ * The objectDetectionRockin2Comp component...
  *
  * \section interface_sec Interface
  *
@@ -34,7 +34,7 @@
  * ...
  *
  * \subsection install2_ssec Compile and install
- * cd objectDetectionRockin22Comp
+ * cd objectDetectionRockin2Comp
  * <br>
  * cmake . && make
  * <br>
@@ -52,7 +52,7 @@
  *
  * \subsection execution_ssec Execution
  *
- * Just: "${PATH_TO_BINARY}/objectDetectionRockin22Comp --Ice.Config=${PATH_TO_CONFIG_FILE}"
+ * Just: "${PATH_TO_BINARY}/objectDetectionRockin2Comp --Ice.Config=${PATH_TO_CONFIG_FILE}"
  *
  * \subsection running_ssec Once running
  *
@@ -100,10 +100,10 @@ using namespace RoboCompRGBD;
 
 
 
-class objectDetectionRockin22Comp : public RoboComp::Application
+class objectDetectionRockin2Comp : public RoboComp::Application
 {
 public:
-	objectDetectionRockin22Comp (QString prfx) { prefix = prfx.toStdString(); }
+	objectDetectionRockin2Comp (QString prfx) { prefix = prfx.toStdString(); }
 private:
 	void initialize();
 	std::string prefix;
@@ -113,18 +113,24 @@ public:
 	virtual int run(int, char*[]);
 };
 
-void ::objectDetectionRockin22Comp::initialize()
+void ::objectDetectionRockin2Comp::initialize()
 {
 	// Config file properties read example
 	// configGetString( PROPERTY_NAME_1, property1_holder, PROPERTY_1_DEFAULT_VALUE );
 	// configGetInt( PROPERTY_NAME_2, property1_holder, PROPERTY_2_DEFAULT_VALUE );
 }
 
-int ::objectDetectionRockin22Comp::run(int argc, char* argv[])
+int ::objectDetectionRockin2Comp::run(int argc, char* argv[])
 {
+#ifdef USE_QTGUI
+	QApplication a(argc, argv);  // GUI application
+#else
 	QCoreApplication a(argc, argv);  // NON-GUI application
+#endif
 	int status=EXIT_SUCCESS;
 
+        ros::init(argc,argv,"refboxInteraction");
+        
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;
 
@@ -304,7 +310,7 @@ int main(int argc, char* argv[])
 			printf("Configuration prefix: <%s>\n", prefix.toStdString().c_str());
 		}
 	}
-	::objectDetectionRockin22Comp app(prefix);
+	::objectDetectionRockin2Comp app(prefix);
 
 	return app.main(argc, argv, configFile.c_str());
 }

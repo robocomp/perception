@@ -49,9 +49,9 @@ void objectDetectionI::mindTheGapPC(const Ice::Current&)
 	worker->mindTheGapPC();
 }
 
-string objectDetectionI::getResult(const string  &image, const string  &pcd, const Ice::Current&)
+void objectDetectionI::getResult(const string  &image, const string  &pcd,  detectionResult  &detection, const Ice::Current&)
 {
-	return worker->getResult(image, pcd);
+	worker->getResult(image, pcd, detection);
 }
 
 void objectDetectionI::centroidBasedPose( float  &x,  float  &y,  float  &theta, const Ice::Current&)
@@ -87,6 +87,11 @@ void objectDetectionI::surfHomography( listType  &guesses, const Ice::Current&)
 void objectDetectionI::fitTheViewVFH(const Ice::Current&)
 {
 	worker->fitTheViewVFH();
+}
+
+void objectDetectionI::readThePointCloud(const string  &image, const string  &pcd, const Ice::Current&)
+{
+	worker->readThePointCloud(image, pcd);
 }
 
 void objectDetectionI::showObject(const int  numObject, const Ice::Current&)
@@ -142,11 +147,6 @@ void objectDetectionI::grabThePointCloud(const string  &image, const string  &pc
 void objectDetectionI::fitModel(const string  &model, const string  &method, const Ice::Current&)
 {
 	worker->fitModel(model, method);
-}
-
-void objectDetectionI::setContinousMode( bool  mode, const Ice::Current&)
-{
-	worker->setContinousMode(mode);
 }
 
 void objectDetectionI::projectInliers(const string  &model, const Ice::Current&)
