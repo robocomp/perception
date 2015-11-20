@@ -129,7 +129,7 @@ int ::objectDetectionRockin2Comp::run(int argc, char* argv[])
 #endif
 	int status=EXIT_SUCCESS;
 
-        ros::init(argc,argv,"refboxInteraction");
+        ros::init(argc,argv,"objectDetectionRockin2");
         
 	InnerModelManagerPrx innermodelmanager_proxy;
 	RGBDPrx rgbd_proxy;

@@ -91,7 +91,7 @@ void SpecificWorker::compute()
 // 	{
 // 		std::cout << "Error reading from Camera" << e << std::endl;
 // 	}
-    ros::spin();  
+    ros::spinOnce();
 // 	trylibrostime
 }
 
