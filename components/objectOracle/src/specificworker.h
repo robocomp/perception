@@ -35,23 +35,28 @@
 #include <innermodel/innermodel.h>
 
 #include <opencv2/opencv.hpp>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 #ifdef __cplusplus
 extern "C"{
 #endif 
     
-#include <ccv.h>
-//int ccv_read(const void* data, ccv_dense_matrix_t** x, int type, int rows, int cols, int scanline);
-int ccv_read_impl(void const* in, ccv_dense_matrix_t** x, int type, int rows, int cols, int scanline);
+#include "ccv/ccv.h"
 
 #ifdef __cplusplus
 }
+
 #endif
 
 //#include "t.hpp"
 
 class SpecificWorker : public GenericWorker
-{
+{  
+    ccv_convnet_t* convnet;
+    fstream file;
+    bool first;
 Q_OBJECT
 public:
 	SpecificWorker(MapPrx& mprx);	

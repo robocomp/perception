@@ -1,9 +1,8 @@
-CommonBehavior.Endpoints=tcp -p 1
+CommonBehavior.Endpoints=tcp -p 11121
 
 
 # Endpoints for implemented interfaces
-objectOracle.Endpoints=tcp -p 0
-
+ObjectOracle.Endpoints=tcp -p 12032
 
 
 Ice.Warn.Connections=0

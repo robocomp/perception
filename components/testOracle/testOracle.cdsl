@@ -1,0 +1,10 @@
+import "/robocomp/interfaces/IDSLs/ObjectOracle.idsl";
+
+Component testOracle
+{
+	Communications
+	{
+		requires ObjectOracle;
+	};
+	language Cpp;
+};

@@ -23,9 +23,8 @@
 */
 SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx)
 {
-    ColorSeq i;
-    ResultList r;
-    getLabelsFromImage(i, r);
+    file.open("/home/robocomp/robocomp/files/dpModels/ccv/image-net-2012.words", std::ifstream::in);
+    convnet = ccv_convnet_read(0, "/home/robocomp/robocomp/files/dpModels/ccv/image-net-2012-vgg-d.sqlite3");
 }
 
 /**
@@ -40,7 +39,7 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 {
 
 
-    
+        
 	
 	timer.start(Period);
 
@@ -70,18 +69,32 @@ static unsigned int get_current_time(void)
 	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
+std::fstream& GotoLine(std::fstream& file, unsigned int num)
+{
+    file.seekg(std::ios::beg);
+    for(int i=0; i < num - 1; ++i)
+    {
+        file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    }
+    return file;
+}
+
 void SpecificWorker::getLabelsFromImage(const ColorSeq &image, ResultList &result)
 {
-//     cv::Mat rgb = cv::imread("img.png");
-    //cv::Mat M(480,640,CV_8UC1, cv::Scalar::all(0));
+    
+#ifdef DEBUG
+    cout<<"SpecificWorker::getLabelsFromImage"<<endl;
+#endif
     
     ccv_dense_matrix_t* ccv_image = 0;
     
-   // ccv_read(rgb.data, &ccv_image, CCV_IO_ANY_RAW | CCV_IO_RGB_COLOR rgb.rows, rgb.cols, rgb.step[0]);
-    ccv_read("/home/marcog/robocomp/components/perception/components/objectOracle/bin/img.png", &ccv_image, CCV_IO_ANY_FILE | CCV_IO_RGB_COLOR);
-
-    ccv_convnet_t* convnet = ccv_convnet_read(0, "/home/marcog/ccv/samples/image-net-2012-vgg-d.sqlite3");
+    ccv_read(image.data(), &ccv_image, CCV_IO_RGB_RAW, 480, 640, 1920);
     
+    assert(ccv_image != 0);
+    ccv_matrix_t *a = 0;
+    
+    string label;
+         
     ccv_dense_matrix_t* input = 0;
     ccv_convnet_input_formation(convnet->input, ccv_image, &input);
     ccv_matrix_free(ccv_image);
@@ -92,17 +105,43 @@ void SpecificWorker::getLabelsFromImage(const ColorSeq &image, ResultList &resul
     int i;
     for (i = 0; i < rank->rnum - 1; i++)
     {
+            //Obtain result
             ccv_classification_t* classification = (ccv_classification_t*)ccv_array_get(rank, i);
+            GotoLine(file, classification->id + 1);
+            std::getline(file,label);
+#ifdef DEBUG
             printf("%d %f ", classification->id + 1, classification->confidence);
+            cout<<label<<endl;
+#endif
+            //Save result to return
+            Label l;
+            l.name = label;
+            l.believe = classification->confidence;
+            result.push_back(l);
+            
+            //reset labels file pointer
+            file.clear() ;
+            file.seekg(0, ios::beg) ;
+            
     }
     ccv_classification_t* classification = (ccv_classification_t*)ccv_array_get(rank, rank->rnum - 1);
-    printf("%d %f\n", classification->id + 1, classification->confidence);
+    GotoLine(file, classification->id + 1);
+    std::getline(file,label);            
+#ifdef DEBUG
+    printf("%d %f ", classification->id + 1, classification->confidence);
+    cout<<label<<endl;
     printf("elapsed time %dms\n", elapsed_time);
+#endif
+    
+    //Save result to return
+    Label l;
+    l.name = label;
+    l.believe = classification->confidence;
+    result.push_back(l);
+    
     ccv_array_free(rank);
     ccv_matrix_free(input);
     ccv_convnet_free(convnet);
-    
-    
     
 }
 
